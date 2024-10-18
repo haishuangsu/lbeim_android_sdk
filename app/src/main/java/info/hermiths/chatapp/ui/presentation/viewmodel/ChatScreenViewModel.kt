@@ -1,6 +1,7 @@
 package info.hermiths.chatapp.ui.presentation.viewmodel
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,6 +16,7 @@ import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import info.hermiths.chatapp.service.ChatService
 import info.hermiths.chatapp.service.proto.IMMsg
+import info.hermiths.chatapp.service.proto.Msg
 import info.hermiths.chatapp.ui.data.enums.ConnectionStatus
 import info.hermiths.chatapp.ui.data.model.ChatMessage
 import info.hermiths.chatapp.ui.data.model.toJsonString
@@ -47,19 +49,20 @@ class ChatScreenViewModel : ViewModel() {
 
     fun sendMessage(messageSent: () -> Unit) {
         val message = message()
-        val msgTp = IMMsg.Join.newBuilder().setUid(message.message).build()
-        val byeArr = msgTp.toByteArray();
+        val hxMsgEntity = Msg.HxMsgEntity.newBuilder().setUser(_uiState.value?.userId).setMsg(message.message).build()
+        val sendBuff = hxMsgEntity.toByteArray();
         println("-------- start---------")
-        println("Proto byte arr ===>> $byeArr")
-        println("Proto byteArr to pro ===>> ${IMMsg.Join.parseFrom(byeArr)}")
+        println("Proto sendBuff ===>> $sendBuff")
         println("-------- end---------")
+
         if (message.message.isEmpty()) return
-        chatService.sendMessage(message.toJsonString())
+
+        chatService.sendMessage(sendBuff)
             .also {
                 messageSent()
             }
         addMessage(message)
-        clearMessage()
+//        clearMessage()
     }
 
     fun setUserId(userId: String) {
@@ -104,10 +107,13 @@ class ChatScreenViewModel : ViewModel() {
 
     private fun handleOnMessageReceived(message: Message) {
         Log.d(TAG, "handleOnMessageReceived: $message")
-//        Log.d(TAG, "handleOnMessageReceived Byte: ${(message as Message.Bytes).value }")
+        Log.d(TAG, "handleOnMessageReceived Byte: ${(message as Message.Bytes).value }")
         try {
-            val value = (message as Message.Text).value
-            val chatMessage = Gson().fromJson(value, ChatMessage::class.java)
+            val value = (message as Message.Bytes).value
+            val hxMsgEntity = Msg.HxMsgEntity.parseFrom(value)
+            Log.d(TAG, "handleOnMessageReceived protobuf bytes: $hxMsgEntity")
+//            val chatMessage = Gson().fromJson(value, ChatMessage::class.java)
+            val chatMessage = ChatMessage(fromUser = hxMsgEntity.user, message = hxMsgEntity.msg)
             if (chatMessage.fromUser != uiState.value?.userId) {
                 addMessage(chatMessage)
             }
