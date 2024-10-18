@@ -5,7 +5,7 @@
 // Generated files should ignore deprecation warnings
 @file:Suppress("DEPRECATION")
 
-import info.hermiths.chatapp.service.proto.IMMsg;
+import info.hermiths.chatapp.service.proto.IMMsg
 
 @kotlin.jvm.JvmName("-initializejoin")
 public inline fun join(block: JoinKt.Dsl.() -> kotlin.Unit): IMMsg.Join =
