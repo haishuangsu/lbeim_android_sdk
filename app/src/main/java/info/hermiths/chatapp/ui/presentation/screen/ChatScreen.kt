@@ -35,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -140,7 +139,6 @@ fun UserIdPrompt(onStart: (String) -> Unit) {
 
 @Composable
 fun MessageItem(message: ChatMessage, messagePosition: MessagePosition) {
-    println("什么 ===>>>> $message")
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -167,10 +165,4 @@ fun MessageItem(message: ChatMessage, messagePosition: MessagePosition) {
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun PreviewMessageItem() {
-    MessageItem(message = ChatMessage("Hello", "Kumar"), MessagePosition.LEFT)
 }
