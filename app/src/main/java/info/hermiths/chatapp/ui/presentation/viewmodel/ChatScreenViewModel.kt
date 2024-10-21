@@ -1,12 +1,10 @@
 package info.hermiths.chatapp.ui.presentation.viewmodel
 
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import com.tinder.scarlet.Message
 import com.tinder.scarlet.Scarlet
 import com.tinder.scarlet.WebSocket
@@ -15,11 +13,9 @@ import com.tinder.scarlet.messageadapter.protobuf.ProtobufMessageAdapter
 import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import info.hermiths.chatapp.service.ChatService
-import info.hermiths.chatapp.service.proto.IMMsg
 import info.hermiths.chatapp.service.proto.Msg
 import info.hermiths.chatapp.ui.data.enums.ConnectionStatus
 import info.hermiths.chatapp.ui.data.model.ChatMessage
-import info.hermiths.chatapp.ui.data.model.toJsonString
 import info.hermiths.chatapp.ui.presentation.screen.ChatScreenUiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -51,9 +47,6 @@ class ChatScreenViewModel : ViewModel() {
         val message = message()
         val hxMsgEntity = Msg.HxMsgEntity.newBuilder().setUser(_uiState.value?.userId).setMsg(message.message).build()
         val sendBuff = hxMsgEntity.toByteArray();
-        println("-------- start---------")
-        println("Proto sendBuff ===>> $sendBuff")
-        println("-------- end---------")
 
         if (message.message.isEmpty()) return
 
@@ -61,7 +54,7 @@ class ChatScreenViewModel : ViewModel() {
             .also {
                 messageSent()
             }
-        addMessage(message)
+        attachMsgToUI(message)
 //        clearMessage()
     }
 
@@ -112,10 +105,10 @@ class ChatScreenViewModel : ViewModel() {
             val value = (message as Message.Bytes).value
             val hxMsgEntity = Msg.HxMsgEntity.parseFrom(value)
             Log.d(TAG, "handleOnMessageReceived protobuf bytes: $hxMsgEntity")
-//            val chatMessage = Gson().fromJson(value, ChatMessage::class.java)
+//            val chatMsg= Gson().fromJson(value, ChatMessage::class.java)
             val chatMessage = ChatMessage(fromUser = hxMsgEntity.user, message = hxMsgEntity.msg)
             if (chatMessage.fromUser != uiState.value?.userId) {
-                addMessage(chatMessage)
+                attachMsgToUI(chatMessage)
             }
         } catch (e: Exception) {
             Log.e(TAG, "handleOnMessageReceived: ", e)
@@ -126,7 +119,7 @@ class ChatScreenViewModel : ViewModel() {
         _uiState.postValue(_uiState.value?.copy(connectionStatus = connectionStatus))
     }
 
-    private fun addMessage(message: ChatMessage) {
+    private fun attachMsgToUI(message: ChatMessage) {
         Log.d(TAG, "addMessage: $message")
         val messages = uiState.value?.messages?.toMutableList()
         messages?.add(message)
