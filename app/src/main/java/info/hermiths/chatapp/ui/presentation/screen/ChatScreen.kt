@@ -1,10 +1,12 @@
 package info.hermiths.chatapp.ui.presentation.screen
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,14 +18,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Send
+import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,10 +37,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import info.hermiths.chatapp.R
 import info.hermiths.chatapp.ui.data.enums.ConnectionStatus
 import info.hermiths.chatapp.ui.data.enums.MessagePosition
 import info.hermiths.chatapp.ui.data.model.ChatMessage
@@ -65,7 +75,7 @@ fun ChatScreen(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(text = "Connection Status: ${uiState.connectionStatus.name}")
-        Text(text = "User Id: ${uiState.userId}")
+        Text(text = "User: ${uiState.userId}")
         Divider(
             modifier = Modifier
                 .fillMaxWidth()
@@ -74,12 +84,12 @@ fun ChatScreen(
         LazyColumn(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(4.dp),
+            contentPadding = PaddingValues(top = 20.dp),
             state = lazyListState
         ) {
             items(uiState.messages) { message ->
                 MessageItem(
-                    message = message,
-                    if (message.fromUser == uiState.userId) MessagePosition.RIGHT
+                    message = message, if (message.fromUser == uiState.userId) MessagePosition.RIGHT
                     else MessagePosition.LEFT
                 )
             }
@@ -89,11 +99,13 @@ fun ChatScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedTextField(
-                value = uiState.message, onValueChange = viewModel::onMessageChange,
-                modifier = Modifier.weight(1f)
+                value = uiState.message,
+                onValueChange = viewModel::onMessageChange,
+                modifier = Modifier.weight(1f),
+                maxLines = 5,
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Icon(imageVector = Icons.Rounded.Send,
+            Icon(imageVector = Icons.AutoMirrored.Rounded.Send,
                 contentDescription = "Send Button",
                 modifier = Modifier
                     .size(40.dp)
@@ -127,7 +139,8 @@ fun UserIdPrompt(onStart: (String) -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                OutlinedTextField(value = userId, onValueChange = { userId = it },
+                OutlinedTextField(value = userId,
+                    onValueChange = { userId = it },
                     label = { Text(text = "User Id") })
                 Button(onClick = { onStart(userId) }) {
                     Text(text = "Start")
@@ -148,21 +161,86 @@ fun MessageItem(message: ChatMessage, messagePosition: MessagePosition) {
             ),
         contentAlignment = if (messagePosition == MessagePosition.LEFT) Alignment.TopStart else Alignment.BottomEnd
     ) {
-        Card {
-            Column(
-                modifier = Modifier
-                    .padding(8.dp)
+        if (messagePosition == MessagePosition.LEFT) {
+            CsRecived(message, messagePosition)
+        } else {
+            UserInput(message, messagePosition)
+        }
+    }
+}
+
+@Composable
+fun CsRecived(message: ChatMessage, messagePosition: MessagePosition) {
+    Row {
+        Image(
+            painter = painterResource(id = R.drawable.cs_avatar),
+            contentDescription = "",
+            modifier = Modifier.size(32.dp)
+        )
+
+        Column(
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Text(
+                text = message.fromUser,
+                modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
+                style = TextStyle(
+                    fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)
+                )
+            )
+            Spacer(Modifier.height(8.dp))
+            Surface(
+                color = Color.White, modifier = Modifier.clip(
+                    RoundedCornerShape(
+                        topEnd = 12.dp,
+                        bottomStart = 12.dp,
+                        bottomEnd = 12.dp,
+                    )
+                )
             ) {
                 Text(
-                    text = message.fromUser,
-                    modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
-                    style = MaterialTheme.typography.labelSmall
-                )
-                Text(
-                    text = message.message,
-                    style = MaterialTheme.typography.bodyMedium
+                    text = message.message, modifier = Modifier.padding(12.dp), style = TextStyle(
+                        fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff000000)
+                    )
                 )
             }
         }
     }
 }
+
+@Composable
+fun UserInput(message: ChatMessage, messagePosition: MessagePosition) {
+    Row(horizontalArrangement = Arrangement.End) {
+        Column(
+            horizontalAlignment = Alignment.End, modifier = Modifier.padding(8.dp)
+        ) {
+            Text(
+                text = message.fromUser,
+                modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
+                style = TextStyle(
+                    fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)
+                )
+            )
+            Spacer(Modifier.height(8.dp))
+            Surface(
+                color = Color(0xff0054FC).copy(alpha = 0.1f), modifier = Modifier.clip(
+                    RoundedCornerShape(
+                        topStart = 12.dp, bottomStart = 12.dp, bottomEnd = 12.dp,
+                    )
+                )
+            ) {
+                Text(
+                    text = message.message, modifier = Modifier.padding(12.dp), style = TextStyle(
+                        fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff000000)
+                    )
+                )
+            }
+        }
+        Image(
+            painter = painterResource(id = R.drawable.user_avatar),
+            contentDescription = "",
+            modifier = Modifier.size(32.dp)
+        )
+    }
+}
+
