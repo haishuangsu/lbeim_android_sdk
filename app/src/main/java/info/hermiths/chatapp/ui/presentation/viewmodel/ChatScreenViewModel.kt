@@ -23,21 +23,18 @@ import okhttp3.OkHttpClient
 
 class ChatScreenViewModel : ViewModel() {
     private val TAG = "ChatScreenViewModel"
-//    private val wss_url = "wss://s13650.sgp1.piesocket.com/v3/1?api_key=${BuildConfig.websocketApiKey}&notify_self=1";
+
+    //    private val wss_url = "wss://s13650.sgp1.piesocket.com/v3/1?api_key=${BuildConfig.websocketApiKey}&notify_self=1";
     private val wss_url = "ws://10.40.90.67:16868";
 
 
     private val _uiState = MutableLiveData(ChatScreenUiState())
     val uiState: LiveData<ChatScreenUiState> = _uiState
 
-    private var chatService: ChatService = Scarlet.Builder()
-        .webSocketFactory(
-            OkHttpClient.Builder().build()
-                .newWebSocketFactory(wss_url)
-        )
-        .addMessageAdapterFactory(ProtobufMessageAdapter.Factory())
-        .addStreamAdapterFactory(RxJava2StreamAdapterFactory())
-        .build().create<ChatService>()
+    private var chatService: ChatService = Scarlet.Builder().webSocketFactory(
+        OkHttpClient.Builder().build().newWebSocketFactory(wss_url)
+    ).addMessageAdapterFactory(ProtobufMessageAdapter.Factory())
+        .addStreamAdapterFactory(RxJava2StreamAdapterFactory()).build().create<ChatService>()
 
     init {
         observerConnection()
@@ -45,17 +42,17 @@ class ChatScreenViewModel : ViewModel() {
 
     fun sendMessage(messageSent: () -> Unit) {
         val message = message()
-        val hxMsgEntity = Msg.HxMsgEntity.newBuilder().setUser(_uiState.value?.userId).setMsg(message.message).build()
-        val sendBuff = hxMsgEntity.toByteArray();
-
         if (message.message.isEmpty()) return
 
-        chatService.sendMessage(sendBuff)
-            .also {
-                messageSent()
-            }
-        attachMsgToUI(message)
-//        clearMessage()
+        val hxMsgEntity =
+            Msg.HxMsgEntity.newBuilder().setUser(_uiState.value?.userId).setMsg(message.message)
+                .build()
+        val sendBuff = hxMsgEntity.toByteArray();
+
+        chatService.sendMessage(sendBuff).also {
+            messageSent()
+        }
+        attachMsgToUI(message, true)
     }
 
     fun setUserId(userId: String) {
@@ -69,38 +66,31 @@ class ChatScreenViewModel : ViewModel() {
     private fun observerConnection() {
         Log.d(TAG, "Observing Connection")
         updateConnectionStatus(ConnectionStatus.CONNECTING)
-        chatService.observeConnection().subscribe(
-            { response ->
-                Log.d(TAG, response.toString())
-                onResponseReceived(response)
-            },
-            { error ->
-                error.localizedMessage?.let { Log.e(TAG, it) }
-            })
+        chatService.observeConnection().subscribe({ response ->
+            Log.d(TAG, response.toString())
+            onResponseReceived(response)
+        }, { error ->
+            error.localizedMessage?.let { Log.e(TAG, it) }
+        })
     }
 
     private fun onResponseReceived(response: WebSocket.Event) {
         when (response) {
-            is OnConnectionOpened<*> ->
-                updateConnectionStatus(ConnectionStatus.OPENED)
+            is OnConnectionOpened<*> -> updateConnectionStatus(ConnectionStatus.OPENED)
 
-            is OnConnectionClosed ->
-                updateConnectionStatus(ConnectionStatus.CLOSED)
+            is OnConnectionClosed -> updateConnectionStatus(ConnectionStatus.CLOSED)
 
-            is OnConnectionClosing ->
-                updateConnectionStatus(ConnectionStatus.CLOSING)
+            is OnConnectionClosing -> updateConnectionStatus(ConnectionStatus.CLOSING)
 
-            is OnConnectionFailed ->
-                updateConnectionStatus(ConnectionStatus.FAILED)
+            is OnConnectionFailed -> updateConnectionStatus(ConnectionStatus.FAILED)
 
-            is OnMessageReceived ->
-                handleOnMessageReceived(response.message)
+            is OnMessageReceived -> handleOnMessageReceived(response.message)
         }
     }
 
     private fun handleOnMessageReceived(message: Message) {
         Log.d(TAG, "handleOnMessageReceived: $message")
-        Log.d(TAG, "handleOnMessageReceived Byte: ${(message as Message.Bytes).value }")
+        Log.d(TAG, "handleOnMessageReceived Byte: ${(message as Message.Bytes).value}")
         try {
             val value = (message as Message.Bytes).value
             val hxMsgEntity = Msg.HxMsgEntity.parseFrom(value)
@@ -108,7 +98,7 @@ class ChatScreenViewModel : ViewModel() {
 //            val chatMsg= Gson().fromJson(value, ChatMessage::class.java)
             val chatMessage = ChatMessage(fromUser = hxMsgEntity.user, message = hxMsgEntity.msg)
             if (chatMessage.fromUser != uiState.value?.userId) {
-                attachMsgToUI(chatMessage)
+                attachMsgToUI(chatMessage, false)
             }
         } catch (e: Exception) {
             Log.e(TAG, "handleOnMessageReceived: ", e)
@@ -119,17 +109,17 @@ class ChatScreenViewModel : ViewModel() {
         _uiState.postValue(_uiState.value?.copy(connectionStatus = connectionStatus))
     }
 
-    private fun attachMsgToUI(message: ChatMessage) {
+    private fun attachMsgToUI(message: ChatMessage, clear: Boolean) {
         Log.d(TAG, "addMessage: $message")
         val messages = uiState.value?.messages?.toMutableList()
         messages?.add(message)
-        _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
-    }
-
-    private fun clearMessage() {
-        viewModelScope.launch {
-            delay(50)
-            _uiState.postValue(_uiState.value?.copy(message = ""))
+        if (clear) {
+            _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it, message = "") })
+        } else {
+            viewModelScope.launch {
+                delay(100)
+                _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
+            }
         }
     }
 
