@@ -24,6 +24,7 @@ android {
         val properties = Properties()
         properties.load(rootProject.file("local.properties").reader())
         buildConfigField("String", "websocketApiKey", "\"${properties["WEB_SOCKET_API_KEY"]}\"")
+        buildConfigField("String", "lbeSign", "\"${properties["LBE_SIGN"]}\"")
     }
 
     buildTypes {
@@ -96,7 +97,18 @@ dependencies {
     // Protobuf
     implementation("com.google.protobuf:protobuf-kotlin:4.29.0-RC1")
     implementation("com.google.protobuf:protobuf-java:3.22.3")
-//    implementation ("com.google.protobuf:protobuf-lite:3.0.1")
-//    implementation("io.grpc:grpc-stub:1.57.0")
-//    implementation("io.grpc:grpc-protobuf:1.57.0")
+    // implementation ("com.google.protobuf:protobuf-lite:3.0.1")
+    // implementation("io.grpc:grpc-stub:1.57.0")
+    // implementation("io.grpc:grpc-protobuf:1.57.0")
+
+    //  Coil
+    implementation("io.coil-kt.coil3:coil-compose:3.0.0-rc01")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.0-rc01")
+
+    // Glide
+    implementation ("com.github.bumptech.glide:compose:1.0.0-beta01")
+
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
 }
