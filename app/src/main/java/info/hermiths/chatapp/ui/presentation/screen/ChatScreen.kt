@@ -18,11 +18,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -39,6 +41,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -47,6 +51,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.ImageLoader
+import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter.State.Empty.painter
+import coil3.compose.SubcomposeAsyncImage
+import coil3.compose.rememberAsyncImagePainter
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
+import com.bumptech.glide.integration.compose.GlideSubcomposition
 import info.hermiths.chatapp.R
 import info.hermiths.chatapp.ui.data.enums.ConnectionStatus
 import info.hermiths.chatapp.ui.data.enums.MessagePosition
@@ -55,7 +67,7 @@ import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 
 data class ChatScreenUiState(
     var messages: List<ChatMessage> = listOf(),
-    val userId: String = "",
+    val userId: String = "hermits",
     val message: String = "",
     val connectionStatus: ConnectionStatus = ConnectionStatus.NOT_STARTED
 )
@@ -64,6 +76,8 @@ data class ChatScreenUiState(
 fun ChatScreen(
     viewModel: ChatScreenViewModel = viewModel()
 ) {
+    ImageLoader.Builder(LocalContext.current)
+
     val uiState by viewModel.uiState.observeAsState(ChatScreenUiState())
     val currentFocus = LocalFocusManager.current
     val lazyListState = rememberLazyListState()
@@ -208,6 +222,7 @@ fun CsRecived(message: ChatMessage, messagePosition: MessagePosition) {
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun UserInput(message: ChatMessage, messagePosition: MessagePosition) {
     Row(horizontalArrangement = Arrangement.End) {
@@ -236,11 +251,45 @@ fun UserInput(message: ChatMessage, messagePosition: MessagePosition) {
                 )
             }
         }
-        Image(
-            painter = painterResource(id = R.drawable.user_avatar),
+//        Image(
+//            painter = painterResource(id = R.drawable.user_avatar),
+//            contentDescription = "",
+//            modifier = Modifier.size(32.dp)
+//        )
+
+        SubcomposeAsyncImage(
+//            model = "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg",
+            model = "https://qiniu-web.aiwei365.com/@/upload/0/image/20170321/1490085940504055412.gif?imageView2/2/w/720",
             contentDescription = "",
-            modifier = Modifier.size(32.dp)
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape),
+            loading = {
+                CircularProgressIndicator()
+            },
+            onLoading = { loading ->
+
+            },
         )
+
+//        GlideImage(
+//            model = "https://qiniu-web.aiwei365.com/@/upload/0/image/20170321/1490085940504055412.gif?imageView2/2/w/720",
+//            contentDescription = "Yo",
+//            contentScale = ContentScale.FillBounds,
+//            modifier = Modifier
+//                .size(32.dp)
+//                .clip(CircleShape),
+//        )
+
+//        GlideSubcomposition(
+//            model = "https://qiniu-web.aiwei365.com/@/upload/0/image/20170321/1490085940504055412.gif?imageView2/2/w/720",
+//            modifier = Modifier
+//                .size(129.dp)
+//                .clip(CircleShape),
+//        ) {
+//
+//        }
     }
 }
 

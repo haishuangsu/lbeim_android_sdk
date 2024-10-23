@@ -14,6 +14,8 @@ import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import info.hermiths.chatapp.service.ChatService
 import info.hermiths.chatapp.service.proto.Msg
+import info.hermiths.chatapp.service.rest.RetrofitInstance
+import info.hermiths.chatapp.service.rest.service.LbeIMRepository
 import info.hermiths.chatapp.ui.data.enums.ConnectionStatus
 import info.hermiths.chatapp.ui.data.model.ChatMessage
 import info.hermiths.chatapp.ui.presentation.screen.ChatScreenUiState
@@ -24,23 +26,32 @@ import okhttp3.OkHttpClient
 class ChatScreenViewModel : ViewModel() {
     private val TAG = "ChatScreenViewModel"
 
-    //    private val wss_url = "wss://s13650.sgp1.piesocket.com/v3/1?api_key=${BuildConfig.websocketApiKey}&notify_self=1";
-    private val wss_url = "ws://10.40.90.67:16868";
-
+    private val wss_url = "ws://10.40.90.67:16868"
 
     private val _uiState = MutableLiveData(ChatScreenUiState())
     val uiState: LiveData<ChatScreenUiState> = _uiState
 
-    private var chatService: ChatService = Scarlet.Builder().webSocketFactory(
-        OkHttpClient.Builder().build().newWebSocketFactory(wss_url)
-    ).addMessageAdapterFactory(ProtobufMessageAdapter.Factory())
+    private var chatService: ChatService = Scarlet.Builder()
+        .webSocketFactory(OkHttpClient.Builder().build().newWebSocketFactory(wss_url))
+        .addMessageAdapterFactory(ProtobufMessageAdapter.Factory())
         .addStreamAdapterFactory(RxJava2StreamAdapterFactory()).build().create<ChatService>()
 
     init {
         observerConnection()
+        viewModelScope.launch {
+            val config = LbeIMRepository.fetchConfig()
+            println("Retrofit fetch config ===>>> $config")
+            /* TODO
+            *  create session
+            *  fetch history
+            *  connect websocket
+            *
+            */
+        }
     }
 
     fun sendMessage(messageSent: () -> Unit) {
+
         val message = message()
         if (message.message.isEmpty()) return
 
@@ -52,7 +63,7 @@ class ChatScreenViewModel : ViewModel() {
         chatService.sendMessage(sendBuff).also {
             messageSent()
         }
-        attachMsgToUI(message, true)
+        sendAttachMsgToUI(message)
     }
 
     fun setUserId(userId: String) {
@@ -98,7 +109,7 @@ class ChatScreenViewModel : ViewModel() {
 //            val chatMsg= Gson().fromJson(value, ChatMessage::class.java)
             val chatMessage = ChatMessage(fromUser = hxMsgEntity.user, message = hxMsgEntity.msg)
             if (chatMessage.fromUser != uiState.value?.userId) {
-                attachMsgToUI(chatMessage, false)
+                attachMsgToUI(chatMessage)
             }
         } catch (e: Exception) {
             Log.e(TAG, "handleOnMessageReceived: ", e)
@@ -109,17 +120,22 @@ class ChatScreenViewModel : ViewModel() {
         _uiState.postValue(_uiState.value?.copy(connectionStatus = connectionStatus))
     }
 
-    private fun attachMsgToUI(message: ChatMessage, clear: Boolean) {
-        Log.d(TAG, "addMessage: $message")
-        val messages = uiState.value?.messages?.toMutableList()
-        messages?.add(message)
-        if (clear) {
+    private fun sendAttachMsgToUI(message: ChatMessage) {
+        Log.d(TAG, "sendAttachMsgToUI: $message")
+        viewModelScope.launch {
+            delay(20)
+            val messages = uiState.value?.messages?.toMutableList()
+            messages?.add(message.copy())
             _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it, message = "") })
-        } else {
-            viewModelScope.launch {
-                delay(100)
-                _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
-            }
+        }
+    }
+
+    private fun attachMsgToUI(message: ChatMessage) {
+        Log.d(TAG, "attachMsgToUI: $message")
+        viewModelScope.launch {
+            val messages = uiState.value?.messages?.toMutableList()
+            messages?.add(message)
+            _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
         }
     }
 
