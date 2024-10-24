@@ -14,7 +14,7 @@ import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import info.hermiths.chatapp.BuildConfig
 import info.hermiths.chatapp.service.ChatService
-import info.hermiths.chatapp.model.proto.Msg
+import info.hermiths.chatapp.model.proto.test.Msg
 import info.hermiths.chatapp.data.LbeIMRepository
 import info.hermiths.chatapp.model.req.ConfigBody
 import info.hermiths.chatapp.model.req.HistoryBody
@@ -40,13 +40,14 @@ class ChatScreenViewModel : ViewModel() {
     private val _inputMsg = MutableLiveData("")
     val inputMsg: LiveData<String> = _inputMsg
 
+
     private var chatService: ChatService = Scarlet.Builder()
         .webSocketFactory(OkHttpClient.Builder().build().newWebSocketFactory(wss_url))
         .addMessageAdapterFactory(ProtobufMessageAdapter.Factory())
         .addStreamAdapterFactory(RxJava2StreamAdapterFactory()).build().create<ChatService>()
 
     init {
-//        prepare()
+        // prepare()
         observerConnection()
     }
 
@@ -140,7 +141,7 @@ class ChatScreenViewModel : ViewModel() {
     private fun message(): ChatMessage {
 //        return _uiState.value?.let { ChatMessage(fromUser = it.user, message = it.inputMsg) }
 //            ?: ChatMessage("", "")
-        return ChatMessage(fromUser = _uiState.value!!.user, message = _inputMsg.value!!)
+        return ChatMessage(fromUser = _uiState.value?.user ?: "", message = _inputMsg.value ?: "")
     }
 
 
