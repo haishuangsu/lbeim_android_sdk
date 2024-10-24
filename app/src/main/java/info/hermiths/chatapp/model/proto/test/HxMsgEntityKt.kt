@@ -5,7 +5,7 @@
 // Generated files should ignore deprecation warnings
 @file:Suppress("DEPRECATION")
 
-import info.hermiths.chatapp.model.proto.Msg
+import info.hermiths.chatapp.model.proto.test.Msg
 
 @kotlin.jvm.JvmName("-initializehxMsgEntity")
 public inline fun hxMsgEntity(block: HxMsgEntityKt.Dsl.() -> kotlin.Unit): Msg.HxMsgEntity =

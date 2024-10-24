@@ -45,6 +45,40 @@ public object JoinKt {
     public fun clearUid() {
       _builder.clearUid()
     }
+
+    /**
+     * `string sessionId = 2;`
+     */
+    public var sessionId: kotlin.String
+      @JvmName("getSessionId")
+      get() = _builder.sessionId
+      @JvmName("setSessionId")
+      set(value) {
+        _builder.sessionId = value
+      }
+    /**
+     * `string sessionId = 2;`
+     */
+    public fun clearSessionId() {
+      _builder.clearSessionId()
+    }
+
+    /**
+     * `string token = 3;`
+     */
+    public var token: kotlin.String
+      @JvmName("getToken")
+      get() = _builder.token
+      @JvmName("setToken")
+      set(value) {
+        _builder.token = value
+      }
+    /**
+     * `string token = 3;`
+     */
+    public fun clearToken() {
+      _builder.clearToken()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic
