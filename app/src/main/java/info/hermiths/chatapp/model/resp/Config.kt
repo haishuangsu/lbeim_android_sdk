@@ -1,4 +1,4 @@
-package info.hermiths.chatapp.service.rest.model
+package info.hermiths.chatapp.model.resp
 
 data class Config(
     val code: Long,
