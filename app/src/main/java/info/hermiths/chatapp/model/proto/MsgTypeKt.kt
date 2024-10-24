@@ -5,7 +5,7 @@
 // Generated files should ignore deprecation warnings
 @file:Suppress("DEPRECATION")
 
-import info.hermiths.chatapp.service.proto.IMMsg
+import info.hermiths.chatapp.model.proto.IMMsg
 
 @kotlin.jvm.JvmName("-initializemsgType")
 public inline fun msgType(block: MsgTypeKt.Dsl.() -> kotlin.Unit): IMMsg.MsgType =

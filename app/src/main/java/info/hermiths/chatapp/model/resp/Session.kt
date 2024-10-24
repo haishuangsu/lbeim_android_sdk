@@ -1,4 +1,4 @@
-package info.hermiths.chatapp.service.rest.model
+package info.hermiths.chatapp.model.resp
 
 import com.google.gson.annotations.SerializedName
 

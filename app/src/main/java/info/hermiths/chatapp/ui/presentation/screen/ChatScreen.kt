@@ -1,6 +1,5 @@
 package info.hermiths.chatapp.ui.presentation.screen
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,8 +21,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Send
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -34,31 +31,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil3.ImageLoader
-import coil3.compose.AsyncImage
-import coil3.compose.AsyncImagePainter.State.Empty.painter
 import coil3.compose.SubcomposeAsyncImage
-import coil3.compose.rememberAsyncImagePainter
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
-import com.bumptech.glide.integration.compose.GlideSubcomposition
+
 import info.hermiths.chatapp.R
 import info.hermiths.chatapp.ui.data.enums.ConnectionStatus
 import info.hermiths.chatapp.ui.data.enums.MessagePosition
@@ -67,8 +53,8 @@ import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 
 data class ChatScreenUiState(
     var messages: List<ChatMessage> = listOf(),
-    val userId: String = "hermits",
-    val message: String = "",
+    val user: String = "hermits",
+    var inputMsg: String = "",
     val connectionStatus: ConnectionStatus = ConnectionStatus.NOT_STARTED
 )
 
@@ -76,9 +62,11 @@ data class ChatScreenUiState(
 fun ChatScreen(
     viewModel: ChatScreenViewModel = viewModel()
 ) {
-    ImageLoader.Builder(LocalContext.current)
+    // ImageLoader.Builder(LocalContext.current)
 
     val uiState by viewModel.uiState.observeAsState(ChatScreenUiState())
+    val input by viewModel.inputMsg.observeAsState("init")
+
     val currentFocus = LocalFocusManager.current
     val lazyListState = rememberLazyListState()
 
@@ -89,7 +77,7 @@ fun ChatScreen(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(text = "Connection Status: ${uiState.connectionStatus.name}")
-        Text(text = "User: ${uiState.userId}")
+        Text(text = "User: ${uiState.user}")
         Divider(
             modifier = Modifier
                 .fillMaxWidth()
@@ -103,7 +91,7 @@ fun ChatScreen(
         ) {
             items(uiState.messages) { message ->
                 MessageItem(
-                    message = message, if (message.fromUser == uiState.userId) MessagePosition.RIGHT
+                    message = message, if (message.fromUser == uiState.user) MessagePosition.RIGHT
                     else MessagePosition.LEFT
                 )
             }
@@ -112,12 +100,20 @@ fun ChatScreen(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
-                value = uiState.message,
+            OutlinedTextField(value = input,
                 onValueChange = viewModel::onMessageChange,
                 modifier = Modifier.weight(1f),
                 maxLines = 5,
-            )
+                placeholder = {
+                    Text(
+                        "请输入你想咨询的问题", style = TextStyle(
+                            color = Color(0xffEBEBEB),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.W400,
+                        )
+                    )
+                })
+
             Spacer(modifier = Modifier.width(8.dp))
             Icon(imageVector = Icons.AutoMirrored.Rounded.Send,
                 contentDescription = "Send Button",
@@ -130,39 +126,13 @@ fun ChatScreen(
                     })
         }
     }
-    // Ask user to enter a unique userId before using the chat functionality
-    AnimatedVisibility(visible = uiState.userId.isEmpty()) {
-        UserIdPrompt() {
-            viewModel.setUserId(it)
-        }
-    }
 
-    // When ever a new message is added to the list we want to scroll to the latest message
+    // scroll to the latest message
     LaunchedEffect(key1 = uiState.messages) {
         lazyListState.animateScrollToItem(uiState.messages.size)
     }
 }
 
-@Composable
-fun UserIdPrompt(onStart: (String) -> Unit) {
-    var userId by remember { mutableStateOf("") }
-    Dialog(onDismissRequest = { }) {
-        Card {
-            Column(
-                modifier = Modifier.padding(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                OutlinedTextField(value = userId,
-                    onValueChange = { userId = it },
-                    label = { Text(text = "User Id") })
-                Button(onClick = { onStart(userId) }) {
-                    Text(text = "Start")
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun MessageItem(message: ChatMessage, messagePosition: MessagePosition) {
@@ -222,7 +192,6 @@ fun CsRecived(message: ChatMessage, messagePosition: MessagePosition) {
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun UserInput(message: ChatMessage, messagePosition: MessagePosition) {
     Row(horizontalArrangement = Arrangement.End) {
@@ -251,11 +220,6 @@ fun UserInput(message: ChatMessage, messagePosition: MessagePosition) {
                 )
             }
         }
-//        Image(
-//            painter = painterResource(id = R.drawable.user_avatar),
-//            contentDescription = "",
-//            modifier = Modifier.size(32.dp)
-//        )
 
         SubcomposeAsyncImage(
 //            model = "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg",
