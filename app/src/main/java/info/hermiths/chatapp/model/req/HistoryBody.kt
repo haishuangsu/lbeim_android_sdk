@@ -1,11 +1,12 @@
 package info.hermiths.chatapp.model.req
+
 import com.google.gson.annotations.SerializedName
 
 
 data class HistoryBody(
-    @SerializedName("seq_condition")
+    @SerializedName("seqCondition")
     val seqCondition: SeqCondition,
-    @SerializedName("session_id")
+    @SerializedName("sessionId")
     val sessionId: String,
 )
 

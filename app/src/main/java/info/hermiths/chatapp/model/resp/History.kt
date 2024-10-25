@@ -15,10 +15,10 @@ data class HistoryData(
 )
 
 data class Content(
-    @SerializedName("sender_uid") val senderUid: String,
-    @SerializedName("receiver_uid") val receiverUid: String,
-    @SerializedName("msg_type") val msgType: Long,
-    @SerializedName("msg_seq") val msgSeq: Long,
-    @SerializedName("msg_body") val msgBody: String,
+    @SerializedName("senderUid") val senderUid: String,
+    @SerializedName("receiverUid") val receiverUid: String,
+    @SerializedName("msgType") val msgType: Long,
+    @SerializedName("msgSeq") val msgSeq: Long,
+    @SerializedName("msgBody") val msgBody: String,
     val status: Long,
 )
