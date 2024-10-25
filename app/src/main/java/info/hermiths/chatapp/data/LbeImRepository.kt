@@ -1,21 +1,16 @@
 package info.hermiths.chatapp.data
 
-import info.hermiths.chatapp.service.RetrofitInstance
-import info.hermiths.chatapp.model.resp.Config
-import info.hermiths.chatapp.model.resp.History
-import info.hermiths.chatapp.model.resp.SendMsg
-import info.hermiths.chatapp.model.resp.Session
 import info.hermiths.chatapp.model.req.ConfigBody
 import info.hermiths.chatapp.model.req.HistoryBody
 import info.hermiths.chatapp.model.req.MsgBody
 import info.hermiths.chatapp.model.req.SessionBody
+import info.hermiths.chatapp.model.resp.History
+import info.hermiths.chatapp.model.resp.SendMsg
+import info.hermiths.chatapp.model.resp.Session
+import info.hermiths.chatapp.service.RetrofitInstance
 
-object LbeIMRepository {
-    private val lbeIMRepository = RetrofitInstance.apiService;
-
-    suspend fun fetchConfig(lbeSign: String, body: ConfigBody): Config {
-        return lbeIMRepository.fetchConfig(lbeSign = lbeSign, body);
-    }
+object LbeImRepository {
+    private val lbeIMRepository = RetrofitInstance.imApiService;
 
     suspend fun createSession(lbeSign: String, body: SessionBody): Session {
         return lbeIMRepository.createSession(lbeSign = lbeSign, body);

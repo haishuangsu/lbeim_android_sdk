@@ -3,11 +3,11 @@ package info.hermiths.chatapp.model.req
 import com.google.gson.annotations.SerializedName
 
 data class MsgBody(
-    @SerializedName("msg_body")
+    @SerializedName("msgBody")
     val msgBody: String,
-    @SerializedName("msg_seq")
+    @SerializedName("msgSeq")
     val msgSeq: Long,
-    @SerializedName("msg_type")
+    @SerializedName("msgType")
     val msgType: Long,
     val source: Long,
 )

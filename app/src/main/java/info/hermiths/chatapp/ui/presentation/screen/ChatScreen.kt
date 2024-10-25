@@ -28,24 +28,34 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
 import coil3.compose.SubcomposeAsyncImage
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 
 import info.hermiths.chatapp.R
+import info.hermiths.chatapp.model.proto.IMMsg
 import info.hermiths.chatapp.ui.data.enums.ConnectionStatus
 import info.hermiths.chatapp.ui.data.enums.MessagePosition
 import info.hermiths.chatapp.ui.data.model.ChatMessage
@@ -53,7 +63,6 @@ import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 
 data class ChatScreenUiState(
     var messages: List<ChatMessage> = listOf(),
-    val user: String = "hermits",
     var inputMsg: String = "",
     val connectionStatus: ConnectionStatus = ConnectionStatus.NOT_STARTED
 )
@@ -77,7 +86,6 @@ fun ChatScreen(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(text = "Connection Status: ${uiState.connectionStatus.name}")
-        Text(text = "User: ${uiState.user}")
         Divider(
             modifier = Modifier
                 .fillMaxWidth()
@@ -91,7 +99,8 @@ fun ChatScreen(
         ) {
             items(uiState.messages) { message ->
                 MessageItem(
-                    message = message, if (message.fromUser == uiState.user) MessagePosition.RIGHT
+                    message = message,
+                    if (message.fromUser == ChatScreenViewModel.customerName) MessagePosition.RIGHT
                     else MessagePosition.LEFT
                 )
             }
@@ -173,21 +182,7 @@ fun CsRecived(message: ChatMessage, messagePosition: MessagePosition) {
                 )
             )
             Spacer(Modifier.height(8.dp))
-            Surface(
-                color = Color.White, modifier = Modifier.clip(
-                    RoundedCornerShape(
-                        topEnd = 12.dp,
-                        bottomStart = 12.dp,
-                        bottomEnd = 12.dp,
-                    )
-                )
-            ) {
-                Text(
-                    text = message.message, modifier = Modifier.padding(12.dp), style = TextStyle(
-                        fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff000000)
-                    )
-                )
-            }
+            MsgContent(message)
         }
     }
 }
@@ -222,8 +217,8 @@ fun UserInput(message: ChatMessage, messagePosition: MessagePosition) {
         }
 
         SubcomposeAsyncImage(
-//            model = "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg",
-            model = "https://qiniu-web.aiwei365.com/@/upload/0/image/20170321/1490085940504055412.gif?imageView2/2/w/720",
+            model = "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg",
+//            model = "https://qiniu-web.aiwei365.com/@/upload/0/image/20170321/1490085940504055412.gif?imageView2/2/w/720",
             contentDescription = "",
             contentScale = ContentScale.FillBounds,
             modifier = Modifier
@@ -237,15 +232,6 @@ fun UserInput(message: ChatMessage, messagePosition: MessagePosition) {
             },
         )
 
-//        GlideImage(
-//            model = "https://qiniu-web.aiwei365.com/@/upload/0/image/20170321/1490085940504055412.gif?imageView2/2/w/720",
-//            contentDescription = "Yo",
-//            contentScale = ContentScale.FillBounds,
-//            modifier = Modifier
-//                .size(32.dp)
-//                .clip(CircleShape),
-//        )
-
 //        GlideSubcomposition(
 //            model = "https://qiniu-web.aiwei365.com/@/upload/0/image/20170321/1490085940504055412.gif?imageView2/2/w/720",
 //            modifier = Modifier
@@ -255,5 +241,88 @@ fun UserInput(message: ChatMessage, messagePosition: MessagePosition) {
 //
 //        }
     }
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+fun MsgContent(message: ChatMessage) {
+    when (message.msgType) {
+        IMMsg.MsgType.TextMsgType -> {
+            Surface(
+                color = Color.White, modifier = Modifier.clip(
+                    RoundedCornerShape(
+                        topEnd = 12.dp,
+                        bottomStart = 12.dp,
+                        bottomEnd = 12.dp,
+                    )
+                )
+            ) {
+                Text(
+                    text = message.message, modifier = Modifier.padding(12.dp), style = TextStyle(
+                        fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff000000)
+                    )
+                )
+            }
+        }
+
+        IMMsg.MsgType.ImgMsgType -> {
+            GlideImage(
+                // model = message.message,
+                model = "https://qiniu-web.aiwei365.com/@/upload/0/image/20170321/1490085940504055412.gif?imageView2/2/w/720",
+                contentDescription = "Yo",
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier.clip(RoundedCornerShape(16.dp)),
+            )
+        }
+
+        IMMsg.MsgType.VideoMsgType -> {
+            ExoPlayerView("https://download.samplelib.com/mp4/sample-5s.mp4")
+        }
+
+        else -> {
+            Text("Not implement yet.")
+        }
+    }
+}
+
+
+@Composable
+fun ExoPlayerView(url: String) {
+    // Get the current context
+    val context = LocalContext.current
+
+    // Initialize ExoPlayer
+    val exoPlayer = ExoPlayer.Builder(context).build()
+
+    // Create a MediaSource
+    val mediaSource = remember(url) {
+        MediaItem.fromUri(url)
+    }
+
+    // Set MediaSource to ExoPlayer
+    LaunchedEffect(mediaSource) {
+        exoPlayer.setMediaItem(mediaSource)
+        exoPlayer.prepare()
+    }
+
+    // Manage lifecycle events
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.release()
+        }
+    }
+
+    // Use AndroidView to embed an Android View (PlayerView) into Compose
+    AndroidView(
+        factory = { ctx ->
+            PlayerView(ctx).apply {
+                player = exoPlayer
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(255.dp)
+            .clip(RoundedCornerShape(16.dp))// Set your desired height
+    )
 }
 
