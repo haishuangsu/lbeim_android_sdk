@@ -123,33 +123,6 @@ public object MsgEntityToServerKt {
 
     public val MsgEntityToServerKt.Dsl.msgBodyOrNull: IMMsg.MsgBody?
       get() = _builder.msgBodyOrNull
-
-    /**
-     * `.CreateSessionMsg createSessionMsg = 5;`
-     */
-    public var createSessionMsg: IMMsg.CreateSessionMsg
-      @JvmName("getCreateSessionMsg")
-      get() = _builder.createSessionMsg
-      @JvmName("setCreateSessionMsg")
-      set(value) {
-        _builder.createSessionMsg = value
-      }
-    /**
-     * `.CreateSessionMsg createSessionMsg = 5;`
-     */
-    public fun clearCreateSessionMsg() {
-      _builder.clearCreateSessionMsg()
-    }
-    /**
-     * `.CreateSessionMsg createSessionMsg = 5;`
-     * @return Whether the createSessionMsg field is set.
-     */
-    public fun hasCreateSessionMsg(): kotlin.Boolean {
-      return _builder.hasCreateSessionMsg()
-    }
-
-    public val MsgEntityToServerKt.Dsl.createSessionMsgOrNull: IMMsg.CreateSessionMsg?
-      get() = _builder.createSessionMsgOrNull
   }
 }
 @kotlin.jvm.JvmSynthetic
@@ -161,7 +134,4 @@ public val IMMsg.MsgEntityToServerOrBuilder.joinOrNull: IMMsg.Join?
 
 public val IMMsg.MsgEntityToServerOrBuilder.msgBodyOrNull: IMMsg.MsgBody?
   get() = if (hasMsgBody()) getMsgBody() else null
-
-public val IMMsg.MsgEntityToServerOrBuilder.createSessionMsgOrNull: IMMsg.CreateSessionMsg?
-  get() = if (hasCreateSessionMsg()) getCreateSessionMsg() else null
 
