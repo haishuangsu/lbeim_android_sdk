@@ -235,6 +235,31 @@ public object MsgBodyKt {
     public fun clearCreateTime() {
       _builder.clearCreateTime()
     }
+
+    /**
+     * ```
+     * 客户端自定义消息ID
+     * ```
+     *
+     * `string clientMsgID = 9;`
+     */
+    public var clientMsgID: kotlin.String
+      @JvmName("getClientMsgID")
+      get() = _builder.clientMsgID
+      @JvmName("setClientMsgID")
+      set(value) {
+        _builder.clientMsgID = value
+      }
+    /**
+     * ```
+     * 客户端自定义消息ID
+     * ```
+     *
+     * `string clientMsgID = 9;`
+     */
+    public fun clearClientMsgID() {
+      _builder.clearClientMsgID()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic

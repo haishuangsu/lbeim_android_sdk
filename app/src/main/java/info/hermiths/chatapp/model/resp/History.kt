@@ -17,8 +17,10 @@ data class HistoryData(
 data class Content(
     @SerializedName("senderUid") val senderUid: String,
     @SerializedName("receiverUid") val receiverUid: String,
-    @SerializedName("msgType") val msgType: Long,
-    @SerializedName("msgSeq") val msgSeq: Long,
+    @SerializedName("msgType") val msgType: Int,
+    @SerializedName("msgSeq") val msgSeq: Int,
     @SerializedName("msgBody") val msgBody: String,
+    val clientMsgId: String,
     val status: Long,
+    val createTime: Long,
 )

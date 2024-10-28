@@ -62,7 +62,7 @@ import info.hermiths.chatapp.ui.data.model.ChatMessage
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 
 data class ChatScreenUiState(
-    var messages: List<ChatMessage> = listOf(),
+    var messages: List<ChatMessage> = emptyList(),
     var inputMsg: String = "",
     val connectionStatus: ConnectionStatus = ConnectionStatus.NOT_STARTED
 )
@@ -276,11 +276,12 @@ fun MsgContent(message: ChatMessage) {
         }
 
         IMMsg.MsgType.VideoMsgType -> {
-            ExoPlayerView("https://download.samplelib.com/mp4/sample-5s.mp4")
+//            ExoPlayerView("https://download.samplelib.com/mp4/sample-5s.mp4")
+            Text("Video not implement yet.")
         }
 
         else -> {
-            Text("Not implement yet.")
+            Text("Not implement yet. --->>> { ${message.msgType} }")
         }
     }
 }
