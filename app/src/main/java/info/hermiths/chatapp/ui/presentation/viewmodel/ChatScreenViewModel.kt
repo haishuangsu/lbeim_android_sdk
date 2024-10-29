@@ -9,12 +9,16 @@ import androidx.lifecycle.viewModelScope
 import com.tinder.scarlet.Message
 import com.tinder.scarlet.Scarlet
 import com.tinder.scarlet.WebSocket
-import com.tinder.scarlet.WebSocket.Event.*
+import com.tinder.scarlet.WebSocket.Event.OnConnectionClosed
+import com.tinder.scarlet.WebSocket.Event.OnConnectionClosing
+import com.tinder.scarlet.WebSocket.Event.OnConnectionFailed
+import com.tinder.scarlet.WebSocket.Event.OnConnectionOpened
+import com.tinder.scarlet.WebSocket.Event.OnMessageReceived
 import com.tinder.scarlet.messageadapter.protobuf.ProtobufMessageAdapter
 import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import info.hermiths.chatapp.BuildConfig
-import info.hermiths.chatapp.service.ChatService
+import info.hermiths.chatapp.utils.TimeUtils.timeStampGen
 import info.hermiths.chatapp.data.LbeConfigRepository
 import info.hermiths.chatapp.data.LbeImRepository
 import info.hermiths.chatapp.model.proto.IMMsg
@@ -25,6 +29,7 @@ import info.hermiths.chatapp.model.req.MsgBody
 import info.hermiths.chatapp.model.req.Pagination
 import info.hermiths.chatapp.model.req.SeqCondition
 import info.hermiths.chatapp.model.req.SessionBody
+import info.hermiths.chatapp.service.ChatService
 import info.hermiths.chatapp.service.DynamicHeaderUrlRequestFactory
 import info.hermiths.chatapp.service.RetrofitInstance
 import info.hermiths.chatapp.ui.data.enums.ConnectionStatus
@@ -32,14 +37,10 @@ import info.hermiths.chatapp.ui.data.model.ChatMessage
 import info.hermiths.chatapp.ui.presentation.screen.ChatScreenUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
-import java.time.Instant
-import java.time.ZoneOffset
-import java.util.Date
-import java.util.TimeZone
 import java.util.UUID
+
 
 class ChatScreenViewModel : ViewModel() {
 
@@ -48,13 +49,12 @@ class ChatScreenViewModel : ViewModel() {
         var csNickName = "客服007"
         var csUid = ""
         var uid = ""
-        var customerName = "hermiths"
+        var customerNickName = "hermiths"
         var wssHost = ""
         var oss = ""
         var lbeToken = ""
         var lbeSession = ""
         var seq: Int = 0
-
     }
 
     private val _uiState = MutableLiveData(ChatScreenUiState())
@@ -84,8 +84,8 @@ class ChatScreenViewModel : ViewModel() {
                     BuildConfig.lbeSign, SessionBody(
                         extraInfo = "",
                         headIcon = "",
-                        nickId = "HermitKK",
-                        nickName = "HermitKK",
+                        nickId = "HermitK3",
+                        nickName = "HermitK3",
                         uid = ""
                     )
                 )
@@ -107,16 +107,17 @@ class ChatScreenViewModel : ViewModel() {
                 val history = LbeImRepository.fetchHistory(
                     BuildConfig.lbeSign, HistoryBody(
                         sessionId = session.data.sessionId,
-                        seqCondition = SeqCondition(startSeq = 0, endSeq = 99999)
+                        seqCondition = SeqCondition(startSeq = 23, endSeq = 43)
                     )
                 )
                 println("Retrofit fetch history ===>>> $history")
                 viewModelScope.launch(Dispatchers.Main) {
                     val messages = uiState.value?.messages?.toMutableList()
+
                     for (content in history.data.content) {
-                        messages?.add(
+                        if (content.msgType == 1 || content.msgType == 2 || content.msgType == 3) messages?.add(
                             ChatMessage(
-                                fromUser = csNickName,
+                                fromUser = content.senderUid,
                                 message = content.msgBody,
                                 msgType = when (content.msgType) {
                                     0 -> IMMsg.MsgType.JoinServer
@@ -125,7 +126,6 @@ class ChatScreenViewModel : ViewModel() {
                                     3 -> IMMsg.MsgType.VideoMsgType
                                     4 -> IMMsg.MsgType.CreateSessionMsgType
                                     else -> {
-                                        println("额外的 ===>>> ${content.msgType}")
                                         IMMsg.MsgType.UNRECOGNIZED
                                     }
                                 }
@@ -138,7 +138,7 @@ class ChatScreenViewModel : ViewModel() {
                     _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
                 }
                 viewModelScope.launch(Dispatchers.IO) {
-                    delay(35)
+                    delay(55)
                     observerConnection()
                 }
             } catch (e: Exception) {
@@ -184,7 +184,6 @@ class ChatScreenViewModel : ViewModel() {
 
     private fun handleOnMessageReceived(message: Message) {
         Log.d(TAG, "handleOnMessageReceived: $message")
-//        Log.d(TAG, "handleOnMessageReceived Byte: ${(message as Message.Bytes).value}")
         try {
             val value = (message as Message.Bytes).value
             viewModelScope.launch {
@@ -194,13 +193,14 @@ class ChatScreenViewModel : ViewModel() {
                 Log.d(
                     TAG, "handleOnMessageReceived protobuf type ===>>  ${msgEntity.msgType}"
                 )
+                seq = msgEntity.msgBody.msgSeq
 
                 val chatMessage = ChatMessage(
-                    fromUser = csNickName,
+                    fromUser = msgEntity.msgBody.senderUid,
                     msgType = msgEntity.msgType,
                     message = msgEntity.msgBody.msgBody
                 )
-                if (chatMessage.fromUser != customerName) {
+                if (chatMessage.fromUser != uid) {
                     attachMsgToUI(chatMessage)
                 }
             }
@@ -219,9 +219,7 @@ class ChatScreenViewModel : ViewModel() {
 
     private fun message(): ChatMessage {
         return ChatMessage(
-            fromUser = customerName,
-            msgType = IMMsg.MsgType.TextMsgType,
-            message = _inputMsg.value ?: ""
+            fromUser = uid, msgType = IMMsg.MsgType.TextMsgType, message = _inputMsg.value ?: ""
         )
     }
 
@@ -233,19 +231,24 @@ class ChatScreenViewModel : ViewModel() {
             val uuid = uidGen()
             val timeStamp = timeStampGen()
             Log.d(TAG, "send uuid: $uuid, timeStamp: $timeStamp")
-            val senMsg = LbeImRepository.sendMsg(
-                lbeToken = lbeToken, lbeSession = lbeSession, MsgBody(
-                    msgBody = message.message,
-                    msgSeq = seq,
-                    msgType = 1,
-                    clientMsgId = "${uuid}_${timeStamp}",
-                    source = 100
+            try {
+                val senMsg = LbeImRepository.sendMsg(
+                    lbeToken = lbeToken, lbeSession = lbeSession, MsgBody(
+                        msgBody = message.message,
+                        msgSeq = seq,
+                        msgType = 1,
+                        clientMsgId = "${uuid}_${timeStamp}",
+                        source = 100
+                    )
                 )
-            )
-            println("Retrofit send msg ===>>> $senMsg")
-            attachMsgToUI(message)
-            messageSent()
-            clearInput()
+                seq = senMsg.data.msgReq
+                println("Retrofit send msg ===>>> $senMsg")
+                attachMsgToUI(message)
+                messageSent()
+                clearInput()
+            } catch (e: Exception) {
+                println("send error -->> $e")
+            }
         }
     }
 
@@ -265,14 +268,5 @@ class ChatScreenViewModel : ViewModel() {
 
     private fun uidGen(): String {
         return UUID.randomUUID().toString()
-    }
-
-    private fun timeStampGen(): Long {
-        TimeZone.getAvailableIDs()
-        val instant = Instant.now().atOffset(ZoneOffset.UTC)
-        val localTime = instant.toLocalTime()
-        val utcTimeStamp = instant.toOffsetTime()
-        Log.d(TAG, "localTime: $localTime, utcTime: $utcTimeStamp")
-        return Date().time
     }
 }

@@ -1,5 +1,6 @@
 package info.hermiths.chatapp.ui.presentation.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,12 +20,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Send
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,7 +51,6 @@ import androidx.media3.ui.PlayerView
 import coil3.compose.SubcomposeAsyncImage
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-
 import info.hermiths.chatapp.R
 import info.hermiths.chatapp.model.proto.IMMsg
 import info.hermiths.chatapp.ui.data.enums.ConnectionStatus
@@ -63,7 +60,6 @@ import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 
 data class ChatScreenUiState(
     var messages: List<ChatMessage> = emptyList(),
-    var inputMsg: String = "",
     val connectionStatus: ConnectionStatus = ConnectionStatus.NOT_STARTED
 )
 
@@ -71,7 +67,8 @@ data class ChatScreenUiState(
 fun ChatScreen(
     viewModel: ChatScreenViewModel = viewModel()
 ) {
-    // ImageLoader.Builder(LocalContext.current)
+    val context = LocalContext.current
+//    ImageLoader.Builder(LocalContext.current)
 
     val uiState by viewModel.uiState.observeAsState(ChatScreenUiState())
     val input by viewModel.inputMsg.observeAsState("init")
@@ -86,7 +83,7 @@ fun ChatScreen(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(text = "Connection Status: ${uiState.connectionStatus.name}")
-        Divider(
+        HorizontalDivider(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
@@ -100,43 +97,116 @@ fun ChatScreen(
             items(uiState.messages) { message ->
                 MessageItem(
                     message = message,
-                    if (message.fromUser == ChatScreenViewModel.customerName) MessagePosition.RIGHT
+                    if (message.fromUser == ChatScreenViewModel.uid) MessagePosition.RIGHT
                     else MessagePosition.LEFT
                 )
             }
         }
+
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(value = input,
+            Surface(
+                color = Color.White, modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+            ) {
+                Image(painter = painterResource(R.drawable.open_file),
+                    contentDescription = "",
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .size(21.dp, 16.dp)
+                        .clickable {
+                            Toast
+                                .makeText(
+                                    context, "send pic || video", Toast.LENGTH_SHORT
+                                )
+                                .show()
+                        })
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            BasicTextField(value = input,
+                modifier = Modifier.fillMaxWidth(),
                 onValueChange = viewModel::onMessageChange,
-                modifier = Modifier.weight(1f),
                 maxLines = 5,
-                placeholder = {
-                    Text(
-                        "请输入你想咨询的问题", style = TextStyle(
-                            color = Color(0xffEBEBEB),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.W400,
-                        )
-                    )
+                decorationBox = { innerTextField ->
+                    Surface(
+                        color = Color.White,
+                        modifier = Modifier
+                            .height(42.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(Modifier.weight(1f)) {
+                                if (input.isEmpty()) Text(
+                                    "请输入你想咨询的问题", style = TextStyle(
+                                        color = Color(0xffEBEBEB),
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.W400,
+                                    )
+                                )
+                                innerTextField()
+                            }
+
+                            Image(painter = painterResource(R.drawable.send),
+                                contentDescription = "Send Button",
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .clickable {
+                                        viewModel.sendMessage(messageSent = {
+                                            currentFocus.clearFocus()
+                                        })
+                                    })
+                        }
+                    }
                 })
 
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(imageVector = Icons.AutoMirrored.Rounded.Send,
-                contentDescription = "Send Button",
-                modifier = Modifier
-                    .size(40.dp)
-                    .clickable {
-                        viewModel.sendMessage(messageSent = {
-                            currentFocus.clearFocus()
-                        })
-                    })
+//            OutlinedTextField(
+//                value = input,
+//                onValueChange = viewModel::onMessageChange,
+//                modifier = Modifier.weight(1f),
+//                trailingIcon = {
+//                    Image(painter = painterResource(R.drawable.send),
+//                        contentDescription = "Send Button",
+//                        modifier = Modifier
+//                            .size(18.dp)
+//                            .clickable {
+//                                viewModel.sendMessage(messageSent = {
+//                                    currentFocus.clearFocus()
+//                                })
+//                            })
+//                },
+//                shape = RoundedCornerShape(12.dp),
+//                colors = TextFieldDefaults.colors(
+//                    focusedContainerColor = Color.White,
+//                    unfocusedContainerColor = Color.White,
+//                    focusedIndicatorColor = Color.White,
+//                    unfocusedIndicatorColor = Color.White,
+//                    cursorColor = Color.Black
+//                ),
+//                placeholder = {
+//                    Text(
+//                        "请输入你想咨询的问题", style = TextStyle(
+//                            color = Color(0xffEBEBEB),
+//                            fontSize = 14.sp,
+//                            fontWeight = FontWeight.W400,
+//                        )
+//                    )
+//                },
+//                maxLines = 5,
+//            )
         }
     }
 
-    // scroll to the latest message
+// scroll to the latest message
     LaunchedEffect(key1 = uiState.messages) {
         lazyListState.animateScrollToItem(uiState.messages.size)
     }
@@ -218,7 +288,6 @@ fun UserInput(message: ChatMessage, messagePosition: MessagePosition) {
 
         SubcomposeAsyncImage(
             model = "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg",
-//            model = "https://qiniu-web.aiwei365.com/@/upload/0/image/20170321/1490085940504055412.gif?imageView2/2/w/720",
             contentDescription = "",
             contentScale = ContentScale.FillBounds,
             modifier = Modifier
@@ -267,8 +336,7 @@ fun MsgContent(message: ChatMessage) {
 
         IMMsg.MsgType.ImgMsgType -> {
             GlideImage(
-                // model = message.message,
-                model = "https://qiniu-web.aiwei365.com/@/upload/0/image/20170321/1490085940504055412.gif?imageView2/2/w/720",
+                model = message.message,
                 contentDescription = "Yo",
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier.clip(RoundedCornerShape(16.dp)),
@@ -276,8 +344,7 @@ fun MsgContent(message: ChatMessage) {
         }
 
         IMMsg.MsgType.VideoMsgType -> {
-//            ExoPlayerView("https://download.samplelib.com/mp4/sample-5s.mp4")
-            Text("Video not implement yet.")
+            ExoPlayerView(message.message)
         }
 
         else -> {
