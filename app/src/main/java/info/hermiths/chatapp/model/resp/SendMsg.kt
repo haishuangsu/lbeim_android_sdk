@@ -11,5 +11,5 @@ data class SendMsg(
 )
 
 data class SendData(
-    @SerializedName("msgReq") val msgReq: Long,
+    @SerializedName("msgReq") val msgReq: Int,
 )
