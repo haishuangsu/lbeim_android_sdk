@@ -18,23 +18,26 @@ import com.tinder.scarlet.messageadapter.protobuf.ProtobufMessageAdapter
 import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import info.hermiths.chatapp.BuildConfig
+import info.hermiths.chatapp.data.IMLocalRepository
 import info.hermiths.chatapp.utils.TimeUtils.timeStampGen
 import info.hermiths.chatapp.data.LbeConfigRepository
 import info.hermiths.chatapp.data.LbeImRepository
 import info.hermiths.chatapp.model.proto.IMMsg
 import info.hermiths.chatapp.model.req.ConfigBody
 import info.hermiths.chatapp.model.req.HistoryBody
-import info.hermiths.chatapp.model.req.HistoryListReq
 import info.hermiths.chatapp.model.req.MsgBody
 import info.hermiths.chatapp.model.req.Pagination
 import info.hermiths.chatapp.model.req.SeqCondition
 import info.hermiths.chatapp.model.req.SessionBody
+import info.hermiths.chatapp.model.req.SessionListReq
 import info.hermiths.chatapp.service.ChatService
 import info.hermiths.chatapp.service.DynamicHeaderUrlRequestFactory
 import info.hermiths.chatapp.service.RetrofitInstance
 import info.hermiths.chatapp.ui.data.enums.ConnectionStatus
 import info.hermiths.chatapp.ui.data.model.ChatMessage
 import info.hermiths.chatapp.ui.presentation.screen.ChatScreenUiState
+import info.hermiths.chatapp.utils.Converts.protoToEntity
+import info.hermiths.chatapp.utils.Converts.sendBodyToEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -46,8 +49,8 @@ class ChatScreenViewModel : ViewModel() {
 
     companion object {
         private const val TAG = "ChatScreenViewModel"
+        private const val REALMTAG = "RealmTAG"
         var csNickName = "客服007"
-        var csUid = ""
         var uid = ""
         var customerNickName = "hermiths"
         var wssHost = ""
@@ -63,7 +66,6 @@ class ChatScreenViewModel : ViewModel() {
     private val _inputMsg = MutableLiveData("")
     val inputMsg: LiveData<String> = _inputMsg
 
-
     private var chatService: ChatService? = null
 
     init {
@@ -71,6 +73,8 @@ class ChatScreenViewModel : ViewModel() {
     }
 
     private fun prepare() {
+        findLocalMessages()
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val config = LbeConfigRepository.fetchConfig(BuildConfig.lbeSign, ConfigBody(0, 1))
@@ -78,7 +82,6 @@ class ChatScreenViewModel : ViewModel() {
                 wssHost = config.data.ws[0]
                 oss = config.data.oss[0]
                 RetrofitInstance.IM_URL = config.data.rest[0]
-                println("http update config ====>>>> restHost: ${RetrofitInstance.IM_URL}, wwsHost: $wssHost")
 
                 val session = LbeImRepository.createSession(
                     BuildConfig.lbeSign, SessionBody(
@@ -93,10 +96,9 @@ class ChatScreenViewModel : ViewModel() {
                 lbeToken = session.data.token
                 lbeSession = session.data.sessionId
                 uid = session.data.uid
-                println("http update session ====>>>> lbeToken: $lbeToken, lbeSession: $lbeSession")
 
                 val sessionList = LbeImRepository.fetchSessionList(
-                    lbeToken = lbeToken, body = HistoryListReq(
+                    lbeToken = lbeToken, body = SessionListReq(
                         pagination = Pagination(
                             pageNumber = 1, showNumber = 1000
                         ), sessionType = 0
@@ -105,9 +107,9 @@ class ChatScreenViewModel : ViewModel() {
                 println("Retrofit fetch sessionList ===>>> $sessionList")
 
                 val history = LbeImRepository.fetchHistory(
-                    BuildConfig.lbeSign, HistoryBody(
+                    BuildConfig.lbeSign, lbeToken, HistoryBody(
                         sessionId = session.data.sessionId,
-                        seqCondition = SeqCondition(startSeq = 23, endSeq = 43)
+                        seqCondition = SeqCondition(startSeq = 0, endSeq = 55)
                     )
                 )
                 println("Retrofit fetch history ===>>> $history")
@@ -120,11 +122,11 @@ class ChatScreenViewModel : ViewModel() {
                                 fromUser = content.senderUid,
                                 message = content.msgBody,
                                 msgType = when (content.msgType) {
-                                    0 -> IMMsg.MsgType.JoinServer
+                                    // 0 -> IMMsg.MsgType.JoinServer
                                     1 -> IMMsg.MsgType.TextMsgType
                                     2 -> IMMsg.MsgType.ImgMsgType
                                     3 -> IMMsg.MsgType.VideoMsgType
-                                    4 -> IMMsg.MsgType.CreateSessionMsgType
+                                    // 4 -> IMMsg.MsgType.CreateSessionMsgType
                                     else -> {
                                         IMMsg.MsgType.UNRECOGNIZED
                                     }
@@ -142,9 +144,14 @@ class ChatScreenViewModel : ViewModel() {
                     observerConnection()
                 }
             } catch (e: Exception) {
-                println("FetchConfig error: $e")
+                println("Prepare error: $e")
             }
         }
+    }
+
+    private fun findLocalMessages() {
+        val messages = IMLocalRepository.findMessages()
+        Log.d(REALMTAG, "find all msg ---->>> ${messages.map { m -> m.toString() }}")
     }
 
     @SuppressLint("CheckResult")
@@ -190,11 +197,15 @@ class ChatScreenViewModel : ViewModel() {
                 // val chatMsg= Gson().fromJson(value, ChatMessage::class.java)
                 val msgEntity = IMMsg.MsgEntityToFrontEnd.parseFrom(value)
                 Log.d(TAG, "handleOnMessageReceived protobuf bytes: $msgEntity")
-                Log.d(
-                    TAG, "handleOnMessageReceived protobuf type ===>>  ${msgEntity.msgType}"
-                )
-                seq = msgEntity.msgBody.msgSeq
-
+                val receivedReq = msgEntity.msgBody.msgSeq
+                if (receivedReq - seq > 2) {
+                    // TODO update
+                } else {
+                    seq = receivedReq
+                }
+                viewModelScope.launch(Dispatchers.IO) {
+                    IMLocalRepository.insertMessage(protoToEntity(msgEntity.msgBody))
+                }
                 val chatMessage = ChatMessage(
                     fromUser = msgEntity.msgBody.senderUid,
                     msgType = msgEntity.msgType,
@@ -228,28 +239,34 @@ class ChatScreenViewModel : ViewModel() {
         if (message.message.isEmpty()) return
 
         viewModelScope.launch {
-            val uuid = uidGen()
+            val uuid = uuidGen()
             val timeStamp = timeStampGen()
-            Log.d(TAG, "send uuid: $uuid, timeStamp: $timeStamp")
+            val body = MsgBody(
+                msgBody = message.message,
+                msgSeq = seq,
+                msgType = 1,
+                clientMsgId = "${uuid}_${timeStamp}",
+                source = 100
+            )
             try {
                 val senMsg = LbeImRepository.sendMsg(
-                    lbeToken = lbeToken, lbeSession = lbeSession, MsgBody(
-                        msgBody = message.message,
-                        msgSeq = seq,
-                        msgType = 1,
-                        clientMsgId = "${uuid}_${timeStamp}",
-                        source = 100
-                    )
+                    lbeToken = lbeToken, lbeSession = lbeSession, body
                 )
-                seq = senMsg.data.msgReq
                 println("Retrofit send msg ===>>> $senMsg")
+                seq = senMsg.data.msgReq
+                IMLocalRepository.insertMessage(sendBodyToEntity(body))
                 attachMsgToUI(message)
                 messageSent()
                 clearInput()
+                viewModelScope.launch(Dispatchers.IO) {
+                    delay(55)
+                    findLocalMessages()
+                }
             } catch (e: Exception) {
                 println("send error -->> $e")
             }
         }
+
     }
 
     private fun attachMsgToUI(message: ChatMessage) {
@@ -266,7 +283,7 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
-    private fun uidGen(): String {
+    private fun uuidGen(): String {
         return UUID.randomUUID().toString()
     }
 }

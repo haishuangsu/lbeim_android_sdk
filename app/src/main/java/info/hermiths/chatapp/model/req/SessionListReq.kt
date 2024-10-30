@@ -1,6 +1,6 @@
 package info.hermiths.chatapp.model.req
 
-data class HistoryListReq(
+data class SessionListReq(
     val pagination: Pagination,
     val sessionType: Long,
 )

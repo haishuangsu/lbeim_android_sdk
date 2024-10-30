@@ -4,7 +4,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
-    private const val BASE_URL = "http://42nz10y3hhah.dreaminglife.cn:10002/"
+    private const val BASE_URL = "http://42nz10y3hhah.dreaminglife.cn:20005/"
     var IM_URL = ""
 
 
