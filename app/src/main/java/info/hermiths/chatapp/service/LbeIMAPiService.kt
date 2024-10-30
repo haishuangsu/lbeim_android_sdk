@@ -1,9 +1,9 @@
 package info.hermiths.chatapp.service
 
 import info.hermiths.chatapp.model.req.HistoryBody
-import info.hermiths.chatapp.model.req.HistoryListReq
 import info.hermiths.chatapp.model.req.MsgBody
 import info.hermiths.chatapp.model.req.SessionBody
+import info.hermiths.chatapp.model.req.SessionListReq
 import info.hermiths.chatapp.model.resp.History
 import info.hermiths.chatapp.model.resp.SendMsg
 import info.hermiths.chatapp.model.resp.Session
@@ -21,11 +21,15 @@ interface LbeIMAPiService {
 
     @POST(FETCH_HISTORY_LIST_URL)
     suspend fun fetchSessionList(
-        @Header("lbe_token") lbeToken: String, @Body body: HistoryListReq
+        @Header("lbe_token") lbeToken: String, @Body body: SessionListReq
     ): SessionListRep
 
     @POST(FETCH_HISTORY_URL)
-    suspend fun fetchHistory(@Header("lbe_sign") lbeSign: String, @Body body: HistoryBody): History
+    suspend fun fetchHistory(
+        @Header("lbe_sign") lbeSign: String,
+        @Header("lbe_token") lbeToken: String,
+        @Body body: HistoryBody
+    ): History
 
     @POST(CREATE_ChAT_URL)
     suspend fun createSession(@Header("lbe_sign") lbeSign: String, @Body body: SessionBody): Session

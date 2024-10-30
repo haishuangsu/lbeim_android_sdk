@@ -26,11 +26,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,20 +41,15 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.PlayerView
 import coil3.compose.SubcomposeAsyncImage
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
+
 import info.hermiths.chatapp.R
-import info.hermiths.chatapp.model.proto.IMMsg
 import info.hermiths.chatapp.ui.data.enums.ConnectionStatus
 import info.hermiths.chatapp.ui.data.enums.MessagePosition
 import info.hermiths.chatapp.ui.data.model.ChatMessage
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
+import info.hermiths.chatapp.ui.presentation.components.MsgTypeContent
 
 data class ChatScreenUiState(
     var messages: List<ChatMessage> = emptyList(),
@@ -168,41 +161,6 @@ fun ChatScreen(
                         }
                     }
                 })
-
-//            OutlinedTextField(
-//                value = input,
-//                onValueChange = viewModel::onMessageChange,
-//                modifier = Modifier.weight(1f),
-//                trailingIcon = {
-//                    Image(painter = painterResource(R.drawable.send),
-//                        contentDescription = "Send Button",
-//                        modifier = Modifier
-//                            .size(18.dp)
-//                            .clickable {
-//                                viewModel.sendMessage(messageSent = {
-//                                    currentFocus.clearFocus()
-//                                })
-//                            })
-//                },
-//                shape = RoundedCornerShape(12.dp),
-//                colors = TextFieldDefaults.colors(
-//                    focusedContainerColor = Color.White,
-//                    unfocusedContainerColor = Color.White,
-//                    focusedIndicatorColor = Color.White,
-//                    unfocusedIndicatorColor = Color.White,
-//                    cursorColor = Color.Black
-//                ),
-//                placeholder = {
-//                    Text(
-//                        "请输入你想咨询的问题", style = TextStyle(
-//                            color = Color(0xffEBEBEB),
-//                            fontSize = 14.sp,
-//                            fontWeight = FontWeight.W400,
-//                        )
-//                    )
-//                },
-//                maxLines = 5,
-//            )
         }
     }
 
@@ -252,7 +210,7 @@ fun CsRecived(message: ChatMessage, messagePosition: MessagePosition) {
                 )
             )
             Spacer(Modifier.height(8.dp))
-            MsgContent(message)
+            MsgTypeContent(message)
         }
     }
 }
@@ -312,85 +270,7 @@ fun UserInput(message: ChatMessage, messagePosition: MessagePosition) {
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
-@Composable
-fun MsgContent(message: ChatMessage) {
-    when (message.msgType) {
-        IMMsg.MsgType.TextMsgType -> {
-            Surface(
-                color = Color.White, modifier = Modifier.clip(
-                    RoundedCornerShape(
-                        topEnd = 12.dp,
-                        bottomStart = 12.dp,
-                        bottomEnd = 12.dp,
-                    )
-                )
-            ) {
-                Text(
-                    text = message.message, modifier = Modifier.padding(12.dp), style = TextStyle(
-                        fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff000000)
-                    )
-                )
-            }
-        }
-
-        IMMsg.MsgType.ImgMsgType -> {
-            GlideImage(
-                model = message.message,
-                contentDescription = "Yo",
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier.clip(RoundedCornerShape(16.dp)),
-            )
-        }
-
-        IMMsg.MsgType.VideoMsgType -> {
-            ExoPlayerView(message.message)
-        }
-
-        else -> {
-            Text("Not implement yet. --->>> { ${message.msgType} }")
-        }
-    }
-}
 
 
-@Composable
-fun ExoPlayerView(url: String) {
-    // Get the current context
-    val context = LocalContext.current
 
-    // Initialize ExoPlayer
-    val exoPlayer = ExoPlayer.Builder(context).build()
-
-    // Create a MediaSource
-    val mediaSource = remember(url) {
-        MediaItem.fromUri(url)
-    }
-
-    // Set MediaSource to ExoPlayer
-    LaunchedEffect(mediaSource) {
-        exoPlayer.setMediaItem(mediaSource)
-        exoPlayer.prepare()
-    }
-
-    // Manage lifecycle events
-    DisposableEffect(Unit) {
-        onDispose {
-            exoPlayer.release()
-        }
-    }
-
-    // Use AndroidView to embed an Android View (PlayerView) into Compose
-    AndroidView(
-        factory = { ctx ->
-            PlayerView(ctx).apply {
-                player = exoPlayer
-            }
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(255.dp)
-            .clip(RoundedCornerShape(16.dp))// Set your desired height
-    )
-}
 

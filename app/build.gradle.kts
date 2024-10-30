@@ -3,6 +3,9 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id ("io.realm.kotlin")
+//    id("kotlin-kapt")
+//    id("com.google.dagger.hilt.android")
 //    id ("com.google.protobuf") version "0.9.4"
 }
 
@@ -56,6 +59,11 @@ android {
         }
     }
 }
+
+// Allow references to generated code
+//kapt {
+//    correctErrorTypes = true
+//}
 
 dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
@@ -116,4 +124,11 @@ dependencies {
     // Exoplayer
     implementation("androidx.media3:media3-exoplayer:1.4.1")
     implementation("androidx.media3:media3-ui:1.4.1")
+
+    // Realm
+    implementation ("io.realm.kotlin:library-base:1.16.0")
+
+    // Hilt
+    //  implementation("com.google.dagger:hilt-android:2.52")
+    //  kapt("com.google.dagger:hilt-android-compiler:2.44")
 }

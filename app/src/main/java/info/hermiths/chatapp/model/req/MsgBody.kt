@@ -8,7 +8,7 @@ data class MsgBody(
     @SerializedName("msgSeq")
     val msgSeq: Int,
     @SerializedName("msgType")
-    val msgType: Long,
-    val source: Long,
+    val msgType: Int,
+    val source: Int,
     val clientMsgId: String,
 )
