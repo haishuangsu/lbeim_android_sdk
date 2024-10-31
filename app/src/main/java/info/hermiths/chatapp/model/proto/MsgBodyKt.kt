@@ -260,6 +260,31 @@ public object MsgBodyKt {
     public fun clearClientMsgID() {
       _builder.clearClientMsgID()
     }
+
+    /**
+     * ```
+     * sessionId
+     * ```
+     *
+     * `string sessionId = 10;`
+     */
+    public var sessionId: kotlin.String
+      @JvmName("getSessionId")
+      get() = _builder.sessionId
+      @JvmName("setSessionId")
+      set(value) {
+        _builder.sessionId = value
+      }
+    /**
+     * ```
+     * sessionId
+     * ```
+     *
+     * `string sessionId = 10;`
+     */
+    public fun clearSessionId() {
+      _builder.clearSessionId()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic

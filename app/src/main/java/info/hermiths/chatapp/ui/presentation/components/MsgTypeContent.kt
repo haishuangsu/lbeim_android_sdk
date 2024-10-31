@@ -15,15 +15,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import info.hermiths.chatapp.model.proto.IMMsg
-import info.hermiths.chatapp.ui.data.model.ChatMessage
+import info.hermiths.chatapp.model.MessageEntity
+
+enum class ConnectionStatus {
+    NOT_STARTED, OPENED, CLOSED, CONNECTING, CLOSING, FAILED, RECEIVED
+}
 
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun MsgTypeContent(message: ChatMessage) {
+fun MsgTypeContent(message: MessageEntity) {
     when (message.msgType) {
-        IMMsg.MsgType.TextMsgType -> {
+        1 -> {
             Surface(
                 color = Color.White, modifier = Modifier.clip(
                     RoundedCornerShape(
@@ -34,24 +37,24 @@ fun MsgTypeContent(message: ChatMessage) {
                 )
             ) {
                 Text(
-                    text = message.message, modifier = Modifier.padding(12.dp), style = TextStyle(
+                    text = message.msgBody, modifier = Modifier.padding(12.dp), style = TextStyle(
                         fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff000000)
                     )
                 )
             }
         }
 
-        IMMsg.MsgType.ImgMsgType -> {
+        2 -> {
             GlideImage(
-                model = message.message,
+                model = message.msgBody,
                 contentDescription = "Yo",
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier.clip(RoundedCornerShape(16.dp)),
             )
         }
 
-        IMMsg.MsgType.VideoMsgType -> {
-            ExoPlayerView(message.message)
+        3 -> {
+            ExoPlayerView(message.msgBody)
         }
 
         else -> {
