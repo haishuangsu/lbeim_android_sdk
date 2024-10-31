@@ -7,7 +7,6 @@
 
 import info.hermiths.chatapp.model.proto.IMMsg
 
-
 @kotlin.jvm.JvmName("-initializecreateSessionMsg")
 public inline fun createSessionMsg(block: CreateSessionMsgKt.Dsl.() -> kotlin.Unit): IMMsg.CreateSessionMsg =
   CreateSessionMsgKt.Dsl._create(IMMsg.CreateSessionMsg.newBuilder()).apply { block() }._build()

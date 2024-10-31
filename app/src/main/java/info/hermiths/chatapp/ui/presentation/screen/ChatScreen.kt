@@ -45,16 +45,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.SubcomposeAsyncImage
 
 import info.hermiths.chatapp.R
-import info.hermiths.chatapp.ui.data.enums.ConnectionStatus
-import info.hermiths.chatapp.ui.data.enums.MessagePosition
-import info.hermiths.chatapp.ui.data.model.ChatMessage
+import info.hermiths.chatapp.model.MessageEntity
+import info.hermiths.chatapp.ui.presentation.components.ConnectionStatus
+
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 import info.hermiths.chatapp.ui.presentation.components.MsgTypeContent
 
 data class ChatScreenUiState(
-    var messages: List<ChatMessage> = emptyList(),
+    var messages: List<MessageEntity> = emptyList(),
     val connectionStatus: ConnectionStatus = ConnectionStatus.NOT_STARTED
 )
+
+enum class MessagePosition {
+    LEFT, RIGHT
+}
 
 @Composable
 fun ChatScreen(
@@ -90,7 +94,7 @@ fun ChatScreen(
             items(uiState.messages) { message ->
                 MessageItem(
                     message = message,
-                    if (message.fromUser == ChatScreenViewModel.uid) MessagePosition.RIGHT
+                    if (message.senderUid == ChatScreenViewModel.uid) MessagePosition.RIGHT
                     else MessagePosition.LEFT
                 )
             }
@@ -172,7 +176,7 @@ fun ChatScreen(
 
 
 @Composable
-fun MessageItem(message: ChatMessage, messagePosition: MessagePosition) {
+fun MessageItem(message: MessageEntity, messagePosition: MessagePosition) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -191,7 +195,7 @@ fun MessageItem(message: ChatMessage, messagePosition: MessagePosition) {
 }
 
 @Composable
-fun CsRecived(message: ChatMessage, messagePosition: MessagePosition) {
+fun CsRecived(message: MessageEntity, messagePosition: MessagePosition) {
     Row {
         Image(
             painter = painterResource(id = R.drawable.cs_avatar),
@@ -203,7 +207,7 @@ fun CsRecived(message: ChatMessage, messagePosition: MessagePosition) {
             modifier = Modifier.padding(8.dp)
         ) {
             Text(
-                text = message.fromUser,
+                text = message.senderUid,
                 modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
                 style = TextStyle(
                     fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)
@@ -216,13 +220,13 @@ fun CsRecived(message: ChatMessage, messagePosition: MessagePosition) {
 }
 
 @Composable
-fun UserInput(message: ChatMessage, messagePosition: MessagePosition) {
+fun UserInput(message: MessageEntity, messagePosition: MessagePosition) {
     Row(horizontalArrangement = Arrangement.End) {
         Column(
             horizontalAlignment = Alignment.End, modifier = Modifier.padding(8.dp)
         ) {
             Text(
-                text = message.fromUser,
+                text = message.senderUid,
                 modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
                 style = TextStyle(
                     fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)
@@ -237,7 +241,7 @@ fun UserInput(message: ChatMessage, messagePosition: MessagePosition) {
                 )
             ) {
                 Text(
-                    text = message.message, modifier = Modifier.padding(12.dp), style = TextStyle(
+                    text = message.msgBody, modifier = Modifier.padding(12.dp), style = TextStyle(
                         fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff000000)
                     )
                 )

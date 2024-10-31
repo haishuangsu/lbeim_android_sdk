@@ -3,36 +3,44 @@ package info.hermiths.chatapp.data
 import android.util.Log
 import info.hermiths.chatapp.model.MessageEntity
 import io.realm.kotlin.ext.query
+import io.realm.kotlin.query.Sort
 import org.mongodb.kbson.ObjectId
 
 object IMLocalRepository {
     private val realm = RealmInstance.realm
 
-    fun findMessages(): List<MessageEntity> {
-        return realm.query<MessageEntity>().find()
+    fun filterMessages(sessionId: String): List<MessageEntity> {
+        return realm.query<MessageEntity>(
+            query = "sessionId == $0", sessionId
+        ).sort("sendStamp", Sort.ASCENDING).find()
     }
 
-    fun filterMessages(filter: String, args: String): List<MessageEntity> {
-        // (query = "name CONTAINS[c] $0", args)
-        return realm.query<MessageEntity>(query = filter, args).find()
+    suspend fun findMsgAndSetStatus(clientMsgID: String, success: Boolean) {
+        realm.write {
+            val msg = query<MessageEntity>(
+                query = "clientMsgID == $0", clientMsgID
+            ).first().find()
+            msg?.sendSuccess = success
+        }
     }
 
     suspend fun insertMessage(msg: MessageEntity) {
         realm.write {
-            val msgExit =
-                query<MessageEntity>(query = "clientMsgID == $0", msg.clientMsgID).first().find()
-            Log.d("RealmTAG", "插入前查找 --->> ${msgExit.toString()}")
+            val msgExit = query<MessageEntity>(
+                query = "clientMsgID == $0", msg.clientMsgID,
+            ).first().find()
+            Log.d("RealmTAG", "插入前查找到Session --->> ${msgExit.toString()}")
             if (msgExit == null) {
                 copyToRealm(msg)
             }
         }
     }
 
-    suspend fun updateMessage(msg: MessageEntity, clientMsgID: String) {
+    suspend fun updateClientMsgID(msg: MessageEntity, clientMsgID: String) {
         realm.write {
-            val queriedPerson =
+            val queriedMsg =
                 query<MessageEntity>(query = "clientMsgID == $0", msg.clientMsgID).first().find()
-            queriedPerson?.clientMsgID = clientMsgID
+            queriedMsg?.clientMsgID = clientMsgID
         }
     }
 

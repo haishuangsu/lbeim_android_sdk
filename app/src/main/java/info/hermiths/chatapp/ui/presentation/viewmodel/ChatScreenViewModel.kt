@@ -22,6 +22,7 @@ import info.hermiths.chatapp.data.IMLocalRepository
 import info.hermiths.chatapp.utils.TimeUtils.timeStampGen
 import info.hermiths.chatapp.data.LbeConfigRepository
 import info.hermiths.chatapp.data.LbeImRepository
+import info.hermiths.chatapp.model.MessageEntity
 import info.hermiths.chatapp.model.proto.IMMsg
 import info.hermiths.chatapp.model.req.ConfigBody
 import info.hermiths.chatapp.model.req.HistoryBody
@@ -33,16 +34,15 @@ import info.hermiths.chatapp.model.req.SessionListReq
 import info.hermiths.chatapp.service.ChatService
 import info.hermiths.chatapp.service.DynamicHeaderUrlRequestFactory
 import info.hermiths.chatapp.service.RetrofitInstance
-import info.hermiths.chatapp.ui.data.enums.ConnectionStatus
-import info.hermiths.chatapp.ui.data.model.ChatMessage
+import info.hermiths.chatapp.ui.presentation.components.ConnectionStatus
 import info.hermiths.chatapp.ui.presentation.screen.ChatScreenUiState
 import info.hermiths.chatapp.utils.Converts.protoToEntity
 import info.hermiths.chatapp.utils.Converts.sendBodyToEntity
+import info.hermiths.chatapp.utils.UUIDUtils.uuidGen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
-import java.util.UUID
 
 
 class ChatScreenViewModel : ViewModel() {
@@ -69,11 +69,17 @@ class ChatScreenViewModel : ViewModel() {
     private var chatService: ChatService? = null
 
     init {
+//        val cacheMessages = findLocalMsgFilter(lbeSession)
+//        viewModelScope.launch(Dispatchers.Main) {
+//            val messages = uiState.value?.messages?.toMutableList()
+//            messages?.clear()
+//            messages?.addAll(cacheMessages)
+//            _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
+//        }
         prepare()
     }
 
     private fun prepare() {
-        findLocalMessages()
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -87,8 +93,8 @@ class ChatScreenViewModel : ViewModel() {
                     BuildConfig.lbeSign, SessionBody(
                         extraInfo = "",
                         headIcon = "",
-                        nickId = "HermitK3",
-                        nickName = "HermitK3",
+                        nickId = "HermitK15",
+                        nickName = "HermitK15",
                         uid = ""
                     )
                 )
@@ -106,6 +112,16 @@ class ChatScreenViewModel : ViewModel() {
                 )
                 println("Retrofit fetch sessionList ===>>> $sessionList")
 
+                // TODO check cache, lack Pagination
+                val cacheMessages = findLocalMsgFilter(lbeSession)
+                viewModelScope.launch(Dispatchers.Main) {
+                    val messages = uiState.value?.messages?.toMutableList()
+                    messages?.clear()
+                    messages?.addAll(cacheMessages)
+                    _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
+                }
+
+                // TODO sync history
                 val history = LbeImRepository.fetchHistory(
                     BuildConfig.lbeSign, lbeToken, HistoryBody(
                         sessionId = session.data.sessionId,
@@ -113,32 +129,33 @@ class ChatScreenViewModel : ViewModel() {
                     )
                 )
                 println("Retrofit fetch history ===>>> $history")
-                viewModelScope.launch(Dispatchers.Main) {
-                    val messages = uiState.value?.messages?.toMutableList()
-
+                viewModelScope.launch(Dispatchers.IO) {
                     for (content in history.data.content) {
-                        if (content.msgType == 1 || content.msgType == 2 || content.msgType == 3) messages?.add(
-                            ChatMessage(
-                                fromUser = content.senderUid,
-                                message = content.msgBody,
-                                msgType = when (content.msgType) {
-                                    // 0 -> IMMsg.MsgType.JoinServer
-                                    1 -> IMMsg.MsgType.TextMsgType
-                                    2 -> IMMsg.MsgType.ImgMsgType
-                                    3 -> IMMsg.MsgType.VideoMsgType
-                                    // 4 -> IMMsg.MsgType.CreateSessionMsgType
-                                    else -> {
-                                        IMMsg.MsgType.UNRECOGNIZED
-                                    }
-                                }
-                            )
-                        )
+                        if (content.msgType == 1 || content.msgType == 2 || content.msgType == 3) {
+                            val entity = MessageEntity().apply {
+                                sessionId = content.sessionId
+                                senderUid = content.senderUid
+                                msgBody = content.msgBody
+                                clientMsgID = content.clientMsgID
+                                msgType = content.msgType
+                                sendStamp = content.clientMsgID.split("-").last().toLong()
+                            }
+                            IMLocalRepository.insertMessage(entity)
+                        }
                     }
+
                     if (history.data.content.isNotEmpty()) {
                         seq = history.data.content.last().msgSeq
                     }
-                    _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
+                    val msgs = findLocalMsgFilter(lbeSession)
+                    viewModelScope.launch(Dispatchers.Main) {
+                        val messages = uiState.value?.messages?.toMutableList()
+                        messages?.clear()
+                        messages?.addAll(msgs)
+                        _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
+                    }
                 }
+
                 viewModelScope.launch(Dispatchers.IO) {
                     delay(55)
                     observerConnection()
@@ -149,9 +166,10 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
-    private fun findLocalMessages() {
-        val messages = IMLocalRepository.findMessages()
-        Log.d(REALMTAG, "find all msg ---->>> ${messages.map { m -> m.toString() }}")
+    private fun findLocalMsgFilter(sessionId: String): List<MessageEntity> {
+        val messages = IMLocalRepository.filterMessages(sessionId)
+        Log.d(REALMTAG, "find all msg filter ---->>> ${messages.map { m -> m.toString() }}")
+        return messages
     }
 
     @SuppressLint("CheckResult")
@@ -197,22 +215,22 @@ class ChatScreenViewModel : ViewModel() {
                 // val chatMsg= Gson().fromJson(value, ChatMessage::class.java)
                 val msgEntity = IMMsg.MsgEntityToFrontEnd.parseFrom(value)
                 Log.d(TAG, "handleOnMessageReceived protobuf bytes: $msgEntity")
+                if (msgEntity.msgBody.sessionId.isEmpty() || msgEntity.msgBody.clientMsgID.isEmpty()) {
+                    return@launch
+                }
+
                 val receivedReq = msgEntity.msgBody.msgSeq
                 if (receivedReq - seq > 2) {
                     // TODO update
                 } else {
                     seq = receivedReq
                 }
-                viewModelScope.launch(Dispatchers.IO) {
-                    IMLocalRepository.insertMessage(protoToEntity(msgEntity.msgBody))
-                }
-                val chatMessage = ChatMessage(
-                    fromUser = msgEntity.msgBody.senderUid,
-                    msgType = msgEntity.msgType,
-                    message = msgEntity.msgBody.msgBody
-                )
-                if (chatMessage.fromUser != uid) {
-                    attachMsgToUI(chatMessage)
+                viewModelScope.launch {
+                    val entity = protoToEntity(msgEntity.msgBody)
+                    IMLocalRepository.insertMessage(entity)
+                    if (entity.senderUid != uid) {
+                        attachMsgToUI(entity)
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -221,31 +239,28 @@ class ChatScreenViewModel : ViewModel() {
     }
 
     private fun updateConnectionStatus(connectionStatus: ConnectionStatus) {
-        _uiState.postValue(_uiState.value?.copy(connectionStatus = connectionStatus))
+        viewModelScope.launch(Dispatchers.Main) {
+            _uiState.postValue(_uiState.value?.copy(connectionStatus = connectionStatus))
+        }
     }
 
     fun onMessageChange(message: String) {
         _inputMsg.postValue(message)
     }
 
-    private fun message(): ChatMessage {
-        return ChatMessage(
-            fromUser = uid, msgType = IMMsg.MsgType.TextMsgType, message = _inputMsg.value ?: ""
-        )
-    }
 
     fun sendMessage(messageSent: () -> Unit) {
-        val message = message()
-        if (message.message.isEmpty()) return
+        if ((_inputMsg.value ?: "").isEmpty()) return
 
         viewModelScope.launch {
             val uuid = uuidGen()
             val timeStamp = timeStampGen()
+            val clientMsgId = "${uuid}-${timeStamp}"
             val body = MsgBody(
-                msgBody = message.message,
+                msgBody = _inputMsg.value ?: "",
                 msgSeq = seq,
                 msgType = 1,
-                clientMsgId = "${uuid}_${timeStamp}",
+                clientMsgId = clientMsgId,
                 source = 100
             )
             try {
@@ -254,22 +269,30 @@ class ChatScreenViewModel : ViewModel() {
                 )
                 println("Retrofit send msg ===>>> $senMsg")
                 seq = senMsg.data.msgReq
-                IMLocalRepository.insertMessage(sendBodyToEntity(body))
-                attachMsgToUI(message)
-                messageSent()
-                clearInput()
+                val entity = sendBodyToEntity(body)
                 viewModelScope.launch(Dispatchers.IO) {
+                    IMLocalRepository.insertMessage(entity)
                     delay(55)
-                    findLocalMessages()
+                    findLocalMsgFilter(lbeSession)
+                    viewModelScope.launch(Dispatchers.Main) {
+                        attachMsgToUI(entity)
+                        messageSent()
+                        clearInput()
+                    }
                 }
             } catch (e: Exception) {
+                viewModelScope.launch(Dispatchers.IO) {
+                    IMLocalRepository.findMsgAndSetStatus(clientMsgId, false)
+                    delay(55)
+                    findLocalMsgFilter(lbeSession)
+                }
                 println("send error -->> $e")
             }
         }
 
     }
 
-    private fun attachMsgToUI(message: ChatMessage) {
+    private fun attachMsgToUI(message: MessageEntity) {
         Log.d(TAG, "attachMsgToUI: $message")
         val messages = uiState.value?.messages?.toMutableList()
         messages?.add(message)
@@ -281,9 +304,5 @@ class ChatScreenViewModel : ViewModel() {
             delay(50)
             _inputMsg.postValue("")
         }
-    }
-
-    private fun uuidGen(): String {
-        return UUID.randomUUID().toString()
     }
 }

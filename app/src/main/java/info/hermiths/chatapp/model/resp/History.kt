@@ -20,7 +20,8 @@ data class Content(
     @SerializedName("msgType") val msgType: Int,
     @SerializedName("msgSeq") val msgSeq: Int,
     @SerializedName("msgBody") val msgBody: String,
-    val clientMsgId: String,
+    val clientMsgID: String,
     val status: Long,
     val createTime: Long,
+    val sessionId: String,
 )
