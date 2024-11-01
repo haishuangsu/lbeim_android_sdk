@@ -15,6 +15,12 @@ object IMLocalRepository {
         ).sort("sendStamp", Sort.ASCENDING).find()
     }
 
+    fun findMsgByClientMsgId(clientMsgID: String): MessageEntity? {
+        return realm.query<MessageEntity>(
+            query = "clientMsgID == $0", clientMsgID
+        ).first().find()
+    }
+
     suspend fun findMsgAndSetStatus(clientMsgID: String, success: Boolean) {
         realm.write {
             val msg = query<MessageEntity>(
@@ -24,23 +30,37 @@ object IMLocalRepository {
         }
     }
 
+    suspend fun findMsgAndSetSeq(clientMsgID: String, msgSeq: Int) {
+        realm.write {
+            val msg = query<MessageEntity>(
+                query = "clientMsgID == $0", clientMsgID
+            ).first().find()
+            msg?.msgSeq = msgSeq
+        }
+    }
+
+    suspend fun updateResendMessage(clientMsgID: String, newClientMsgId: String, msgSeq: Int) {
+        realm.write {
+            val msg = query<MessageEntity>(
+                query = "clientMsgID == $0", clientMsgID
+            ).first().find()
+            msg?.clientMsgID = newClientMsgId
+            msg?.msgSeq = msgSeq
+            msg?.sendSuccess = true
+            msg?.sendStamp = newClientMsgId.split("-").last().toLong()
+        }
+    }
+
     suspend fun insertMessage(msg: MessageEntity) {
         realm.write {
             val msgExit = query<MessageEntity>(
                 query = "clientMsgID == $0", msg.clientMsgID,
             ).first().find()
-            Log.d("RealmTAG", "插入前查找到Session --->> ${msgExit.toString()}")
+//            Log.d("RealmTAG", "要插入的 Msg：${msg.msgBody}， 查找到缓存 --->> ${msgExit?.msgBody}")
             if (msgExit == null) {
+                Log.d("RealmTAG", "未查找到缓存，即将插入的 Msg：${msg.msgBody}")
                 copyToRealm(msg)
             }
-        }
-    }
-
-    suspend fun updateClientMsgID(msg: MessageEntity, clientMsgID: String) {
-        realm.write {
-            val queriedMsg =
-                query<MessageEntity>(query = "clientMsgID == $0", msg.clientMsgID).first().find()
-            queriedMsg?.clientMsgID = clientMsgID
         }
     }
 

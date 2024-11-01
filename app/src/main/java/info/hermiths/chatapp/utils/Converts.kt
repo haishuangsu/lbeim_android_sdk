@@ -45,12 +45,12 @@ object Converts {
         return entity
     }
 
-    fun entityToSendBody(entity: MessageEntity): MsgBody {
+    fun entityToSendBody(entity: MessageEntity, newClientMsgID: String): MsgBody {
         return MsgBody(
             msgBody = entity.msgBody,
             msgSeq = entity.msgSeq,
             msgType = entity.msgType,
-            clientMsgId = entity.clientMsgID,
+            clientMsgId = newClientMsgID,
             source = 100
         )
     }
