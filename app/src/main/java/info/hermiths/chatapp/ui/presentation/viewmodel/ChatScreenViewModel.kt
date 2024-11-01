@@ -36,7 +36,6 @@ import info.hermiths.chatapp.model.req.SessionListReq
 import info.hermiths.chatapp.service.ChatService
 import info.hermiths.chatapp.service.DynamicHeaderUrlRequestFactory
 import info.hermiths.chatapp.service.RetrofitInstance
-import info.hermiths.chatapp.ui.presentation.components.ConnectionStatus
 import info.hermiths.chatapp.ui.presentation.screen.ChatScreenUiState
 import info.hermiths.chatapp.utils.Converts.entityToSendBody
 import info.hermiths.chatapp.utils.Converts.protoToEntity
@@ -47,6 +46,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 
+enum class ConnectionStatus {
+    NOT_STARTED, OPENED, CLOSED, CONNECTING, CLOSING, FAILED, RECEIVED
+}
 
 class ChatScreenViewModel : ViewModel() {
 
@@ -94,7 +96,7 @@ class ChatScreenViewModel : ViewModel() {
 
     // TODO check cache, lack Pagination
     private fun filterLocalMessages(sessionId: String = lbeSession) {
-        val cacheMessages = IMLocalRepository.filterMessages(sessionId)
+        val cacheMessages = IMLocalRepository.filterMessages(sessionId).subList(81, 101)
         Log.d(REALMTAG, "find all msg filter ---->>> ${cacheMessages.map { m -> m.msgBody }}")
         viewModelScope.launch(Dispatchers.Main) {
             val messages = uiState.value?.messages?.toMutableList()
@@ -240,7 +242,6 @@ class ChatScreenViewModel : ViewModel() {
     fun onMessageChange(message: String) {
         _inputMsg.postValue(message)
     }
-
 
     fun sendMessage(messageSent: () -> Unit) {
         if ((_inputMsg.value ?: "").isEmpty()) return

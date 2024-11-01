@@ -46,15 +46,16 @@ import coil3.compose.SubcomposeAsyncImage
 
 import info.hermiths.chatapp.R
 import info.hermiths.chatapp.model.MessageEntity
-import info.hermiths.chatapp.ui.presentation.components.ConnectionStatus
 
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 import info.hermiths.chatapp.ui.presentation.components.MsgTypeContent
+import info.hermiths.chatapp.ui.presentation.viewmodel.ConnectionStatus
 
 data class ChatScreenUiState(
     var messages: List<MessageEntity> = emptyList(),
     val connectionStatus: ConnectionStatus = ConnectionStatus.NOT_STARTED
 )
+
 
 enum class MessagePosition {
     LEFT, RIGHT
