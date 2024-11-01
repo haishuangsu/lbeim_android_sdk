@@ -17,10 +17,6 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import info.hermiths.chatapp.model.MessageEntity
 
-enum class ConnectionStatus {
-    NOT_STARTED, OPENED, CLOSED, CONNECTING, CLOSING, FAILED, RECEIVED
-}
-
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
