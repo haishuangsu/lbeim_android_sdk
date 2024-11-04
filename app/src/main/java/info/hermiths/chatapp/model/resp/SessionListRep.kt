@@ -11,10 +11,10 @@ data class SessionListRep(
 
 data class SLData(
     val total: Long,
-    val sessionList: List<SessionList>,
+    val sessionList: List<SessionEntry>,
 )
 
-data class SessionList(
+data class SessionEntry(
     val sessionId: String,
     val nickName: String,
     val headIcon: String,
@@ -25,6 +25,7 @@ data class SessionList(
     val extra: String,
     val latestMsg: LatestMsg,
     val createTime: Long,
+    var sync: Boolean = false,
 )
 
 data class LatestMsg(
@@ -32,7 +33,7 @@ data class LatestMsg(
     val receiverUid: String,
     @SerializedName("clientMsgID") val clientMsgId: String,
     val msgType: Long,
-    val msgSeq: Long,
+    val msgSeq: Int,
     val msgBody: String,
     val status: Long,
     val createTime: Long,
