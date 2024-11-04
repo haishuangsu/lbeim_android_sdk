@@ -19,11 +19,8 @@ import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import info.hermiths.chatapp.BuildConfig
 import info.hermiths.chatapp.data.IMLocalRepository
-import info.hermiths.chatapp.utils.TimeUtils.timeStampGen
 import info.hermiths.chatapp.data.LbeConfigRepository
-
 import info.hermiths.chatapp.data.LbeImRepository
-
 import info.hermiths.chatapp.model.MessageEntity
 import info.hermiths.chatapp.model.proto.IMMsg
 import info.hermiths.chatapp.model.req.ConfigBody
@@ -33,6 +30,8 @@ import info.hermiths.chatapp.model.req.Pagination
 import info.hermiths.chatapp.model.req.SeqCondition
 import info.hermiths.chatapp.model.req.SessionBody
 import info.hermiths.chatapp.model.req.SessionListReq
+import info.hermiths.chatapp.model.resp.History
+import info.hermiths.chatapp.model.resp.SessionEntry
 import info.hermiths.chatapp.service.ChatService
 import info.hermiths.chatapp.service.DynamicHeaderUrlRequestFactory
 import info.hermiths.chatapp.service.RetrofitInstance
@@ -40,6 +39,7 @@ import info.hermiths.chatapp.ui.presentation.screen.ChatScreenUiState
 import info.hermiths.chatapp.utils.Converts.entityToSendBody
 import info.hermiths.chatapp.utils.Converts.protoToEntity
 import info.hermiths.chatapp.utils.Converts.sendBodyToEntity
+import info.hermiths.chatapp.utils.TimeUtils.timeStampGen
 import info.hermiths.chatapp.utils.UUIDUtils.uuidGen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -61,6 +61,12 @@ class ChatScreenViewModel : ViewModel() {
         var lbeToken = ""
         var lbeSession = ""
         var seq: Int = 0
+        var sessionList: MutableList<SessionEntry> = mutableListOf()
+        var currentSession: SessionEntry? = null
+        var currentSessionIndex = 0
+        var currentSessionTotalPages = 0
+        var showPageNums = 10
+        var currentPage = 14
     }
 
     private val _uiState = MutableLiveData(ChatScreenUiState())
@@ -72,7 +78,6 @@ class ChatScreenViewModel : ViewModel() {
     private var chatService: ChatService? = null
 
     init {
-//        filterLocalMessages("cn-4385obtsiy15")
         prepare()
     }
 
@@ -81,28 +86,13 @@ class ChatScreenViewModel : ViewModel() {
             try {
                 fetchConfig()
                 createSession()
-                fetchSessionList()
-                filterLocalMessages()
-                fetchHistoryAndSync()
                 viewModelScope.launch(Dispatchers.IO) {
-                    delay(55)
+                    fetchSessionList()
                     observerConnection()
                 }
             } catch (e: Exception) {
                 println("Prepare error: $e")
             }
-        }
-    }
-
-    // TODO check cache, lack Pagination
-    private fun filterLocalMessages(sessionId: String = lbeSession) {
-        val cacheMessages = IMLocalRepository.filterMessages(sessionId).subList(81, 101)
-        Log.d(REALMTAG, "find all msg filter ---->>> ${cacheMessages.map { m -> m.msgBody }}")
-        viewModelScope.launch(Dispatchers.Main) {
-            val messages = uiState.value?.messages?.toMutableList()
-            messages?.clear()
-            messages?.addAll(cacheMessages)
-            _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
         }
     }
 
@@ -129,43 +119,88 @@ class ChatScreenViewModel : ViewModel() {
     }
 
     private suspend fun fetchSessionList() {
-        val sessionList = LbeImRepository.fetchSessionList(
+        val sessionListRep = LbeImRepository.fetchSessionList(
             lbeToken = lbeToken, body = SessionListReq(
                 pagination = Pagination(
                     pageNumber = 1, showNumber = 1000
                 ), sessionType = 0
             )
         )
+        sessionList.addAll(sessionListRep.data.sessionList)
+        currentSession = sessionList[currentSessionIndex]
+        filterLocalMessages()
     }
 
-    private suspend fun fetchHistoryAndSync() {
-        // TODO sync history
-        val history = LbeImRepository.fetchHistory(
-            BuildConfig.lbeSign, lbeToken, HistoryBody(
-                sessionId = lbeSession, seqCondition = SeqCondition(startSeq = 0, endSeq = 1000)
-            )
+    // TODO 分页只改变 currentPage; 跨会话改变 currentSession, currentPage > currentSessionTotalPages
+    private suspend fun filterLocalMessages(sid: String = currentSession?.sessionId ?: "") {
+        var cacheMessages = IMLocalRepository.filterMessages(sid)
+        val remoteSeq = currentSession?.latestMsg?.msgSeq ?: 0
+        Log.d(
+            REALMTAG,
+            "find all msg filter ---->>> ${cacheMessages.map { m -> "(${m.msgBody},${m.msgSeq})" }}"
         )
-        for (content in history.data.content) {
-            if (content.msgType == 1 || content.msgType == 2 || content.msgType == 3) {
-                val entity = MessageEntity().apply {
-                    sessionId = content.sessionId
-                    senderUid = content.senderUid
-                    msgBody = content.msgBody
-                    clientMsgID = content.clientMsgID
-                    msgType = content.msgType
-                    sendStamp = content.clientMsgID.split("-").last().toLong()
-                }
-                IMLocalRepository.insertMessage(entity)
-            }
+        Log.d(
+            REALMTAG,
+            "缓存 size: ${cacheMessages.size}, 缓存 lastSeq: ${cacheMessages.last().msgSeq} ; remote size: ${currentSession?.latestMsg?.msgSeq}, remote lastSeq: $remoteSeq "
+        )
+
+        // sync
+        if (cacheMessages.size < remoteSeq || cacheMessages.last().msgSeq < remoteSeq) {
+            fetchHistoryAndSync()
         }
 
+        // query newest cache
+        cacheMessages = IMLocalRepository.filterMessages(sid)
+        currentSessionTotalPages = cacheMessages.size / showPageNums
+        val yu = cacheMessages.size % showPageNums
+        Log.d(REALMTAG, "分页总页数: $currentSessionTotalPages, 取余: $yu")
+
+        val subList = if (currentPage == currentSessionTotalPages && yu != 0) {
+            val start = Math.max((currentPage - 1) * showPageNums, 0)
+            val end = Math.min(currentPage * showPageNums + yu, cacheMessages.size)
+            Log.d(REALMTAG, "最后一页 --->>> start: $start, end: $end")
+            cacheMessages.subList(start, end)
+        } else {
+            val start = Math.max((currentPage - 1) * showPageNums, 0)
+            val end = Math.min(currentPage * showPageNums, cacheMessages.size)
+            Log.d(REALMTAG, "非最后一页 --->>> start: $start, end: $end")
+            cacheMessages.subList(start, end)
+        }
+        viewModelScope.launch(Dispatchers.Main) {
+            val messages = uiState.value?.messages?.toMutableList()
+            // TODO 不清空，取增量
+            messages?.clear()
+            messages?.addAll(subList)
+            _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
+        }
+    }
+
+    private suspend fun fetchHistoryAndSync(): History {
+        val history = LbeImRepository.fetchHistory(
+            BuildConfig.lbeSign, lbeToken, HistoryBody(
+                sessionId = currentSession?.sessionId ?: "",
+                seqCondition = SeqCondition(startSeq = 0, endSeq = 1000)
+            )
+        )
+        Log.d(REALMTAG, "History sync")
         if (history.data.content.isNotEmpty()) {
             seq = history.data.content.last().msgSeq
+            for (content in history.data.content) {
+                if (content.msgType == 1 || content.msgType == 2 || content.msgType == 3) {
+                    val entity = MessageEntity().apply {
+                        sessionId = content.sessionId
+                        senderUid = content.senderUid
+                        msgBody = content.msgBody
+                        clientMsgID = content.clientMsgID
+                        msgType = content.msgType
+                        sendStamp = content.clientMsgID.split("-").last().toLong()
+                        msgSeq = content.msgSeq
+                    }
+                    IMLocalRepository.insertMessage(entity)
+                }
+            }
         }
-        viewModelScope.launch(Dispatchers.IO) {
-            delay(1000)
-            filterLocalMessages()
-        }
+        return history
     }
 
     @SuppressLint("CheckResult")
@@ -216,7 +251,7 @@ class ChatScreenViewModel : ViewModel() {
                 }
                 val receivedReq = msgEntity.msgBody.msgSeq
                 if (receivedReq - seq > 2) {
-                    // TODO update
+                    fetchHistoryAndSync()
                 } else {
                     seq = receivedReq
                 }
@@ -298,6 +333,7 @@ class ChatScreenViewModel : ViewModel() {
                 } catch (e: Exception) {
                     println("send error -->> $e")
                 } finally {
+                    // TODO
                     filterLocalMessages()
                 }
             }
