@@ -1,5 +1,6 @@
 package info.hermiths.chatapp.ui.presentation.screen
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -16,7 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -73,6 +74,7 @@ fun ChatScreen(
 
     val currentFocus = LocalFocusManager.current
     val lazyListState = rememberLazyListState()
+    viewModel.lazyListState = lazyListState
 
     Column(
         modifier = Modifier
@@ -86,22 +88,42 @@ fun ChatScreen(
                 .fillMaxWidth()
                 .height(1.dp)
         )
+
         LazyColumn(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(4.dp),
             contentPadding = PaddingValues(top = 20.dp),
             state = lazyListState
         ) {
-            items(uiState.messages) { message ->
+            itemsIndexed(uiState.messages, key = { _, msg ->
+                msg.clientMsgID
+            }) { index, message ->
                 MessageItem(
                     message = message,
                     if (message.senderUid == ChatScreenViewModel.uid) MessagePosition.RIGHT
                     else MessagePosition.LEFT,
                     viewModel
                 )
+                LaunchedEffect(uiState.messages) {
+                    Log.d("列表滑动", "index: $index")
+                    if (lazyListState.isScrollInProgress) {
+                        if (uiState.messages.size - index > ChatScreenViewModel.showPageNums - 3) {
+                            if (ChatScreenViewModel.currentPage > 1) {
+                                ChatScreenViewModel.currentPage -= 1
+                                Log.d(
+                                    "列表滑动",
+                                    "分页时的 old index: $index, msgs size: ${uiState.messages.size}, msg: ${uiState.messages[index].msgBody}"
+                                )
+                                viewModel.filterLocalMessages(
+                                    send = false,
+                                    needScrollEnd = false,
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
-
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
@@ -168,11 +190,6 @@ fun ChatScreen(
                     }
                 })
         }
-    }
-
-    LaunchedEffect(key1 = uiState.messages) {
-//        lazyListState.animateScrollToItem(uiState.messages.size)
-        lazyListState.requestScrollToItem(uiState.messages.size)
     }
 }
 

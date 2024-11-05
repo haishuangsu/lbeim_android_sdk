@@ -2,6 +2,7 @@ package info.hermiths.chatapp.ui.presentation.viewmodel
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -65,8 +66,9 @@ class ChatScreenViewModel : ViewModel() {
         var currentSession: SessionEntry? = null
         var currentSessionIndex = 0
         var currentSessionTotalPages = 0
-        var showPageNums = 10
-        var currentPage = 14
+        var showPageNums = 20
+        var currentPage = 10
+        var remoteLastMsgType = -1
     }
 
     private val _uiState = MutableLiveData(ChatScreenUiState())
@@ -76,6 +78,7 @@ class ChatScreenViewModel : ViewModel() {
     val inputMsg: LiveData<String> = _inputMsg
 
     private var chatService: ChatService? = null
+    var lazyListState: LazyListState? = null
 
     init {
         prepare()
@@ -123,29 +126,44 @@ class ChatScreenViewModel : ViewModel() {
             lbeToken = lbeToken, body = SessionListReq(
                 pagination = Pagination(
                     pageNumber = 1, showNumber = 1000
-                ), sessionType = 0
+                ), sessionType = 2
             )
         )
         sessionList.addAll(sessionListRep.data.sessionList)
         currentSession = sessionList[currentSessionIndex]
-        filterLocalMessages()
+        seq = currentSession?.latestMsg?.msgSeq ?: 0
+        remoteLastMsgType = currentSession?.latestMsg?.msgType ?: 0
+        updateTotalPages()
+        filterLocalMessages(needScrollEnd = true)
     }
 
-    // TODO 分页只改变 currentPage; 跨会话改变 currentSession, currentPage > currentSessionTotalPages
-    private suspend fun filterLocalMessages(sid: String = currentSession?.sessionId ?: "") {
-        var cacheMessages = IMLocalRepository.filterMessages(sid)
-        val remoteSeq = currentSession?.latestMsg?.msgSeq ?: 0
+    // TODO 分页只改变 currentPage;
+    // TODO 跨会话改变 currentSession: currentPage > currentSessionTotalPages
+    suspend fun filterLocalMessages(
+        sid: String = currentSession?.sessionId ?: "",
+        send: Boolean = false,
+        needScrollEnd: Boolean = false, // send needScrollEnd
+    ) {
         Log.d(
             REALMTAG,
-            "find all msg filter ---->>> ${cacheMessages.map { m -> "(${m.msgBody},${m.msgSeq})" }}"
+            "filterLocalMessages ---->>> currentSessionTotalPages: $currentSessionTotalPages, currentPage: $currentPage"
         )
+
+        if ((currentSessionTotalPages != 0 && currentPage > currentSessionTotalPages) || currentPage < 1) return
+
+        var cacheMessages = IMLocalRepository.filterMessages(sid)
+        if (cacheMessages.isEmpty()) return
+//        Log.d(
+//            REALMTAG,
+//            "find all msg filter ---->>> ${cacheMessages.map { m -> "(${m.msgBody},${m.msgSeq})" }}"
+//        )
         Log.d(
             REALMTAG,
-            "缓存 size: ${cacheMessages.size}, 缓存 lastSeq: ${cacheMessages.last().msgSeq} ; remote size: ${currentSession?.latestMsg?.msgSeq}, remote lastSeq: $remoteSeq "
+            "缓存 size: ${cacheMessages.size}, 缓存 lastSeq: ${cacheMessages.last().msgSeq} ; remote size: ${currentSession?.latestMsg?.msgSeq ?: 0}, remote lastSeq: $seq "
         )
 
         // sync
-        if (cacheMessages.size < remoteSeq || cacheMessages.last().msgSeq < remoteSeq) {
+        if (cacheMessages.size < seq && remoteLastMsgType != 0 || cacheMessages.last().msgSeq < seq && remoteLastMsgType != 0) {
             fetchHistoryAndSync()
         }
 
@@ -155,25 +173,52 @@ class ChatScreenViewModel : ViewModel() {
         val yu = cacheMessages.size % showPageNums
         Log.d(REALMTAG, "分页总页数: $currentSessionTotalPages, 取余: $yu")
 
-        val subList = if (currentPage == currentSessionTotalPages && yu != 0) {
+        if (send) currentPage = currentSessionTotalPages
+
+        val subList = if (currentPage == 1 && yu != 0) {
             val start = Math.max((currentPage - 1) * showPageNums, 0)
             val end = Math.min(currentPage * showPageNums + yu, cacheMessages.size)
-            Log.d(REALMTAG, "最后一页 --->>> start: $start, end: $end")
+            Log.d(REALMTAG, "最后一页 --->>> currentPage: $currentPage, start: $start, end: $end")
             cacheMessages.subList(start, end)
         } else {
-            val start = Math.max((currentPage - 1) * showPageNums, 0)
-            val end = Math.min(currentPage * showPageNums, cacheMessages.size)
-            Log.d(REALMTAG, "非最后一页 --->>> start: $start, end: $end")
+            val start = Math.max(
+                cacheMessages.size - showPageNums * (currentSessionTotalPages - (currentPage - 1)),
+                0
+            )
+            val end = Math.min(start + showPageNums, cacheMessages.size)
+            Log.d(REALMTAG, "非最后一页 --->>> currentPage: $currentPage, start: $start, end: $end")
             cacheMessages.subList(start, end)
         }
+
         viewModelScope.launch(Dispatchers.Main) {
             val messages = uiState.value?.messages?.toMutableList()
-            // TODO 不清空，取增量
-            messages?.clear()
-            messages?.addAll(subList)
+            if (!send) {
+                messages?.addAll(0, subList)
+            } else {
+                // messages?.add(subList.last()) 失败消息重发时，旧消息没 clear
+                messages?.clear()
+                messages?.addAll(subList)
+            }
             _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
+            if (needScrollEnd) {
+                scrollTo(messages?.size ?: 0)
+            }
         }
     }
+
+    private fun updateTotalPages() {
+        val cacheMessages = IMLocalRepository.filterMessages(lbeSession)
+        if (cacheMessages.isNotEmpty()) {
+            currentSessionTotalPages = Math.max(cacheMessages.size / showPageNums, 1)
+            Log.d(REALMTAG, "update total pages ---->>> $currentSessionTotalPages")
+        }
+    }
+
+    private fun scrollTo(index: Int) {
+        Log.d(REALMTAG, "scrollToEnd： $index")
+        lazyListState?.requestScrollToItem(index)
+    }
+
 
     private suspend fun fetchHistoryAndSync(): History {
         val history = LbeImRepository.fetchHistory(
@@ -254,7 +299,16 @@ class ChatScreenViewModel : ViewModel() {
                     fetchHistoryAndSync()
                 } else {
                     seq = receivedReq
+                    remoteLastMsgType = when (msgEntity.msgBody.msgType) {
+                        IMMsg.MsgType.JoinServer -> 0
+                        IMMsg.MsgType.TextMsgType -> 1
+                        IMMsg.MsgType.ImgMsgType -> 2
+                        IMMsg.MsgType.VideoMsgType -> 3
+                        IMMsg.MsgType.CreateSessionMsgType -> 4
+                        else -> 9
+                    }
                 }
+                Log.d(REALMTAG, "收到消息 --->> seq: $seq, remoteLastMsgType: $remoteLastMsgType")
                 viewModelScope.launch {
                     val entity = protoToEntity(msgEntity.msgBody)
                     IMLocalRepository.insertMessage(entity)
@@ -285,26 +339,27 @@ class ChatScreenViewModel : ViewModel() {
         val timeStamp = timeStampGen()
         val clientMsgId = "${uuid}-${timeStamp}"
         val body = MsgBody(
-            msgBody = _inputMsg.value ?: "",
-            msgSeq = seq,
-            msgType = 1,
-            clientMsgId = clientMsgId,
-            source = 100
+            msgBody = _inputMsg.value ?: "", msgSeq = seq, msgType = 1,  // TODO 目前写死
+            clientMsgId = clientMsgId, source = 100
         )
         val entity = sendBodyToEntity(body)
         viewModelScope.launch(Dispatchers.IO) {
             IMLocalRepository.insertMessage(entity)
+            updateTotalPages()
             try {
                 val senMsg = LbeImRepository.sendMsg(
                     lbeToken = lbeToken, lbeSession = lbeSession, body
                 )
                 seq = senMsg.data.msgReq
+                // TODO 目前写死
+                remoteLastMsgType = 1
                 IMLocalRepository.findMsgAndSetSeq(clientMsgId, seq)
             } catch (e: Exception) {
                 println("send error -->> $e")
                 IMLocalRepository.findMsgAndSetStatus(clientMsgId, false)
             } finally {
-                filterLocalMessages()
+                filterLocalMessages(send = true, needScrollEnd = true)
+                updateTotalPages()
                 viewModelScope.launch(Dispatchers.Main) {
                     messageSent()
                     clearInput()
@@ -333,8 +388,7 @@ class ChatScreenViewModel : ViewModel() {
                 } catch (e: Exception) {
                     println("send error -->> $e")
                 } finally {
-                    // TODO
-                    filterLocalMessages()
+                    filterLocalMessages(send = true, needScrollEnd = true)
                 }
             }
         }
