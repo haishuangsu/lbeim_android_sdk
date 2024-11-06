@@ -19,13 +19,15 @@ import com.tinder.scarlet.messageadapter.protobuf.ProtobufMessageAdapter
 import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import info.hermiths.chatapp.BuildConfig
-import info.hermiths.chatapp.data.IMLocalRepository
-import info.hermiths.chatapp.data.LbeConfigRepository
-import info.hermiths.chatapp.data.LbeImRepository
+import info.hermiths.chatapp.data.local.IMLocalRepository
+import info.hermiths.chatapp.data.remote.LbeConfigRepository
+import info.hermiths.chatapp.data.remote.LbeImRepository
+import info.hermiths.chatapp.data.remote.UploadRepository
 import info.hermiths.chatapp.model.MessageEntity
 import info.hermiths.chatapp.model.proto.IMMsg
 import info.hermiths.chatapp.model.req.ConfigBody
 import info.hermiths.chatapp.model.req.HistoryBody
+import info.hermiths.chatapp.model.req.InitMultiPartUploadBody
 import info.hermiths.chatapp.model.req.MsgBody
 import info.hermiths.chatapp.model.req.Pagination
 import info.hermiths.chatapp.model.req.SeqCondition
@@ -42,10 +44,14 @@ import info.hermiths.chatapp.utils.Converts.protoToEntity
 import info.hermiths.chatapp.utils.Converts.sendBodyToEntity
 import info.hermiths.chatapp.utils.TimeUtils.timeStampGen
 import info.hermiths.chatapp.utils.UUIDUtils.uuidGen
+import info.hermiths.chatapp.utils.UploadBigFileUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
+import java.io.File
+import java.io.FileInputStream
+
 
 enum class ConnectionStatus {
     NOT_STARTED, OPENED, CLOSED, CONNECTING, CLOSING, FAILED, RECEIVED
@@ -56,6 +62,7 @@ class ChatScreenViewModel : ViewModel() {
     companion object {
         private const val TAG = "ChatScreenViewModel"
         private const val REALMTAG = "RealmTAG"
+        private const val UPLOAD = "IM UPLOAD"
         var uid = "c-4385obtijcnd"
         var wssHost = ""
         var oss = ""
@@ -392,6 +399,44 @@ class ChatScreenViewModel : ViewModel() {
                 }
             }
         }
+    }
+
+    fun upload(path: String) {
+        try {
+            val file = File(path)
+            val fileInputStream = FileInputStream(file)
+            val fileChannel = fileInputStream.channel
+            val size = fileChannel.size()
+            val fileName = file.name
+            Log.d(UPLOAD, "path: $path, fileName: $fileName, size: $size")
+        } catch (e: Exception) {
+            Log.d(UPLOAD, "error --->>> $e")
+        }
+
+//        UploadBigFileUtils.splitFile(file, 5 * 1024 * 1024)
+//
+//        viewModelScope.launch(Dispatchers.IO) {
+//            val initRep = UploadRepository.initMultiPartUpload(
+//                url = "api/multi/initiate-multipart_upload", body = InitMultiPartUploadBody(
+//                    size = 20971725, name = "funny.mp4", contentType = ""
+//                )
+//            )
+//            Log.d(UPLOAD, "init multi upload --->>> $initRep")
+//
+////            val file = File("")
+////            // 1.
+////            val bodyFromFile =
+////                file.asRequestBody(contentType = "application/octet-stream".toMediaTypeOrNull())
+////
+////            val `in`: InputStream = FileInputStream(file)
+////            val buf = ByteArray(`in`.available())
+////            while (`in`.read(buf) != -1);
+////            // 2.
+////            var bodyFromBuffer = RequestBody.create(
+////                contentType = "application/octet-stream".toMediaTypeOrNull(), content = buf
+////            )
+////            UploadRepository.uploadBinary(url = "", bodyFromFile)
+//        }
     }
 
     private fun attachMsgToUI(message: MessageEntity) {

@@ -1,4 +1,4 @@
-package info.hermiths.chatapp.data
+package info.hermiths.chatapp.data.local
 
 import info.hermiths.chatapp.model.MessageEntity
 import io.realm.kotlin.Realm

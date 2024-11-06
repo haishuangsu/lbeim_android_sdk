@@ -1,4 +1,4 @@
-package info.hermiths.chatapp.data
+package info.hermiths.chatapp.data.remote
 
 import info.hermiths.chatapp.model.req.HistoryBody
 import info.hermiths.chatapp.model.req.MsgBody
