@@ -1,7 +1,10 @@
 package info.hermiths.chatapp.ui.presentation.screen
 
+import android.net.Uri
 import android.util.Log
-import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +33,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -76,6 +81,12 @@ fun ChatScreen(
     val lazyListState = rememberLazyListState()
     viewModel.lazyListState = lazyListState
 
+    val pickFilesResult = remember { mutableStateOf<List<Uri?>?>(null) }
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(9)) {
+            pickFilesResult.value = it
+        }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -107,6 +118,7 @@ fun ChatScreen(
                 LaunchedEffect(uiState.messages) {
                     Log.d("列表滑动", "index: $index")
                     if (lazyListState.isScrollInProgress) {
+                        // TODO 待优化
                         if (uiState.messages.size - index > ChatScreenViewModel.showPageNums - 3) {
                             if (ChatScreenViewModel.currentPage > 1) {
                                 ChatScreenViewModel.currentPage -= 1
@@ -139,12 +151,19 @@ fun ChatScreen(
                         .padding(5.dp)
                         .size(21.dp, 16.dp)
                         .clickable {
-                            Toast
-                                .makeText(
-                                    context, "send pic || video", Toast.LENGTH_SHORT
-                                )
-                                .show()
+                            launcher.launch(
+                                PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+                            )
                         })
+                LaunchedEffect(
+                    pickFilesResult.value
+                ) {
+                    if (pickFilesResult.value != null) {
+                        val paths = pickFilesResult.value
+                        Log.d("文件选择", "${pickFilesResult.value}")
+                        viewModel.upload(paths?.get(0)?.toString() ?: "")
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.width(12.dp))

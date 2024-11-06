@@ -50,7 +50,9 @@ fun MsgTypeContent(message: MessageEntity) {
         }
 
         3 -> {
-            ExoPlayerView(message.msgBody)
+            // ExoPlayerView("http://10.40.92.203:9910/openimttt/VID_20241105_153339.mp4")
+            // ExoPlayerView(message.msgBody)
+            Text("Not implement yet. --->>> { ${message.msgBody} }")
         }
 
         else -> {

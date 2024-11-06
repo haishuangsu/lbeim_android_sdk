@@ -1,4 +1,4 @@
-package info.hermiths.chatapp.data
+package info.hermiths.chatapp.data.local
 
 import android.util.Log
 import info.hermiths.chatapp.model.MessageEntity
