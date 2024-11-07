@@ -1,6 +1,7 @@
 package info.hermiths.chatapp.ui.presentation.screen
 
 import android.net.Uri
+import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -47,15 +48,16 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.SubcomposeAsyncImage
-
 import info.hermiths.chatapp.R
 import info.hermiths.chatapp.model.MessageEntity
-
-import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 import info.hermiths.chatapp.ui.presentation.components.MsgTypeContent
+import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 import info.hermiths.chatapp.ui.presentation.viewmodel.ConnectionStatus
+import java.io.File
+
 
 data class ChatScreenUiState(
     var messages: List<MessageEntity> = emptyList(),
@@ -81,11 +83,24 @@ fun ChatScreen(
     val lazyListState = rememberLazyListState()
     viewModel.lazyListState = lazyListState
 
-    val pickFilesResult = remember { mutableStateOf<List<Uri?>?>(null) }
+//    val mediaPermissionState = rememberMultiplePermissionsState(
+//        permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) listOf(
+//            Manifest.permission.READ_MEDIA_IMAGES
+//        ) else listOf(
+//            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//            Manifest.permission.READ_EXTERNAL_STORAGE,
+//        )
+//    )
+//    val hasCameraPermission = cameraPermissionState.status.isGranted
+//    val hasMediaPermission = mediaPermissionState.allPermissionsGranted
+
+    val pickFilesResult = remember { mutableStateOf<List<Uri>>(emptyList()) }
     val launcher =
-        rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(9)) {
-            pickFilesResult.value = it
-        }
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.PickMultipleVisualMedia(
+            9
+        ), onResult = { uris: List<Uri> ->
+            pickFilesResult.value = uris
+        })
 
     Column(
         modifier = Modifier
@@ -151,17 +166,58 @@ fun ChatScreen(
                         .padding(5.dp)
                         .size(21.dp, 16.dp)
                         .clickable {
+//                            if (hasMediaPermission) {
+//                                galleryLauncher.launch(galleryIntent)
+//                            } else {
+//                                mediaPermissionState.launchMultiplePermissionRequest()
+//                            }
                             launcher.launch(
                                 PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo)
                             )
+//                            open mime type
+//                            val mimeType = "image/gif"
+//                            pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.SingleMimeType(mimeType)))
                         })
                 LaunchedEffect(
                     pickFilesResult.value
                 ) {
-                    if (pickFilesResult.value != null) {
-                        val paths = pickFilesResult.value
+                    if (pickFilesResult.value.isNotEmpty()) {
+                        val uris = pickFilesResult.value
+                        val uri = uris[0]
+
+//                        val f1 = DocumentFile.fromSingleUri(context, uri)
+//                        if (f1 != null) {
+//                            Log.d(
+//                                "文件选择",
+//                                "DocumentFile --->> fileName: ${f1.name}, size: ${f1.length()}"
+//                            )
+//                        }
+
                         Log.d("文件选择", "${pickFilesResult.value}")
-                        viewModel.upload(paths?.get(0)?.toString() ?: "")
+                        val cr = context.contentResolver
+                        val projection = arrayOf(MediaStore.MediaColumns.DATA)
+                        val metaCursor = cr.query(uri, projection, null, null, null)
+                        metaCursor?.use { mCursor ->
+                            if (mCursor.moveToFirst()) {
+                                val path = mCursor.getString(0);
+                                Log.d("文件选择", "metaCursor: $path")
+                                val f2 = File(path)
+                                viewModel.upload(f2)
+                                Log.d(
+                                    "文件选择",
+                                    "找到文件: ${f2.name}, ${f2.path}, ${f2.length()}, ${f2.absolutePath}"
+                                )
+                            }
+                        }
+//                        val parcelFileDescriptor = cr.openFileDescriptor(
+//                            uri, "r", null
+//                        )
+//                        Log.d("文件选择", "path: ${uri.path}")
+//                        parcelFileDescriptor?.let { pfd ->
+//                            val fdp = pfd.fileDescriptor
+//
+//                        }
+//                        parcelFileDescriptor?.close()
                     }
                 }
             }

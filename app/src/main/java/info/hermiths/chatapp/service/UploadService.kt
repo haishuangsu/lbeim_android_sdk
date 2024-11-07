@@ -1,6 +1,8 @@
 package info.hermiths.chatapp.service
 
+import info.hermiths.chatapp.model.req.CompleteMultiPartUploadReq
 import info.hermiths.chatapp.model.req.InitMultiPartUploadBody
+import info.hermiths.chatapp.model.resp.CompleteMultiPartUploadRep
 import info.hermiths.chatapp.model.resp.InitMultiPartUploadRep
 import okhttp3.RequestBody
 import retrofit2.http.Body
@@ -24,4 +26,9 @@ interface UploadService {
 //        @Header("X-Amz-Date") auth: String,
         @Body requestBody: RequestBody
     )
+
+    @POST
+    suspend fun completeMultiPartUpload(
+        @Url url: String, @Body body: CompleteMultiPartUploadReq
+    ): CompleteMultiPartUploadRep
 }
