@@ -25,11 +25,13 @@ import info.hermiths.chatapp.data.remote.LbeImRepository
 import info.hermiths.chatapp.data.remote.UploadRepository
 import info.hermiths.chatapp.model.MessageEntity
 import info.hermiths.chatapp.model.proto.IMMsg
+import info.hermiths.chatapp.model.req.CompleteMultiPartUploadReq
 import info.hermiths.chatapp.model.req.ConfigBody
 import info.hermiths.chatapp.model.req.HistoryBody
 import info.hermiths.chatapp.model.req.InitMultiPartUploadBody
 import info.hermiths.chatapp.model.req.MsgBody
 import info.hermiths.chatapp.model.req.Pagination
+import info.hermiths.chatapp.model.req.Part
 import info.hermiths.chatapp.model.req.SeqCondition
 import info.hermiths.chatapp.model.req.SessionBody
 import info.hermiths.chatapp.model.req.SessionListReq
@@ -48,9 +50,14 @@ import info.hermiths.chatapp.utils.UploadBigFileUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
+import java.io.FileDescriptor
 import java.io.FileInputStream
+import java.security.MessageDigest
 
 
 enum class ConnectionStatus {
@@ -401,42 +408,69 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
-    fun upload(path: String) {
+    fun upload(file: File) {
+        if (file.length() > UploadBigFileUtils.defaultChunkSize) {
+            bigFileUpload(file)
+        } else {
+            fileUpload(file)
+        }
+    }
+
+    private fun fileUpload(file: File) {
+
+    }
+
+    private fun bigFileUpload(file: File) {
         try {
-            val file = File(path)
-            val fileInputStream = FileInputStream(file)
-            val fileChannel = fileInputStream.channel
-            val size = fileChannel.size()
-            val fileName = file.name
-            Log.d(UPLOAD, "path: $path, fileName: $fileName, size: $size")
+            val start = System.currentTimeMillis()
+            Log.d(
+                UPLOAD, "fileName: ${file.name}, Fs hash: ${file.hashCode()}, split start: $start"
+            )
+            UploadBigFileUtils.splitFile(file, UploadBigFileUtils.defaultChunkSize)
+            val end = System.currentTimeMillis()
+            Log.d(UPLOAD, "split end: $end, diff: ${end - start}")
+            viewModelScope.launch(Dispatchers.IO) {
+                val initRep = UploadRepository.initMultiPartUpload(
+                    url = "api/multi/initiate-multipart_upload", body = InitMultiPartUploadBody(
+                        size = file.length(), name = file.name, contentType = ""
+                    )
+                )
+                Log.d(UPLOAD, "init multi upload --->>> $initRep")
+                val completeMultiPartUploadReq = CompleteMultiPartUploadReq(
+                    uploadId = initRep.data.uploadId, name = file.name, part = mutableListOf()
+                )
+                val buffers = UploadBigFileUtils.blocks[file.hashCode()]
+                if (buffers != null) {
+                    var index = 1
+                    for (buffer in buffers) {
+                        val md5 = MessageDigest.getInstance("MD5")
+                        val sign = md5.digest(buffer.array())
+                        val hexString = sign.joinToString("") { "%02x".format(it) }
+                        Log.d(UPLOAD, "split chunk size: ${buffer.array().size}, sign: $hexString")
+                        completeMultiPartUploadReq.part.add(
+                            Part(
+                                partNumber = index, etag = hexString
+                            )
+                        )
+                        val bodyFromBuffer = buffer.array().toRequestBody(
+                            contentType = "application/octet-stream".toMediaTypeOrNull(),
+                            byteCount = buffer.array().size
+                        )
+                        UploadRepository.uploadBinary(
+                            url = initRep.data.node[buffers.indexOf(buffer)].url, bodyFromBuffer
+                        )
+                        index++
+                    }
+                }
+                Log.d(UPLOAD, "iter --->> $completeMultiPartUploadReq")
+                val mergeUpload = UploadRepository.completeMultiPartUpload(
+                    "api/multi/complete-multipart-upload", body = completeMultiPartUploadReq
+                )
+                Log.d(UPLOAD, "BigFileUpload success ---> ${mergeUpload.data.location}")
+            }
         } catch (e: Exception) {
             Log.d(UPLOAD, "error --->>> $e")
         }
-
-//        UploadBigFileUtils.splitFile(file, 5 * 1024 * 1024)
-//
-//        viewModelScope.launch(Dispatchers.IO) {
-//            val initRep = UploadRepository.initMultiPartUpload(
-//                url = "api/multi/initiate-multipart_upload", body = InitMultiPartUploadBody(
-//                    size = 20971725, name = "funny.mp4", contentType = ""
-//                )
-//            )
-//            Log.d(UPLOAD, "init multi upload --->>> $initRep")
-//
-////            val file = File("")
-////            // 1.
-////            val bodyFromFile =
-////                file.asRequestBody(contentType = "application/octet-stream".toMediaTypeOrNull())
-////
-////            val `in`: InputStream = FileInputStream(file)
-////            val buf = ByteArray(`in`.available())
-////            while (`in`.read(buf) != -1);
-////            // 2.
-////            var bodyFromBuffer = RequestBody.create(
-////                contentType = "application/octet-stream".toMediaTypeOrNull(), content = buf
-////            )
-////            UploadRepository.uploadBinary(url = "", bodyFromFile)
-//        }
     }
 
     private fun attachMsgToUI(message: MessageEntity) {
