@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import com.tinder.scarlet.Message
 import com.tinder.scarlet.Scarlet
 import com.tinder.scarlet.WebSocket
@@ -23,6 +24,7 @@ import info.hermiths.chatapp.data.local.IMLocalRepository
 import info.hermiths.chatapp.data.remote.LbeConfigRepository
 import info.hermiths.chatapp.data.remote.LbeImRepository
 import info.hermiths.chatapp.data.remote.UploadRepository
+import info.hermiths.chatapp.model.MediaMessage
 import info.hermiths.chatapp.model.MessageEntity
 import info.hermiths.chatapp.model.proto.IMMsg
 import info.hermiths.chatapp.model.req.CompleteMultiPartUploadReq
@@ -36,7 +38,10 @@ import info.hermiths.chatapp.model.req.SeqCondition
 import info.hermiths.chatapp.model.req.SessionBody
 import info.hermiths.chatapp.model.req.SessionListReq
 import info.hermiths.chatapp.model.resp.History
+import info.hermiths.chatapp.model.resp.MediaSource
+import info.hermiths.chatapp.model.resp.Resource
 import info.hermiths.chatapp.model.resp.SessionEntry
+import info.hermiths.chatapp.model.resp.Thumbnail
 import info.hermiths.chatapp.service.ChatService
 import info.hermiths.chatapp.service.DynamicHeaderUrlRequestFactory
 import info.hermiths.chatapp.service.RetrofitInstance
@@ -51,12 +56,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.File
-import java.io.FileDescriptor
-import java.io.FileInputStream
 import java.security.MessageDigest
 
 
@@ -67,9 +70,10 @@ enum class ConnectionStatus {
 class ChatScreenViewModel : ViewModel() {
 
     companion object {
-        private const val TAG = "ChatScreenViewModel"
-        private const val REALMTAG = "RealmTAG"
+        private const val TAG = "IM Websocket"
+        private const val REALM = "RealmTAG"
         private const val UPLOAD = "IM UPLOAD"
+        const val FILESELECT = "File Select"
         var uid = "c-4385obtijcnd"
         var wssHost = ""
         var oss = ""
@@ -80,8 +84,8 @@ class ChatScreenViewModel : ViewModel() {
         var currentSession: SessionEntry? = null
         var currentSessionIndex = 0
         var currentSessionTotalPages = 0
-        var showPageNums = 20
-        var currentPage = 10
+        var showPageSize = 20
+        var currentPage = 0
         var remoteLastMsgType = -1
     }
 
@@ -116,8 +120,8 @@ class ChatScreenViewModel : ViewModel() {
     private suspend fun fetchConfig() {
         val config = LbeConfigRepository.fetchConfig(BuildConfig.lbeSign, ConfigBody(0, 1))
         wssHost = config.data.ws[0]
-        oss = config.data.oss[0]
         RetrofitInstance.IM_URL = config.data.rest[0]
+        RetrofitInstance.UPLOAD_BASE_URL = config.data.oss[0]
     }
 
     private suspend fun createSession() {
@@ -159,21 +163,23 @@ class ChatScreenViewModel : ViewModel() {
         needScrollEnd: Boolean = false, // send needScrollEnd
     ) {
         Log.d(
-            REALMTAG,
-            "filterLocalMessages ---->>> currentSessionTotalPages: $currentSessionTotalPages, currentPage: $currentPage"
+            REALM,
+            "filterLocalMessages ---->>> currentSessionTotalPages: $currentSessionTotalPages, currentPage: $currentPage, seq: $seq"
         )
 
         if ((currentSessionTotalPages != 0 && currentPage > currentSessionTotalPages) || currentPage < 1) return
 
         var cacheMessages = IMLocalRepository.filterMessages(sid)
-        if (cacheMessages.isEmpty()) return
+
+//        if (cacheMessages.isEmpty()) return
+
 //        Log.d(
 //            REALMTAG,
 //            "find all msg filter ---->>> ${cacheMessages.map { m -> "(${m.msgBody},${m.msgSeq})" }}"
 //        )
         Log.d(
-            REALMTAG,
-            "缓存 size: ${cacheMessages.size}, 缓存 lastSeq: ${cacheMessages.last().msgSeq} ; remote size: ${currentSession?.latestMsg?.msgSeq ?: 0}, remote lastSeq: $seq "
+            REALM,
+            "cache size: ${cacheMessages.size}, cache lastSeq: ${cacheMessages.last().msgSeq} | remote size: ${currentSession?.latestMsg?.msgSeq ?: 0}, remote lastSeq: $seq "
         )
 
         // sync
@@ -183,24 +189,24 @@ class ChatScreenViewModel : ViewModel() {
 
         // query newest cache
         cacheMessages = IMLocalRepository.filterMessages(sid)
-        currentSessionTotalPages = cacheMessages.size / showPageNums
-        val yu = cacheMessages.size % showPageNums
-        Log.d(REALMTAG, "分页总页数: $currentSessionTotalPages, 取余: $yu")
+        currentSessionTotalPages = cacheMessages.size / showPageSize
+        val yu = cacheMessages.size % showPageSize
+        Log.d(REALM, "分页总页数: $currentSessionTotalPages, 取余: $yu")
 
         if (send) currentPage = currentSessionTotalPages
 
         val subList = if (currentPage == 1 && yu != 0) {
-            val start = Math.max((currentPage - 1) * showPageNums, 0)
-            val end = Math.min(currentPage * showPageNums + yu, cacheMessages.size)
-            Log.d(REALMTAG, "最后一页 --->>> currentPage: $currentPage, start: $start, end: $end")
+            val start = Math.max((currentPage - 1) * showPageSize, 0)
+            val end = Math.min(currentPage * showPageSize + yu, cacheMessages.size)
+            Log.d(REALM, "最后一页 --->>> currentPage: $currentPage, start: $start, end: $end")
             cacheMessages.subList(start, end)
         } else {
             val start = Math.max(
-                cacheMessages.size - showPageNums * (currentSessionTotalPages - (currentPage - 1)),
+                cacheMessages.size - showPageSize * (currentSessionTotalPages - (currentPage - 1)),
                 0
             )
-            val end = Math.min(start + showPageNums, cacheMessages.size)
-            Log.d(REALMTAG, "非最后一页 --->>> currentPage: $currentPage, start: $start, end: $end")
+            val end = Math.min(start + showPageSize, cacheMessages.size)
+            Log.d(REALM, "非最后一页 --->>> currentPage: $currentPage, start: $start, end: $end")
             cacheMessages.subList(start, end)
         }
 
@@ -223,13 +229,14 @@ class ChatScreenViewModel : ViewModel() {
     private fun updateTotalPages() {
         val cacheMessages = IMLocalRepository.filterMessages(lbeSession)
         if (cacheMessages.isNotEmpty()) {
-            currentSessionTotalPages = Math.max(cacheMessages.size / showPageNums, 1)
-            Log.d(REALMTAG, "update total pages ---->>> $currentSessionTotalPages")
+            currentSessionTotalPages = Math.max(cacheMessages.size / showPageSize, 1)
+            currentPage = currentSessionTotalPages
+            Log.d(REALM, "update total pages ---->>> $currentSessionTotalPages")
         }
     }
 
     private fun scrollTo(index: Int) {
-        Log.d(REALMTAG, "scrollToEnd： $index")
+        Log.d(REALM, "scrollToEnd： $index")
         lazyListState?.requestScrollToItem(index)
     }
 
@@ -241,7 +248,7 @@ class ChatScreenViewModel : ViewModel() {
                 seqCondition = SeqCondition(startSeq = 0, endSeq = 1000)
             )
         )
-        Log.d(REALMTAG, "History sync")
+        Log.d(REALM, "History sync")
         if (history.data.content.isNotEmpty()) {
             seq = history.data.content.last().msgSeq
             for (content in history.data.content) {
@@ -302,7 +309,6 @@ class ChatScreenViewModel : ViewModel() {
         try {
             val value = (message as Message.Bytes).value
             viewModelScope.launch {
-                // val chatMsg= Gson().fromJson(value, ChatMessage::class.java)
                 val msgEntity = IMMsg.MsgEntityToFrontEnd.parseFrom(value)
                 Log.d(TAG, "handleOnMessageReceived protobuf bytes: $msgEntity")
                 if (msgEntity.msgBody.sessionId.isEmpty() || msgEntity.msgBody.clientMsgID.isEmpty()) {
@@ -322,7 +328,7 @@ class ChatScreenViewModel : ViewModel() {
                         else -> 9
                     }
                 }
-                Log.d(REALMTAG, "收到消息 --->> seq: $seq, remoteLastMsgType: $remoteLastMsgType")
+                Log.d(REALM, "收到消息 --->> seq: $seq, remoteLastMsgType: $remoteLastMsgType")
                 viewModelScope.launch {
                     val entity = protoToEntity(msgEntity.msgBody)
                     IMLocalRepository.insertMessage(entity)
@@ -346,15 +352,22 @@ class ChatScreenViewModel : ViewModel() {
         _inputMsg.postValue(message)
     }
 
-    fun sendMessage(messageSent: () -> Unit) {
+    fun sendMessageFromInput(messageSent: () -> Unit) {
         if ((_inputMsg.value ?: "").isEmpty()) return
 
+        send(messageSent = messageSent, msg = _inputMsg.value ?: "", msgType = 1)
+    }
+
+    private fun senMessageFromMedia(msg: String, msgType: Int) {
+        send(messageSent = {}, msg = msg, msgType = msgType)
+    }
+
+    private fun send(messageSent: () -> Unit, msg: String, msgType: Int) {
         val uuid = uuidGen()
         val timeStamp = timeStampGen()
         val clientMsgId = "${uuid}-${timeStamp}"
         val body = MsgBody(
-            msgBody = _inputMsg.value ?: "", msgSeq = seq, msgType = 1,  // TODO 目前写死
-            clientMsgId = clientMsgId, source = 100
+            msgBody = msg, msgSeq = seq, msgType = msgType, clientMsgId = clientMsgId, source = 100
         )
         val entity = sendBodyToEntity(body)
         viewModelScope.launch(Dispatchers.IO) {
@@ -365,8 +378,7 @@ class ChatScreenViewModel : ViewModel() {
                     lbeToken = lbeToken, lbeSession = lbeSession, body
                 )
                 seq = senMsg.data.msgReq
-                // TODO 目前写死
-                remoteLastMsgType = 1
+                remoteLastMsgType = msgType
                 IMLocalRepository.findMsgAndSetSeq(clientMsgId, seq)
             } catch (e: Exception) {
                 println("send error -->> $e")
@@ -408,45 +420,71 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
-    fun upload(file: File) {
-        if (file.length() > UploadBigFileUtils.defaultChunkSize) {
-            bigFileUpload(file)
+    fun upload(mediaMessage: MediaMessage) {
+        Log.d(UPLOAD, "upload file size---->>> ${mediaMessage.file.length()}")
+        if (mediaMessage.file.length() > UploadBigFileUtils.defaultChunkSize) {
+            bigFileUpload(mediaMessage)
         } else {
-            fileUpload(file)
+            singleUpload(mediaMessage)
         }
     }
 
-    private fun fileUpload(file: File) {
-
+    private fun singleUpload(mediaMessage: MediaMessage) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val rep = UploadRepository.singleUpload(
+                    file = MultipartBody.Part.createFormData(
+                        "file", mediaMessage.file.name, mediaMessage.file.asRequestBody()
+                    ), signType = 1
+                )
+                Log.d(UPLOAD, "single upload ---->>> ${rep.data.paths[0]}")
+                val mediaSource = MediaSource(
+                    thumbnail = Thumbnail(url = "", key = ""), resource = Resource(
+                        url = rep.data.paths[0].url, key = rep.data.paths[0].key
+                    )
+                )
+                senMessageFromMedia(msg = Gson().toJson(mediaSource), msgType = 2)
+            } catch (e: Exception) {
+                Log.d(UPLOAD, "Single upload error --->> $e")
+            }
+        }
     }
 
-    private fun bigFileUpload(file: File) {
+    private fun bigFileUpload(mediaMessage: MediaMessage) {
         try {
             val start = System.currentTimeMillis()
             Log.d(
-                UPLOAD, "fileName: ${file.name}, Fs hash: ${file.hashCode()}, split start: $start"
+                UPLOAD,
+                "Big file upload ---->>> fileName: ${mediaMessage.file.name}, Fs hash: ${mediaMessage.file.hashCode()}, split start: $start"
             )
-            UploadBigFileUtils.splitFile(file, UploadBigFileUtils.defaultChunkSize)
+            UploadBigFileUtils.splitFile(mediaMessage.file, UploadBigFileUtils.defaultChunkSize)
             val end = System.currentTimeMillis()
             Log.d(UPLOAD, "split end: $end, diff: ${end - start}")
             viewModelScope.launch(Dispatchers.IO) {
                 val initRep = UploadRepository.initMultiPartUpload(
-                    url = "api/multi/initiate-multipart_upload", body = InitMultiPartUploadBody(
-                        size = file.length(), name = file.name, contentType = ""
+                    body = InitMultiPartUploadBody(
+                        size = mediaMessage.file.length(),
+                        name = mediaMessage.file.name,
+                        contentType = ""
                     )
                 )
                 Log.d(UPLOAD, "init multi upload --->>> $initRep")
                 val completeMultiPartUploadReq = CompleteMultiPartUploadReq(
-                    uploadId = initRep.data.uploadId, name = file.name, part = mutableListOf()
+                    uploadId = initRep.data.uploadId,
+                    name = mediaMessage.file.name,
+                    part = mutableListOf()
                 )
-                val buffers = UploadBigFileUtils.blocks[file.hashCode()]
+                val buffers = UploadBigFileUtils.blocks[mediaMessage.file.hashCode()]
                 if (buffers != null) {
                     var index = 1
                     for (buffer in buffers) {
                         val md5 = MessageDigest.getInstance("MD5")
                         val sign = md5.digest(buffer.array())
                         val hexString = sign.joinToString("") { "%02x".format(it) }
-                        Log.d(UPLOAD, "split chunk size: ${buffer.array().size}, sign: $hexString")
+                        Log.d(
+                            UPLOAD,
+                            "split chunk size: ${buffer.array().size}, hexString: $hexString"
+                        )
                         completeMultiPartUploadReq.part.add(
                             Part(
                                 partNumber = index, etag = hexString
@@ -464,12 +502,18 @@ class ChatScreenViewModel : ViewModel() {
                 }
                 Log.d(UPLOAD, "iter --->> $completeMultiPartUploadReq")
                 val mergeUpload = UploadRepository.completeMultiPartUpload(
-                    "api/multi/complete-multipart-upload", body = completeMultiPartUploadReq
+                    body = completeMultiPartUploadReq
                 )
                 Log.d(UPLOAD, "BigFileUpload success ---> ${mergeUpload.data.location}")
+                val mediaSource = MediaSource(
+                    thumbnail = Thumbnail(url = "", key = ""), resource = Resource(
+                        url = mergeUpload.data.location, key = ""
+                    )
+                )
+                senMessageFromMedia(msg = Gson().toJson(mediaSource), msgType = 3)
             }
         } catch (e: Exception) {
-            Log.d(UPLOAD, "error --->>> $e")
+            Log.d(UPLOAD, "Big file upload error --->>> $e")
         }
     }
 

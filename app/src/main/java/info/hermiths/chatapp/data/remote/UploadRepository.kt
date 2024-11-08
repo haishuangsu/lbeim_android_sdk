@@ -4,16 +4,22 @@ import info.hermiths.chatapp.model.req.CompleteMultiPartUploadReq
 import info.hermiths.chatapp.model.req.InitMultiPartUploadBody
 import info.hermiths.chatapp.model.resp.CompleteMultiPartUploadRep
 import info.hermiths.chatapp.model.resp.InitMultiPartUploadRep
+import info.hermiths.chatapp.model.resp.SingleUploadRep
 import info.hermiths.chatapp.service.RetrofitInstance
+import okhttp3.MultipartBody
 import okhttp3.RequestBody
 
 object UploadRepository {
-    val uploadService = RetrofitInstance.uploadService
+    private val uploadService = RetrofitInstance.uploadService
+
+    suspend fun singleUpload(file: MultipartBody.Part, signType: Int = 1): SingleUploadRep {
+        return uploadService.singleUpload(file = file, signType = signType)
+    }
 
     suspend fun initMultiPartUpload(
-        url: String, body: InitMultiPartUploadBody
+        body: InitMultiPartUploadBody
     ): InitMultiPartUploadRep {
-        return uploadService.initMultiPartUpload(url = url, body = body)
+        return uploadService.initMultiPartUpload(body = body)
     }
 
     suspend fun uploadBinary(url: String, body: RequestBody) {
@@ -21,8 +27,8 @@ object UploadRepository {
     }
 
     suspend fun completeMultiPartUpload(
-        url: String, body: CompleteMultiPartUploadReq
+        body: CompleteMultiPartUploadReq
     ): CompleteMultiPartUploadRep {
-        return uploadService.completeMultiPartUpload(url = url, body = body)
+        return uploadService.completeMultiPartUpload(body = body)
     }
 }

@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitInstance {
     private const val BASE_URL = "http://42nz10y3hhah.dreaminglife.cn:20005/"
     var IM_URL = ""
-    private const val UPLOAD_BASE_URL = "http://10.40.91.10:20003/"
+    var UPLOAD_BASE_URL = ""
 
 
     private val baseRetrofit: Retrofit by lazy {
