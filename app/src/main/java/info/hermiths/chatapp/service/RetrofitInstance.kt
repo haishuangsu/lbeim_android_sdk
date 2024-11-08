@@ -32,4 +32,9 @@ object RetrofitInstance {
             .addConverterFactory(GsonConverterFactory.create()).build()
         retrofit.create(UploadService::class.java)
     }
+
+    val baseService: BaseService by lazy {
+        val retrofit = Retrofit.Builder().baseUrl(UPLOAD_BASE_URL).build()
+        retrofit.create(BaseService::class.java)
+    }
 }

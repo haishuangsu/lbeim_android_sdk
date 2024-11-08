@@ -1,5 +1,6 @@
 package info.hermiths.chatapp.ui.presentation.components
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,9 +20,11 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.google.gson.Gson
 import info.hermiths.chatapp.model.MessageEntity
 import info.hermiths.chatapp.model.resp.MediaSource
+import java.nio.charset.StandardCharsets
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 
 
 @OptIn(ExperimentalGlideComposeApi::class)
@@ -48,37 +51,54 @@ fun MsgTypeContent(message: MessageEntity) {
 
         2 -> {
             var url = ""
+            var key = ""
             try {
                 val media = Gson().fromJson(message.msgBody, MediaSource::class.java)
                 url = media.resource.url
+                key = media.resource.key
             } catch (e: Exception) {
-
+                Log.d("", "")
             }
-//            val mediaJson = Gson().toJson(media)
-//
+
+            if (key.isEmpty()) {
+                GlideImage(
+                    model = url,
+                    contentDescription = "Yo",
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier
+                        .size(width = 160.dp, height = 90.dp)
+                        .clip(RoundedCornerShape(16.dp)),
+                )
+            } else {
+                val secretByteArray = key.toByteArray(StandardCharsets.UTF_8)
+                val secretKey = SecretKeySpec(secretByteArray, "AES")
+
 //            // gen key
-//            val keyGenerator = KeyGenerator.getInstance("AES")
-//            keyGenerator.init(256)
+                val keyGenerator = KeyGenerator.getInstance("AES")
+                keyGenerator.init(256)
 //            val secretKey = keyGenerator.generateKey()
 //
 //            // encryption
-//            val cipher = Cipher.getInstance("AES/CBC/PKCS7Padding")
-//            val ivP = IvParameterSpec(ByteArray(16))
-//            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivP)
+                val cipher = Cipher.getInstance("AES/CBC/PKCS7Padding")
+                val ivP = IvParameterSpec(ByteArray(16))
+                cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivP)
+
 //            val enData = cipher.doFinal(ByteArray(32)) // put data
 //
 //            // decryption
 //            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivP)
-//            val deData = cipher.doFinal(ByteArray(32)) // put data
+                val deData = cipher.doFinal(ByteArray(32)) // put data
 
-            GlideImage(
-                model = url,
-                contentDescription = "Yo",
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier
-                    .size(width = 160.dp, height = 90.dp)
-                    .clip(RoundedCornerShape(16.dp)),
-            )
+                GlideImage(
+                    model = deData,
+                    contentDescription = "Yo",
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier
+                        .size(width = 160.dp, height = 90.dp)
+                        .clip(RoundedCornerShape(16.dp)),
+                )
+            }
+
         }
 
         3 -> {
