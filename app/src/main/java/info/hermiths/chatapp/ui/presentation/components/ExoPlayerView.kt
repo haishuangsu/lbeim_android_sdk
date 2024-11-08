@@ -2,6 +2,7 @@ package info.hermiths.chatapp.ui.presentation.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -48,10 +49,10 @@ fun ExoPlayerView(url: String) {
             PlayerView(ctx).apply {
                 player = exoPlayer
             }
-        },
-        modifier = Modifier
+        }, modifier = Modifier
             .fillMaxWidth()
-            .height(255.dp)
+            .height(170.dp)
+//            .size(width = 160.dp, height = 90.dp)
             .clip(RoundedCornerShape(16.dp))// Set your desired height
     )
 }

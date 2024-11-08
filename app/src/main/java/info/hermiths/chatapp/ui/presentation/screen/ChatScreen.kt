@@ -48,14 +48,20 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.SubcomposeAsyncImage
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
+import com.google.gson.Gson
 import info.hermiths.chatapp.R
+import info.hermiths.chatapp.model.MediaMessage
 import info.hermiths.chatapp.model.MessageEntity
+import info.hermiths.chatapp.model.resp.MediaSource
+import info.hermiths.chatapp.ui.presentation.components.ExoPlayerView
 import info.hermiths.chatapp.ui.presentation.components.MsgTypeContent
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 import info.hermiths.chatapp.ui.presentation.viewmodel.ConnectionStatus
+import info.hermiths.chatapp.utils.FileUtils
 import java.io.File
 
 
@@ -134,7 +140,7 @@ fun ChatScreen(
                     Log.d("列表滑动", "index: $index")
                     if (lazyListState.isScrollInProgress) {
                         // TODO 待优化
-                        if (uiState.messages.size - index > ChatScreenViewModel.showPageNums - 3) {
+                        if (uiState.messages.size - index > ChatScreenViewModel.showPageSize - 3) {
                             if (ChatScreenViewModel.currentPage > 1) {
                                 ChatScreenViewModel.currentPage -= 1
                                 Log.d(
@@ -183,41 +189,35 @@ fun ChatScreen(
                 ) {
                     if (pickFilesResult.value.isNotEmpty()) {
                         val uris = pickFilesResult.value
-                        val uri = uris[0]
-
-//                        val f1 = DocumentFile.fromSingleUri(context, uri)
-//                        if (f1 != null) {
-//                            Log.d(
-//                                "文件选择",
-//                                "DocumentFile --->> fileName: ${f1.name}, size: ${f1.length()}"
-//                            )
-//                        }
-
-                        Log.d("文件选择", "${pickFilesResult.value}")
-                        val cr = context.contentResolver
-                        val projection = arrayOf(MediaStore.MediaColumns.DATA)
-                        val metaCursor = cr.query(uri, projection, null, null, null)
-                        metaCursor?.use { mCursor ->
-                            if (mCursor.moveToFirst()) {
-                                val path = mCursor.getString(0);
-                                Log.d("文件选择", "metaCursor: $path")
-                                val f2 = File(path)
-                                viewModel.upload(f2)
-                                Log.d(
-                                    "文件选择",
-                                    "找到文件: ${f2.name}, ${f2.path}, ${f2.length()}, ${f2.absolutePath}"
-                                )
+                        Log.d(ChatScreenViewModel.FILESELECT, "${pickFilesResult.value}")
+                        for (uri in uris) {
+                            val cr = context.contentResolver
+                            val projection = arrayOf(
+                                MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.MIME_TYPE
+                            )
+                            val metaCursor = cr.query(uri, projection, null, null, null)
+                            metaCursor?.use { mCursor ->
+                                if (mCursor.moveToFirst()) {
+                                    val path = mCursor.getString(0)
+                                    val mime = mCursor.getString(1)
+                                    Log.d(ChatScreenViewModel.FILESELECT, "path: $path")
+                                    val file = File(path)
+                                    val mediaMessage = MediaMessage(
+                                        file = file,
+                                        isImage = FileUtils.isImage(mime),
+                                    )
+                                    viewModel.upload(mediaMessage)
+                                    Log.d(
+                                        ChatScreenViewModel.FILESELECT,
+                                        "found file --->> ${file.name}, ${file.path}, ${file.length()}, ${file.absolutePath}, mimeType: $mime, Is image file: ${
+                                            FileUtils.isImage(
+                                                mime
+                                            )
+                                        }"
+                                    )
+                                }
                             }
                         }
-//                        val parcelFileDescriptor = cr.openFileDescriptor(
-//                            uri, "r", null
-//                        )
-//                        Log.d("文件选择", "path: ${uri.path}")
-//                        parcelFileDescriptor?.let { pfd ->
-//                            val fdp = pfd.fileDescriptor
-//
-//                        }
-//                        parcelFileDescriptor?.close()
                     }
                 }
             }
@@ -257,7 +257,7 @@ fun ChatScreen(
                                 modifier = Modifier
                                     .size(18.dp)
                                     .clickable {
-                                        viewModel.sendMessage(messageSent = {
+                                        viewModel.sendMessageFromInput(messageSent = {
                                             currentFocus.clearFocus()
                                         })
                                     })
@@ -315,6 +315,7 @@ fun CsRecived(message: MessageEntity, messagePosition: MessagePosition) {
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun UserInput(
     message: MessageEntity, messagePosition: MessagePosition, viewModel: ChatScreenViewModel
@@ -332,39 +333,75 @@ fun UserInput(
             )
             Spacer(Modifier.height(8.dp))
 
+            when (message.msgType) {
+                1 -> {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (!message.sendSuccess) {
+                            Image(painter = painterResource(R.drawable.send_fail),
+                                contentDescription = "send fail",
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .clickable {
+                                        viewModel.reSendMessage(message.clientMsgID)
+                                    })
+                            Spacer(Modifier.width(9.dp))
+                        }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (!message.sendSuccess) {
-                    Image(painter = painterResource(R.drawable.send_fail),
-                        contentDescription = "send fail",
-                        modifier = Modifier
-                            .size(16.dp)
-                            .clickable {
-                                viewModel.reSendMessage(message.clientMsgID)
-                            })
-                    Spacer(Modifier.width(9.dp))
+                        Surface(
+                            color = Color(0xff0054FC).copy(alpha = 0.1f), modifier = Modifier.clip(
+                                RoundedCornerShape(
+                                    topStart = 12.dp, bottomStart = 12.dp, bottomEnd = 12.dp,
+                                )
+                            )
+                        ) {
+                            Text(
+                                text = message.msgBody,
+                                modifier = Modifier.padding(12.dp),
+                                style = TextStyle(
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.W400,
+                                    color = Color(0xff000000)
+                                )
+                            )
+                        }
+                    }
                 }
 
-                Surface(
-                    color = Color(0xff0054FC).copy(alpha = 0.1f), modifier = Modifier.clip(
-                        RoundedCornerShape(
-                            topStart = 12.dp, bottomStart = 12.dp, bottomEnd = 12.dp,
-                        )
+                2 -> {
+                    var url = ""
+                    try {
+                        val media = Gson().fromJson(message.msgBody, MediaSource::class.java)
+                        url = media.resource.url
+                    } catch (e: Exception) {
+
+                    }
+
+                    GlideImage(
+                        model = url,
+                        contentDescription = "Yo",
+                        contentScale = ContentScale.FillBounds,
+                        modifier = Modifier
+                            .size(width = 160.dp, height = 90.dp)
+                            .clip(RoundedCornerShape(16.dp)),
                     )
-                ) {
-                    Text(
-                        text = message.msgBody,
-                        modifier = Modifier.padding(12.dp),
-                        style = TextStyle(
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.W400,
-                            color = Color(0xff000000)
-                        )
-                    )
+                }
+
+                3 -> {
+                    var url = ""
+                    try {
+                        val media = Gson().fromJson(message.msgBody, MediaSource::class.java)
+                        url = media.resource.url
+                    } catch (e: Exception) {
+
+                    }
+                    ExoPlayerView(url)
+                }
+
+                else -> {
+                    Text("Not implement yet. --->>> { ${message.msgType} }")
                 }
             }
         }
-
 
         SubcomposeAsyncImage(
             model = "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg",
