@@ -1,6 +1,8 @@
 package info.hermiths.chatapp.ui.presentation.components
 
+import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,21 +17,25 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.google.gson.Gson
 import info.hermiths.chatapp.model.MessageEntity
 import info.hermiths.chatapp.model.resp.MediaSource
+import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel.Companion.IMAGEENCRYPTION
 import java.nio.charset.StandardCharsets
 import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun MsgTypeContent(message: MessageEntity) {
+fun MsgTypeContent(
+    message: MessageEntity, context: Context,
+) {
     when (message.msgType) {
         1 -> {
             Surface(
@@ -59,6 +65,7 @@ fun MsgTypeContent(message: MessageEntity) {
             } catch (e: Exception) {
                 Log.d("", "")
             }
+            Log.d(IMAGEENCRYPTION, "url: $url, key: $key")
 
             if (key.isEmpty()) {
                 GlideImage(
@@ -72,25 +79,51 @@ fun MsgTypeContent(message: MessageEntity) {
             } else {
                 val secretByteArray = key.toByteArray(StandardCharsets.UTF_8)
                 val secretKey = SecretKeySpec(secretByteArray, "AES")
-
-//            // gen key
-                val keyGenerator = KeyGenerator.getInstance("AES")
-                keyGenerator.init(256)
-//            val secretKey = keyGenerator.generateKey()
-//
-//            // encryption
                 val cipher = Cipher.getInstance("AES/CBC/PKCS7Padding")
                 val ivP = IvParameterSpec(ByteArray(16))
-                cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivP)
+                // decryption
+                cipher.init(Cipher.DECRYPT_MODE, secretKey, ivP)
+//                val deData = cipher.doFinal(ByteArray(32)) // put data
 
-//            val enData = cipher.doFinal(ByteArray(32)) // put data
+//            // gen key
+//                val keyGenerator = KeyGenerator.getInstance("AES")
+//                keyGenerator.init(256)
+//                val secretKey = keyGenerator.generateKey()
+
+                // encryption
+//                cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivP)
+//                val enData = cipher.doFinal(ByteArray(32)) // put data
+
+
+//                GlideImage(
+//                    model = deData,
+//                    contentDescription = "Yo",
+//                    contentScale = ContentScale.FillBounds,
+//                    modifier = Modifier
+//                        .size(width = 160.dp, height = 90.dp)
+//                        .clip(RoundedCornerShape(16.dp)),
+//                ) {
+//                    it.decode()
+//                }
+
+//                val imageLoader = ImageLoader.Builder(context).components {
+////                        add(CustomCacheInterceptor())
+////                        add(ItemMapper())
+////                        add(HttpUrlKeyer())
+////                        add(CronetFetcher.Factory())
+//                    add(BitmapFactoryDecoder.Factory())
+//                }.build()
 //
-//            // decryption
-//            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivP)
-                val deData = cipher.doFinal(ByteArray(32)) // put data
+//                Image(
+//                    painter = rememberAsyncImagePainter(
+//                        model = ImageRequest.Builder(context).data(url)
+////                            .decoderFactory(DecryptionDecoder.Factory(key = key))
+////                            .build(), imageLoader = imageLoader
+//                    ), contentDescription = ""
+//                )
 
                 GlideImage(
-                    model = deData,
+                    model = url,
                     contentDescription = "Yo",
                     contentScale = ContentScale.FillBounds,
                     modifier = Modifier

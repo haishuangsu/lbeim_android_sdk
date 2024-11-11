@@ -1,9 +1,10 @@
+import com.android.build.gradle.internal.scope.ProjectInfo.Companion.getBaseName
 import java.util.Properties
 
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id ("io.realm.kotlin")
+    id("io.realm.kotlin")
 //    id("kotlin-kapt")
 //    id("com.google.dagger.hilt.android")
 //    id ("com.google.protobuf") version "0.9.4"
@@ -30,13 +31,22 @@ android {
         buildConfigField("String", "lbeSign", "\"${properties["LBE_SIGN"]}\"")
     }
 
+    signingConfigs {
+        create("release") {
+            keyAlias = "hermit"
+            keyPassword = "gavin@95"
+            storeFile = file("../hermit.jks")
+            storePassword = "gavin@95"
+        }
+    }
+
     buildTypes {
-        release {
+        getByName("release") {
             isMinifyEnabled = false
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
@@ -113,21 +123,25 @@ dependencies {
     //  Coil
     implementation("io.coil-kt.coil3:coil-compose:3.0.0-rc01")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.0-rc01")
+    implementation("io.coil-kt.coil3:coil-gif:3.0.2")
+    implementation("io.coil-kt.coil3:coil-svg:3.0.2")
 
     // Glide
-    implementation ("com.github.bumptech.glide:compose:1.0.0-beta01")
+    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
-    api ("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    api("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2")
 
     // Exoplayer
     implementation("androidx.media3:media3-exoplayer:1.4.1")
     implementation("androidx.media3:media3-ui:1.4.1")
 
     // Realm
-    implementation ("io.realm.kotlin:library-base:1.16.0")
+    implementation("io.realm.kotlin:library-base:1.16.0")
+
+    implementation("com.google.accompanist:accompanist-permissions:0.36.0")
 
     // Hilt
     //  implementation("com.google.dagger:hilt-android:2.52")

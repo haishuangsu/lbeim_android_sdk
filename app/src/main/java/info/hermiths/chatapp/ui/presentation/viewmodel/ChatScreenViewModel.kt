@@ -74,6 +74,8 @@ class ChatScreenViewModel : ViewModel() {
         private const val REALM = "RealmTAG"
         private const val UPLOAD = "IM UPLOAD"
         const val FILESELECT = "File Select"
+        const val IMAGEENCRYPTION = "Image Encryption"
+        var lbeSign = BuildConfig.lbeSign
         var uid = "c-4385obtijcnd"
         var wssHost = ""
         var oss = ""
@@ -87,6 +89,8 @@ class ChatScreenViewModel : ViewModel() {
         var showPageSize = 20
         var currentPage = 0
         var remoteLastMsgType = -1
+        var nickId: String = ""
+        var nickName: String = ""
     }
 
     private val _uiState = MutableLiveData(ChatScreenUiState())
@@ -99,6 +103,17 @@ class ChatScreenViewModel : ViewModel() {
     var lazyListState: LazyListState? = null
 
     init {
+        // TODO
+        // prepare()
+    }
+
+    fun setNickId(nid: String) {
+        if (nid.isEmpty()) {
+            return
+        }
+        _uiState.postValue(_uiState.value?.copy(nickId = nid))
+        nickId = nid
+        nickName = nid
         prepare()
     }
 
@@ -118,7 +133,7 @@ class ChatScreenViewModel : ViewModel() {
     }
 
     private suspend fun fetchConfig() {
-        val config = LbeConfigRepository.fetchConfig(BuildConfig.lbeSign, ConfigBody(0, 1))
+        val config = LbeConfigRepository.fetchConfig(lbeSign, ConfigBody(0, 1))
         wssHost = config.data.ws[0]
         RetrofitInstance.IM_URL = config.data.rest[0]
         RetrofitInstance.UPLOAD_BASE_URL = config.data.oss[0]
@@ -126,12 +141,8 @@ class ChatScreenViewModel : ViewModel() {
 
     private suspend fun createSession() {
         val session = LbeImRepository.createSession(
-            BuildConfig.lbeSign, SessionBody(
-                extraInfo = "",
-                headIcon = "",
-                nickId = "HermitK15",
-                nickName = "HermitK15",
-                uid = ""
+            lbeSign, SessionBody(
+                extraInfo = "", headIcon = "", nickId = nickId, nickName = nickName, uid = ""
             )
         )
         lbeToken = session.data.token
@@ -171,19 +182,14 @@ class ChatScreenViewModel : ViewModel() {
 
         var cacheMessages = IMLocalRepository.filterMessages(sid)
 
-//        if (cacheMessages.isEmpty()) return
-
 //        Log.d(
 //            REALMTAG,
 //            "find all msg filter ---->>> ${cacheMessages.map { m -> "(${m.msgBody},${m.msgSeq})" }}"
 //        )
-        Log.d(
-            REALM,
-            "cache size: ${cacheMessages.size}, cache lastSeq: ${cacheMessages.last().msgSeq} | remote size: ${currentSession?.latestMsg?.msgSeq ?: 0}, remote lastSeq: $seq "
-        )
+        Log.d(REALM, "cache size: ${cacheMessages.size} |  remote lastSeq: $seq ")
 
         // sync
-        if (cacheMessages.size < seq && remoteLastMsgType != 0 || cacheMessages.last().msgSeq < seq && remoteLastMsgType != 0) {
+        if (cacheMessages.size < seq && remoteLastMsgType != 0) { // || cacheMessages.last().msgSeq < seq && remoteLastMsgType != 0) {
             fetchHistoryAndSync()
         }
 
@@ -228,10 +234,14 @@ class ChatScreenViewModel : ViewModel() {
 
     private fun updateTotalPages() {
         val cacheMessages = IMLocalRepository.filterMessages(lbeSession)
+        Log.d(REALM, "update total pages cacheMessages size---->>> ${cacheMessages.size}")
         if (cacheMessages.isNotEmpty()) {
             currentSessionTotalPages = Math.max(cacheMessages.size / showPageSize, 1)
             currentPage = currentSessionTotalPages
             Log.d(REALM, "update total pages ---->>> $currentSessionTotalPages")
+        } else {
+            currentPage = 1
+            currentSessionTotalPages = 1
         }
     }
 

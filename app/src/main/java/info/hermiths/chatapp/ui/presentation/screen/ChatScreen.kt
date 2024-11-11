@@ -1,11 +1,15 @@
 package info.hermiths.chatapp.ui.presentation.screen
 
+import android.Manifest
+import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,8 +30,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,10 +55,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil3.compose.SubcomposeAsyncImage
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.gson.Gson
 import info.hermiths.chatapp.R
 import info.hermiths.chatapp.model.MediaMessage
@@ -64,23 +73,23 @@ import info.hermiths.chatapp.ui.presentation.viewmodel.ConnectionStatus
 import info.hermiths.chatapp.utils.FileUtils
 import java.io.File
 
-
 data class ChatScreenUiState(
     var messages: List<MessageEntity> = emptyList(),
-    val connectionStatus: ConnectionStatus = ConnectionStatus.NOT_STARTED
+    val connectionStatus: ConnectionStatus = ConnectionStatus.NOT_STARTED,
+    val lbeSign: String = "",
+    val nickId: String = "",
 )
-
 
 enum class MessagePosition {
     LEFT, RIGHT
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ChatScreen(
-    viewModel: ChatScreenViewModel = viewModel()
+    modifier: Modifier = Modifier, viewModel: ChatScreenViewModel = viewModel()
 ) {
     val context = LocalContext.current
-//    ImageLoader.Builder(LocalContext.current)
 
     val uiState by viewModel.uiState.observeAsState(ChatScreenUiState())
     val input by viewModel.inputMsg.observeAsState("init")
@@ -89,16 +98,15 @@ fun ChatScreen(
     val lazyListState = rememberLazyListState()
     viewModel.lazyListState = lazyListState
 
-//    val mediaPermissionState = rememberMultiplePermissionsState(
-//        permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) listOf(
-//            Manifest.permission.READ_MEDIA_IMAGES
-//        ) else listOf(
-//            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-//            Manifest.permission.READ_EXTERNAL_STORAGE,
-//        )
-//    )
-//    val hasCameraPermission = cameraPermissionState.status.isGranted
-//    val hasMediaPermission = mediaPermissionState.allPermissionsGranted
+    val mediaPermissionState = rememberMultiplePermissionsState(
+        permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) listOf(
+            Manifest.permission.READ_MEDIA_IMAGES
+        ) else listOf(
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+        )
+    )
+    val hasMediaPermission = mediaPermissionState.allPermissionsGranted
 
     val pickFilesResult = remember { mutableStateOf<List<Uri>>(emptyList()) }
     val launcher =
@@ -109,16 +117,18 @@ fun ChatScreen(
         })
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Text(text = "Connection Status: ${uiState.connectionStatus.name}")
+        // TODO connectionStatus
+//        Text(text = "Connection Status: ${uiState.connectionStatus.name}")
         HorizontalDivider(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(1.dp)
+                .height(0.5.dp),
+            color = Color(0xffEBEBEB),
         )
 
         LazyColumn(
@@ -134,7 +144,8 @@ fun ChatScreen(
                     message = message,
                     if (message.senderUid == ChatScreenViewModel.uid) MessagePosition.RIGHT
                     else MessagePosition.LEFT,
-                    viewModel
+                    viewModel,
+                    context
                 )
                 LaunchedEffect(uiState.messages) {
                     Log.d("列表滑动", "index: $index")
@@ -172,14 +183,13 @@ fun ChatScreen(
                         .padding(5.dp)
                         .size(21.dp, 16.dp)
                         .clickable {
-//                            if (hasMediaPermission) {
-//                                galleryLauncher.launch(galleryIntent)
-//                            } else {
-//                                mediaPermissionState.launchMultiplePermissionRequest()
-//                            }
-                            launcher.launch(
-                                PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo)
-                            )
+                            if (hasMediaPermission) {
+                                launcher.launch(
+                                    PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+                                )
+                            } else {
+                                mediaPermissionState.launchMultiplePermissionRequest()
+                            }
 //                            open mime type
 //                            val mimeType = "image/gif"
 //                            pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.SingleMimeType(mimeType)))
@@ -266,12 +276,42 @@ fun ChatScreen(
                 })
         }
     }
+
+    AnimatedVisibility(visible = uiState.nickId.isEmpty()) {
+        UserIdPrompt() {
+            viewModel.setNickId(it)
+        }
+    }
+}
+
+@Composable
+fun UserIdPrompt(onStart: (String) -> Unit) {
+    var nickId by remember { mutableStateOf("") }
+    Dialog(onDismissRequest = { }) {
+        Card {
+            Column(
+                modifier = Modifier.padding(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                OutlinedTextField(value = nickId,
+                    onValueChange = { nickId = it },
+                    label = { Text(text = "NickId") })
+                Button(onClick = { onStart(nickId) }) {
+                    Text(text = "Connect")
+                }
+            }
+        }
+    }
 }
 
 
 @Composable
 fun MessageItem(
-    message: MessageEntity, messagePosition: MessagePosition, viewModel: ChatScreenViewModel
+    message: MessageEntity,
+    messagePosition: MessagePosition,
+    viewModel: ChatScreenViewModel,
+    context: Context,
 ) {
     Box(
         modifier = Modifier
@@ -283,15 +323,17 @@ fun MessageItem(
         contentAlignment = if (messagePosition == MessagePosition.LEFT) Alignment.TopStart else Alignment.BottomEnd
     ) {
         if (messagePosition == MessagePosition.LEFT) {
-            CsRecived(message, messagePosition)
+            CsRecived(message, messagePosition, context)
         } else {
-            UserInput(message, messagePosition, viewModel = viewModel)
+            UserInput(message, messagePosition, viewModel = viewModel, context)
         }
     }
 }
 
 @Composable
-fun CsRecived(message: MessageEntity, messagePosition: MessagePosition) {
+fun CsRecived(
+    message: MessageEntity, messagePosition: MessagePosition, context: Context,
+) {
     Row {
         Image(
             painter = painterResource(id = R.drawable.cs_avatar),
@@ -310,7 +352,7 @@ fun CsRecived(message: MessageEntity, messagePosition: MessagePosition) {
                 )
             )
             Spacer(Modifier.height(8.dp))
-            MsgTypeContent(message)
+            MsgTypeContent(message, context)
         }
     }
 }
@@ -318,7 +360,10 @@ fun CsRecived(message: MessageEntity, messagePosition: MessagePosition) {
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun UserInput(
-    message: MessageEntity, messagePosition: MessagePosition, viewModel: ChatScreenViewModel
+    message: MessageEntity,
+    messagePosition: MessagePosition,
+    viewModel: ChatScreenViewModel,
+    context: Context,
 ) {
     Row(horizontalArrangement = Arrangement.End) {
         Column(
@@ -403,20 +448,43 @@ fun UserInput(
             }
         }
 
-        SubcomposeAsyncImage(
+        GlideImage(
             model = "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg",
-            contentDescription = "",
+            contentDescription = "Yo",
             contentScale = ContentScale.FillBounds,
             modifier = Modifier
                 .size(32.dp)
                 .clip(CircleShape),
-            loading = {
-                CircularProgressIndicator()
-            },
-            onLoading = { loading ->
-
-            },
         )
+
+//        Image(
+//            painter = rememberAsyncImagePainter(
+//                model = ImageRequest.Builder(context)
+//                    .data("https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg")
+////                            .decoderFactory(DecryptionDecoder.Factory(key = key))
+////                            .build(), imageLoader = imageLoader
+//            ),
+//            contentDescription = "",
+//            contentScale = ContentScale.FillBounds,
+//            modifier = Modifier
+//                .size(32.dp)
+//                .clip(CircleShape),
+//        )
+
+//        SubcomposeAsyncImage(
+//            model = "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg",
+//            contentDescription = "",
+//            contentScale = ContentScale.FillBounds,
+//            modifier = Modifier
+//                .size(32.dp)
+//                .clip(CircleShape),
+//            loading = {
+//                CircularProgressIndicator()
+//            },
+//            onLoading = { loading ->
+//
+//            },
+//        )
 
 //        GlideSubcomposition(
 //            model = "https://qiniu-web.aiwei365.com/@/upload/0/image/20170321/1490085940504055412.gif?imageView2/2/w/720",
