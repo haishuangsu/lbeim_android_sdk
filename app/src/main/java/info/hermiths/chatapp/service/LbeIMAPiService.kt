@@ -12,10 +12,10 @@ import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.POST
 
-private const val FETCH_HISTORY_URL = "api/trans/history"
-private const val CREATE_ChAT_URL = "api/trans/session"
-private const val SEND_MSG_URL = "api/trans/msg-send"
-private const val FETCH_HISTORY_LIST_URL = "api/trans/session-list"
+private const val FETCH_HISTORY_URL = "miners-api/trans/history"
+private const val CREATE_ChAT_URL = "miners-api/trans/session"
+private const val SEND_MSG_URL = "miners-api/trans/msg-send"
+private const val FETCH_HISTORY_LIST_URL = "miners-api/trans/session-list"
 
 interface LbeIMAPiService {
 

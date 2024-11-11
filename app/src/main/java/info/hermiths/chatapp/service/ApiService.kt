@@ -8,7 +8,7 @@ import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.POST
 
-private const val FETCH_CONFIG_URL = "api/trans/nodes"
+private const val FETCH_CONFIG_URL = "miners-api/trans/nodes"
 
 
 interface ApiService {

@@ -18,10 +18,10 @@ import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Url
 
-const val SINGLE_UPLOAD = "api/single/fileupload"
-const val INIT_MULTI_PART_UPLOAD = "http://10.40.91.10:20003/api/multi/initiate-multipart_upload"
+const val SINGLE_UPLOAD = "miners-api/single/fileupload"
+const val INIT_MULTI_PART_UPLOAD = "http://10.40.91.10:20003/miners-api/multi/initiate-multipart_upload"
 const val COMPLETE_MULTI_PART_UPLOAD =
-    "http://10.40.91.10:20003/api/multi/complete-multipart-upload"
+    "http://10.40.91.10:20003/miners-api/multi/complete-multipart-upload"
 
 
 interface UploadService {
