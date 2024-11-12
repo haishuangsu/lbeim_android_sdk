@@ -57,6 +57,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.ImageLoader
+import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.compose.rememberAsyncImagePainter
+import coil3.network.NetworkFetcher
+import coil3.request.ImageRequest
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -66,9 +72,12 @@ import info.hermiths.chatapp.R
 import info.hermiths.chatapp.model.MediaMessage
 import info.hermiths.chatapp.model.MessageEntity
 import info.hermiths.chatapp.model.resp.MediaSource
+import info.hermiths.chatapp.ui.presentation.components.CustomDecoder
+import info.hermiths.chatapp.ui.presentation.components.DecryptionDecoder
 import info.hermiths.chatapp.ui.presentation.components.ExoPlayerView
 import info.hermiths.chatapp.ui.presentation.components.MsgTypeContent
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
+import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel.Companion.lbeIdentity
 import info.hermiths.chatapp.ui.presentation.viewmodel.ConnectionStatus
 import info.hermiths.chatapp.utils.FileUtils
 import java.io.File
@@ -76,8 +85,7 @@ import java.io.File
 data class ChatScreenUiState(
     var messages: List<MessageEntity> = emptyList(),
     val connectionStatus: ConnectionStatus = ConnectionStatus.NOT_STARTED,
-    val lbeSign: String = "",
-    val nickId: String = "",
+    val login: Boolean = false,
 )
 
 enum class MessagePosition {
@@ -188,7 +196,11 @@ fun ChatScreen(
                                     PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo)
                                 )
                             } else {
-                                mediaPermissionState.launchMultiplePermissionRequest()
+                                mediaPermissionState
+                                    .launchMultiplePermissionRequest()
+                                    .let {
+                                        PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+                                    }
                             }
 //                            open mime type
 //                            val mimeType = "image/gif"
@@ -277,16 +289,22 @@ fun ChatScreen(
         }
     }
 
-    AnimatedVisibility(visible = uiState.nickId.isEmpty()) {
-        UserIdPrompt() {
-            viewModel.setNickId(it)
+    AnimatedVisibility(visible = !uiState.login) {
+        NickIdPrompt { nid, nName, lbeIdentity ->
+            viewModel.setNickId(nid, nName, lbeIdentity)
         }
     }
 }
 
 @Composable
-fun UserIdPrompt(onStart: (String) -> Unit) {
-    var nickId by remember { mutableStateOf("") }
+fun NickIdPrompt(onStart: (nid: String, nName: String, lbeIdentity: String) -> Unit) {
+    var nickId by remember { mutableStateOf("HermitK15") }
+    var nickName by remember { mutableStateOf("HermitK15") }
+    // dev
+//     var lbeIdentity by remember { mutableStateOf("42nz10y3hhah") }
+    // sit
+    var lbeIdentity by remember { mutableStateOf("43p28i7bt9l6") }
+
     Dialog(onDismissRequest = { }) {
         Card {
             Column(
@@ -297,7 +315,13 @@ fun UserIdPrompt(onStart: (String) -> Unit) {
                 OutlinedTextField(value = nickId,
                     onValueChange = { nickId = it },
                     label = { Text(text = "NickId") })
-                Button(onClick = { onStart(nickId) }) {
+                OutlinedTextField(value = nickName,
+                    onValueChange = { nickName = it },
+                    label = { Text(text = "NickName") })
+                OutlinedTextField(value = lbeIdentity,
+                    onValueChange = { lbeIdentity = it },
+                    label = { Text(text = "LbeIdentity") })
+                Button(onClick = { onStart(nickId, nickName, lbeIdentity) }) {
                     Text(text = "Connect")
                 }
             }
@@ -414,21 +438,60 @@ fun UserInput(
 
                 2 -> {
                     var url = ""
+                    var key = ""
                     try {
                         val media = Gson().fromJson(message.msgBody, MediaSource::class.java)
                         url = media.resource.url
+                        key = media.resource.key
                     } catch (e: Exception) {
 
                     }
+                    if (key.isEmpty()) {
+//                        GlideImage(
+//                            model = url,
+//                            contentDescription = "Yo",
+//                            contentScale = ContentScale.FillBounds,
+//                            modifier = Modifier
+//                                .size(width = 160.dp, height = 90.dp)
+//                                .clip(RoundedCornerShape(16.dp)),
+//                        )
+                        AsyncImage(
+                            model = url,
+                            contentDescription = "Yo",
+                            contentScale = ContentScale.FillBounds,
+                            modifier = Modifier
+                                .size(width = 160.dp, height = 90.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                        )
+                    } else {
+                        val ctx = LocalPlatformContext.current
 
-                    GlideImage(
-                        model = url,
-                        contentDescription = "Yo",
-                        contentScale = ContentScale.FillBounds,
-                        modifier = Modifier
-                            .size(width = 160.dp, height = 90.dp)
-                            .clip(RoundedCornerShape(16.dp)),
-                    )
+//                        val imageLoader = remember {
+//                            ImageLoader.Builder(ctx).components {
+//                                add(CustomDecoder.Factory(url = url, key = key))
+//                            }.build()
+//                        }
+//                        AsyncImage(
+//                            model = url, contentDescription = null, imageLoader = imageLoader,
+//                            contentScale = ContentScale.FillBounds,
+//                            modifier = Modifier
+//                                .size(width = 160.dp, height = 90.dp)
+//                                .clip(RoundedCornerShape(16.dp)),
+//                        )
+
+                        Image(
+                            painter = rememberAsyncImagePainter(
+                                model = ImageRequest.Builder(ctx).data(url)
+                                    .decoderFactory(CustomDecoder.Factory(url = url, key = key))
+                                    .build(),
+                            ),
+                            contentDescription = "Yo",
+                            contentScale = ContentScale.FillBounds,
+                            modifier = Modifier
+                                .size(width = 160.dp, height = 90.dp)
+                                .clip(RoundedCornerShape(16.dp)),
+                        )
+                    }
                 }
 
                 3 -> {

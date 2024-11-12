@@ -7,21 +7,16 @@ import info.hermiths.chatapp.model.resp.InitMultiPartUploadRep
 import info.hermiths.chatapp.model.resp.SingleUploadRep
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import okhttp3.Response
 import retrofit2.http.Body
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
 import retrofit2.http.Multipart
-
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Url
 
-const val SINGLE_UPLOAD = "miners-api/single/fileupload"
-const val INIT_MULTI_PART_UPLOAD = "http://10.40.91.10:20003/miners-api/multi/initiate-multipart_upload"
-const val COMPLETE_MULTI_PART_UPLOAD =
-    "http://10.40.91.10:20003/miners-api/multi/complete-multipart-upload"
+const val SINGLE_UPLOAD = "api/single/fileupload"
+const val INIT_MULTI_PART_UPLOAD = "api/multi/initiate-multipart_upload"
+const val COMPLETE_MULTI_PART_UPLOAD = "api/multi/complete-multipart-upload"
 
 
 interface UploadService {
