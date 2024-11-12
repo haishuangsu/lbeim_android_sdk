@@ -8,10 +8,14 @@ import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.POST
 
-private const val FETCH_CONFIG_URL = "miners-api/trans/nodes"
+private const val FETCH_CONFIG_URL = "miner-api/trans/nodes"
 
 
 interface ApiService {
     @POST(FETCH_CONFIG_URL)
-    suspend fun fetchConfig(@Header("lbe_sign") lbeSign: String, @Body body: ConfigBody): Config
+    suspend fun fetchConfig(
+        @Header("lbeSign") lbeSign: String,
+        @Header("lbeIdentity") lbeIdentity: String,
+        @Body body: ConfigBody
+    ): Config
 }

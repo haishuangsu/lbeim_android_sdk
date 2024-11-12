@@ -77,12 +77,13 @@ fun MsgTypeContent(
                         .clip(RoundedCornerShape(16.dp)),
                 )
             } else {
-                val secretByteArray = key.toByteArray(StandardCharsets.UTF_8)
-                val secretKey = SecretKeySpec(secretByteArray, "AES")
-                val cipher = Cipher.getInstance("AES/CBC/PKCS7Padding")
-                val ivP = IvParameterSpec(ByteArray(16))
-                // decryption
-                cipher.init(Cipher.DECRYPT_MODE, secretKey, ivP)
+//                val secretByteArray = key.toByteArray(StandardCharsets.UTF_8)
+//                val secretKey = SecretKeySpec(secretByteArray, "AES")
+//                val cipher = Cipher.getInstance("AES/CBC/PKCS7Padding")
+//                val ivP = IvParameterSpec(ByteArray(16))
+//
+//                // decryption
+//                cipher.init(Cipher.DECRYPT_MODE, secretKey, ivP)
 //                val deData = cipher.doFinal(ByteArray(32)) // put data
 
 //            // gen key

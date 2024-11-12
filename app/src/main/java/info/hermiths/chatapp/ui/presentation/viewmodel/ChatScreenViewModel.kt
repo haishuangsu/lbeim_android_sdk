@@ -78,7 +78,6 @@ class ChatScreenViewModel : ViewModel() {
         var lbeSign = BuildConfig.lbeSign
         var uid = "c-4385obtijcnd"
         var wssHost = ""
-        var oss = ""
         var lbeToken = ""
         var lbeSession = ""
         var seq: Int = 0
@@ -91,6 +90,7 @@ class ChatScreenViewModel : ViewModel() {
         var remoteLastMsgType = -1
         var nickId: String = ""
         var nickName: String = ""
+        var lbeIdentity: String = "" // 42nz10y3hhah
     }
 
     private val _uiState = MutableLiveData(ChatScreenUiState())
@@ -107,13 +107,14 @@ class ChatScreenViewModel : ViewModel() {
         // prepare()
     }
 
-    fun setNickId(nid: String) {
+    fun setNickId(nid: String, nName: String, identity: String) {
         if (nid.isEmpty()) {
             return
         }
-        _uiState.postValue(_uiState.value?.copy(nickId = nid))
+        _uiState.postValue(_uiState.value?.copy(login = true))
         nickId = nid
-        nickName = nid
+        nickName = nName
+        lbeIdentity = identity
         prepare()
     }
 
@@ -133,37 +134,49 @@ class ChatScreenViewModel : ViewModel() {
     }
 
     private suspend fun fetchConfig() {
-        val config = LbeConfigRepository.fetchConfig(lbeSign, ConfigBody(0, 1))
-        wssHost = config.data.ws[0]
-        RetrofitInstance.IM_URL = config.data.rest[0]
-        RetrofitInstance.UPLOAD_BASE_URL = config.data.oss[0]
+        try {
+            val config = LbeConfigRepository.fetchConfig(lbeSign, lbeIdentity, ConfigBody(0, 1))
+            wssHost = config.data.ws[0]
+            RetrofitInstance.IM_URL = config.data.rest[0]
+            RetrofitInstance.UPLOAD_BASE_URL = config.data.oss[0]
+        } catch (e: Exception) {
+            println("Fetch config error: $e")
+        }
     }
 
     private suspend fun createSession() {
-        val session = LbeImRepository.createSession(
-            lbeSign, SessionBody(
-                extraInfo = "", headIcon = "", nickId = nickId, nickName = nickName, uid = ""
+        try {
+            val session = LbeImRepository.createSession(
+                lbeSign, lbeIdentity = lbeIdentity, SessionBody(
+                    extraInfo = "", headIcon = "", nickId = nickId, nickName = nickName, uid = ""
+                )
             )
-        )
-        lbeToken = session.data.token
-        lbeSession = session.data.sessionId
-        uid = session.data.uid
+            lbeToken = session.data.token
+            lbeSession = session.data.sessionId
+            uid = session.data.uid
+        } catch (e: Exception) {
+            println("Create session error: $e")
+        }
     }
 
     private suspend fun fetchSessionList() {
-        val sessionListRep = LbeImRepository.fetchSessionList(
-            lbeToken = lbeToken, body = SessionListReq(
-                pagination = Pagination(
-                    pageNumber = 1, showNumber = 1000
-                ), sessionType = 2
+        try {
+            val sessionListRep = LbeImRepository.fetchSessionList(
+                lbeToken = lbeToken, lbeIdentity = lbeIdentity, body = SessionListReq(
+                    pagination = Pagination(
+                        pageNumber = 1, showNumber = 1000
+                    ), sessionType = 2
+                )
             )
-        )
-        sessionList.addAll(sessionListRep.data.sessionList)
-        currentSession = sessionList[currentSessionIndex]
-        seq = currentSession?.latestMsg?.msgSeq ?: 0
-        remoteLastMsgType = currentSession?.latestMsg?.msgType ?: 0
-        updateTotalPages()
-        filterLocalMessages(needScrollEnd = true)
+            sessionList.addAll(sessionListRep.data.sessionList)
+            currentSession = sessionList[currentSessionIndex]
+            seq = currentSession?.latestMsg?.msgSeq ?: 0
+            remoteLastMsgType = currentSession?.latestMsg?.msgType ?: 0
+            syncPageInfo()
+            filterLocalMessages(needScrollEnd = true)
+        } catch (e: Exception) {
+            println("Fetch session list error: $e")
+        }
     }
 
     // TODO 分页只改变 currentPage;
@@ -186,10 +199,13 @@ class ChatScreenViewModel : ViewModel() {
 //            REALMTAG,
 //            "find all msg filter ---->>> ${cacheMessages.map { m -> "(${m.msgBody},${m.msgSeq})" }}"
 //        )
-        Log.d(REALM, "cache size: ${cacheMessages.size} |  remote lastSeq: $seq ")
+        Log.d(
+            REALM,
+            "cache size: ${cacheMessages.size} |  remote lastSeq: $seq , remoteLastMsgType: $remoteLastMsgType"
+        )
 
         // sync
-        if (cacheMessages.size < seq && remoteLastMsgType != 0) { // || cacheMessages.last().msgSeq < seq && remoteLastMsgType != 0) {
+        if (cacheMessages.size < seq) { //&& remoteLastMsgType != 0) { // || cacheMessages.last().msgSeq < seq && remoteLastMsgType != 0) {
             fetchHistoryAndSync()
         }
 
@@ -232,7 +248,7 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
-    private fun updateTotalPages() {
+    private fun syncPageInfo() {
         val cacheMessages = IMLocalRepository.filterMessages(lbeSession)
         Log.d(REALM, "update total pages cacheMessages size---->>> ${cacheMessages.size}")
         if (cacheMessages.isNotEmpty()) {
@@ -253,7 +269,10 @@ class ChatScreenViewModel : ViewModel() {
 
     private suspend fun fetchHistoryAndSync(): History {
         val history = LbeImRepository.fetchHistory(
-            BuildConfig.lbeSign, lbeToken, HistoryBody(
+            lbeSign = BuildConfig.lbeSign,
+            lbeToken = lbeToken,
+            lbeIdentity = lbeIdentity,
+            body = HistoryBody(
                 sessionId = currentSession?.sessionId ?: "",
                 seqCondition = SeqCondition(startSeq = 0, endSeq = 1000)
             )
@@ -276,6 +295,7 @@ class ChatScreenViewModel : ViewModel() {
                 }
             }
         }
+        syncPageInfo()
         return history
     }
 
@@ -382,10 +402,13 @@ class ChatScreenViewModel : ViewModel() {
         val entity = sendBodyToEntity(body)
         viewModelScope.launch(Dispatchers.IO) {
             IMLocalRepository.insertMessage(entity)
-            updateTotalPages()
+            syncPageInfo()
             try {
                 val senMsg = LbeImRepository.sendMsg(
-                    lbeToken = lbeToken, lbeSession = lbeSession, body
+                    lbeToken = lbeToken,
+                    lbeIdentity = lbeIdentity,
+                    lbeSession = lbeSession,
+                    body = body
                 )
                 seq = senMsg.data.msgReq
                 remoteLastMsgType = msgType
@@ -395,7 +418,7 @@ class ChatScreenViewModel : ViewModel() {
                 IMLocalRepository.findMsgAndSetStatus(clientMsgId, false)
             } finally {
                 filterLocalMessages(send = true, needScrollEnd = true)
-                updateTotalPages()
+                syncPageInfo()
                 viewModelScope.launch(Dispatchers.Main) {
                     messageSent()
                     clearInput()
@@ -417,7 +440,10 @@ class ChatScreenViewModel : ViewModel() {
             viewModelScope.launch(Dispatchers.IO) {
                 try {
                     val senMsg = LbeImRepository.sendMsg(
-                        lbeToken = lbeToken, lbeSession = lbeSession, body
+                        lbeToken = lbeToken,
+                        lbeSession = lbeSession,
+                        lbeIdentity = lbeIdentity,
+                        body = body
                     )
                     seq = senMsg.data.msgReq
                     IMLocalRepository.updateResendMessage(clientMsgId, newClientMsgId, seq)

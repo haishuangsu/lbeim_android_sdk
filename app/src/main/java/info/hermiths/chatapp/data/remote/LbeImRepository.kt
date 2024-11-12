@@ -13,19 +13,31 @@ import info.hermiths.chatapp.service.RetrofitInstance
 object LbeImRepository {
     private val lbeIMRepository = RetrofitInstance.imApiService
 
-    suspend fun fetchSessionList(lbeToken: String, body: SessionListReq): SessionListRep {
-        return lbeIMRepository.fetchSessionList(lbeToken = lbeToken, body)
+    suspend fun fetchSessionList(
+        lbeToken: String, lbeIdentity: String, body: SessionListReq
+    ): SessionListRep {
+        return lbeIMRepository.fetchSessionList(
+            lbeToken = lbeToken, lbeIdentity = lbeIdentity, body
+        )
     }
 
-    suspend fun createSession(lbeSign: String, body: SessionBody): Session {
-        return lbeIMRepository.createSession(lbeSign = lbeSign, body);
+    suspend fun createSession(lbeSign: String, lbeIdentity: String, body: SessionBody): Session {
+        return lbeIMRepository.createSession(lbeSign = lbeSign, lbeIdentity = lbeIdentity, body);
     }
 
-    suspend fun fetchHistory(lbeSign: String, lbeToken: String, body: HistoryBody): History {
-        return lbeIMRepository.fetchHistory(lbeSign = lbeSign, lbeToken = lbeToken, body);
+    suspend fun fetchHistory(
+        lbeSign: String, lbeToken: String, lbeIdentity: String, body: HistoryBody
+    ): History {
+        return lbeIMRepository.fetchHistory(
+            lbeSign = lbeSign, lbeToken = lbeToken, lbeIdentity = lbeIdentity, body = body
+        )
     }
 
-    suspend fun sendMsg(lbeToken: String, lbeSession: String, body: MsgBody): SendMsg {
-        return lbeIMRepository.sendMsg(lbeToken = lbeToken, lbeSession = lbeSession, body);
+    suspend fun sendMsg(
+        lbeToken: String, lbeSession: String, lbeIdentity: String, body: MsgBody
+    ): SendMsg {
+        return lbeIMRepository.sendMsg(
+            lbeToken = lbeToken, lbeSession = lbeSession, lbeIdentity = lbeIdentity, body = body
+        )
     }
 }

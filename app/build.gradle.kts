@@ -19,7 +19,7 @@ android {
         minSdk = 26
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.0.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -123,8 +123,8 @@ dependencies {
     //  Coil
     implementation("io.coil-kt.coil3:coil-compose:3.0.0-rc01")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.0-rc01")
-    implementation("io.coil-kt.coil3:coil-gif:3.0.2")
-    implementation("io.coil-kt.coil3:coil-svg:3.0.2")
+//    implementation("io.coil-kt.coil3:coil-gif:3.0.2")
+//    implementation("io.coil-kt.coil3:coil-svg:3.0.2")
 
     // Glide
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
