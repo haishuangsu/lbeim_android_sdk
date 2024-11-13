@@ -57,14 +57,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil3.ImageLoader
 import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.compose.rememberAsyncImagePainter
-import coil3.network.NetworkFetcher
-import coil3.request.ImageRequest
+
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.gson.Gson
@@ -72,12 +67,10 @@ import info.hermiths.chatapp.R
 import info.hermiths.chatapp.model.MediaMessage
 import info.hermiths.chatapp.model.MessageEntity
 import info.hermiths.chatapp.model.resp.MediaSource
-import info.hermiths.chatapp.ui.presentation.components.CustomDecoder
-import info.hermiths.chatapp.ui.presentation.components.DecryptionDecoder
+import info.hermiths.chatapp.ui.presentation.components.DecryptedOrNotImageView
 import info.hermiths.chatapp.ui.presentation.components.ExoPlayerView
 import info.hermiths.chatapp.ui.presentation.components.MsgTypeContent
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
-import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel.Companion.lbeIdentity
 import info.hermiths.chatapp.ui.presentation.viewmodel.ConnectionStatus
 import info.hermiths.chatapp.utils.FileUtils
 import java.io.File
@@ -298,6 +291,7 @@ fun ChatScreen(
 
 @Composable
 fun NickIdPrompt(onStart: (nid: String, nName: String, lbeIdentity: String) -> Unit) {
+    // HermitK15
     var nickId by remember { mutableStateOf("HermitK15") }
     var nickName by remember { mutableStateOf("HermitK15") }
     // dev
@@ -349,7 +343,7 @@ fun MessageItem(
         if (messagePosition == MessagePosition.LEFT) {
             CsRecived(message, messagePosition, context)
         } else {
-            UserInput(message, messagePosition, viewModel = viewModel, context)
+            UserInput(message, messagePosition, viewModel = viewModel)
         }
     }
 }
@@ -381,13 +375,11 @@ fun CsRecived(
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun UserInput(
     message: MessageEntity,
     messagePosition: MessagePosition,
     viewModel: ChatScreenViewModel,
-    context: Context,
 ) {
     Row(horizontalArrangement = Arrangement.End) {
         Column(
@@ -437,61 +429,7 @@ fun UserInput(
                 }
 
                 2 -> {
-                    var url = ""
-                    var key = ""
-                    try {
-                        val media = Gson().fromJson(message.msgBody, MediaSource::class.java)
-                        url = media.resource.url
-                        key = media.resource.key
-                    } catch (e: Exception) {
-
-                    }
-                    if (key.isEmpty()) {
-//                        GlideImage(
-//                            model = url,
-//                            contentDescription = "Yo",
-//                            contentScale = ContentScale.FillBounds,
-//                            modifier = Modifier
-//                                .size(width = 160.dp, height = 90.dp)
-//                                .clip(RoundedCornerShape(16.dp)),
-//                        )
-                        AsyncImage(
-                            model = url,
-                            contentDescription = "Yo",
-                            contentScale = ContentScale.FillBounds,
-                            modifier = Modifier
-                                .size(width = 160.dp, height = 90.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                        )
-                    } else {
-                        val ctx = LocalPlatformContext.current
-
-//                        val imageLoader = remember {
-//                            ImageLoader.Builder(ctx).components {
-//                                add(CustomDecoder.Factory(url = url, key = key))
-//                            }.build()
-//                        }
-//                        AsyncImage(
-//                            model = url, contentDescription = null, imageLoader = imageLoader,
-//                            contentScale = ContentScale.FillBounds,
-//                            modifier = Modifier
-//                                .size(width = 160.dp, height = 90.dp)
-//                                .clip(RoundedCornerShape(16.dp)),
-//                        )
-
-                        Image(
-                            painter = rememberAsyncImagePainter(
-                                model = ImageRequest.Builder(ctx).data(url)
-                                    .decoderFactory(CustomDecoder.Factory(url = url, key = key))
-                                    .build(),
-                            ),
-                            contentDescription = "Yo",
-                            contentScale = ContentScale.FillBounds,
-                            modifier = Modifier
-                                .size(width = 160.dp, height = 90.dp)
-                                .clip(RoundedCornerShape(16.dp)),
-                        )
-                    }
+                    DecryptedOrNotImageView(message.msgBody)
                 }
 
                 3 -> {
@@ -500,7 +438,7 @@ fun UserInput(
                         val media = Gson().fromJson(message.msgBody, MediaSource::class.java)
                         url = media.resource.url
                     } catch (e: Exception) {
-
+                        println("Json parse error -->> ${message.msgBody}")
                     }
                     ExoPlayerView(url)
                 }
@@ -511,7 +449,7 @@ fun UserInput(
             }
         }
 
-        GlideImage(
+        AsyncImage(
             model = "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg",
             contentDescription = "Yo",
             contentScale = ContentScale.FillBounds,
@@ -519,20 +457,6 @@ fun UserInput(
                 .size(32.dp)
                 .clip(CircleShape),
         )
-
-//        Image(
-//            painter = rememberAsyncImagePainter(
-//                model = ImageRequest.Builder(context)
-//                    .data("https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg")
-////                            .decoderFactory(DecryptionDecoder.Factory(key = key))
-////                            .build(), imageLoader = imageLoader
-//            ),
-//            contentDescription = "",
-//            contentScale = ContentScale.FillBounds,
-//            modifier = Modifier
-//                .size(32.dp)
-//                .clip(CircleShape),
-//        )
 
 //        SubcomposeAsyncImage(
 //            model = "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg",
@@ -549,14 +473,6 @@ fun UserInput(
 //            },
 //        )
 
-//        GlideSubcomposition(
-//            model = "https://qiniu-web.aiwei365.com/@/upload/0/image/20170321/1490085940504055412.gif?imageView2/2/w/720",
-//            modifier = Modifier
-//                .size(129.dp)
-//                .clip(CircleShape),
-//        ) {
-//
-//        }
     }
 }
 

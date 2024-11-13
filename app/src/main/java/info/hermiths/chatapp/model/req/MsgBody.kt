@@ -11,4 +11,5 @@ data class MsgBody(
     val msgType: Int,
     val source: Int,
     val clientMsgId: String,
+    val sendTime: String,
 )

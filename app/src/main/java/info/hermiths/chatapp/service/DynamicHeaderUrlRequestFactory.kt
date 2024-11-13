@@ -12,7 +12,7 @@ internal class DynamicHeaderUrlRequestFactory(
 
     override fun createRequest(): Request = Request.Builder()
         .url(url)
-        .addHeader("lbe_token", lbeToken)
-        .addHeader("lbe_session", lbeSession)
+        .addHeader("lbeToken", lbeToken)
+        .addHeader("lbeSession", lbeSession)
         .build()
 }
