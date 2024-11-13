@@ -1,5 +1,8 @@
 package info.hermiths.chatapp.model
 
+import info.hermiths.chatapp.model.resp.Resource
+import info.hermiths.chatapp.model.resp.Thumbnail
+import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.RealmInstant
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
@@ -27,9 +30,28 @@ class MessageEntity : RealmObject {
     // true: read; false: no read yet
     var readed: Boolean = false
 
+    var mediaSrc: MediaSrc? = null
+
     var timestamp: RealmInstant = RealmInstant.now()
 
     override fun toString(): String {
         return "MessageEntity(sessionId: $sessionId, senderUid: $senderUid, msgBody: $msgBody, msgType: $msgType, msgSeq: $msgSeq, clientMsgID: $clientMsgID, sendStamp: $sendStamp, sendSuccess: $sendSuccess, readed: $readed)"
     }
+}
+
+class MediaSrc : EmbeddedRealmObject {
+    val width: Int = 0
+    val height: Int = 0
+    val thumbnail: Thumb? = null
+    val resource: Rsc? = null
+}
+
+class Thumb : EmbeddedRealmObject {
+    val url: String = ""
+    val key: String = ""
+}
+
+class Rsc : EmbeddedRealmObject {
+    val url: String = ""
+    val key: String = ""
 }
