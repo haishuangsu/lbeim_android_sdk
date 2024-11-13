@@ -1,7 +1,12 @@
 package info.hermiths.chatapp.ui.presentation.viewmodel
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.media.ThumbnailUtils
+import android.os.Build
 import android.util.Log
+import android.util.Size
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -41,6 +46,7 @@ import info.hermiths.chatapp.model.resp.History
 import info.hermiths.chatapp.model.resp.MediaSource
 import info.hermiths.chatapp.model.resp.Resource
 import info.hermiths.chatapp.model.resp.SessionEntry
+import info.hermiths.chatapp.model.resp.SingleUploadRep
 import info.hermiths.chatapp.model.resp.Thumbnail
 import info.hermiths.chatapp.service.ChatService
 import info.hermiths.chatapp.service.DynamicHeaderUrlRequestFactory
@@ -55,11 +61,13 @@ import info.hermiths.chatapp.utils.UploadBigFileUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 
 
@@ -406,7 +414,12 @@ class ChatScreenViewModel : ViewModel() {
         val timeStamp = timeStampGen()
         val clientMsgId = "${uuid}-${timeStamp}"
         val body = MsgBody(
-            msgBody = msg, msgSeq = seq, msgType = msgType, clientMsgId = clientMsgId, source = 100 , sendTime = timeStamp.toString()
+            msgBody = msg,
+            msgSeq = seq,
+            msgType = msgType,
+            clientMsgId = clientMsgId,
+            source = 100,
+            sendTime = timeStamp.toString()
         )
         val entity = sendBodyToEntity(body)
         viewModelScope.launch(Dispatchers.IO) {
@@ -465,6 +478,7 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     fun upload(mediaMessage: MediaMessage) {
         Log.d(UPLOAD, "upload file size---->>> ${mediaMessage.file.length()}")
         if (mediaMessage.file.length() > UploadBigFileUtils.defaultChunkSize) {
@@ -474,27 +488,34 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun singleUpload(mediaMessage: MediaMessage) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                val thumbnailResp = uploadThumbnail(mediaMessage)
                 val rep = UploadRepository.singleUpload(
                     file = MultipartBody.Part.createFormData(
                         "file", mediaMessage.file.name, mediaMessage.file.asRequestBody()
-                    ), signType = 2
+                    ), signType = if (mediaMessage.isImage) 2 else 1
                 )
                 Log.d(UPLOAD, "single upload ---->>> ${rep.data.paths[0]}")
                 val mediaSource = MediaSource(
-                    thumbnail = Thumbnail(url = "", key = ""), resource = Resource(
+                    width = mediaMessage.width, height = mediaMessage.height, thumbnail = Thumbnail(
+                        url = thumbnailResp.data.paths[0].url, key = thumbnailResp.data.paths[0].key
+                    ), resource = Resource(
                         url = rep.data.paths[0].url, key = rep.data.paths[0].key
                     )
                 )
-                senMessageFromMedia(msg = Gson().toJson(mediaSource), msgType = 2)
+                senMessageFromMedia(
+                    msg = Gson().toJson(mediaSource), msgType = if (mediaMessage.isImage) 2 else 3
+                )
             } catch (e: Exception) {
                 Log.d(UPLOAD, "Single upload error --->> $e")
             }
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun bigFileUpload(mediaMessage: MediaMessage) {
         try {
             val start = System.currentTimeMillis()
@@ -506,6 +527,8 @@ class ChatScreenViewModel : ViewModel() {
             val end = System.currentTimeMillis()
             Log.d(UPLOAD, "split end: $end, diff: ${end - start}")
             viewModelScope.launch(Dispatchers.IO) {
+                val thumbnailResp = uploadThumbnail(mediaMessage)
+
                 val initRep = UploadRepository.initMultiPartUpload(
                     body = InitMultiPartUploadBody(
                         size = mediaMessage.file.length(),
@@ -514,6 +537,7 @@ class ChatScreenViewModel : ViewModel() {
                     )
                 )
                 Log.d(UPLOAD, "init multi upload --->>> $initRep")
+
                 val completeMultiPartUploadReq = CompleteMultiPartUploadReq(
                     uploadId = initRep.data.uploadId,
                     name = mediaMessage.file.name,
@@ -551,15 +575,44 @@ class ChatScreenViewModel : ViewModel() {
                 )
                 Log.d(UPLOAD, "BigFileUpload success ---> ${mergeUpload.data.location}")
                 val mediaSource = MediaSource(
-                    thumbnail = Thumbnail(url = "", key = ""), resource = Resource(
+                    width = mediaMessage.width, height = mediaMessage.height, thumbnail = Thumbnail(
+                        url = thumbnailResp.data.paths[0].url, key = thumbnailResp.data.paths[0].key
+                    ), resource = Resource(
                         url = mergeUpload.data.location, key = ""
                     )
                 )
-                senMessageFromMedia(msg = Gson().toJson(mediaSource), msgType = 3)
+                senMessageFromMedia(msg = Gson().toJson(mediaSource), msgType = if (mediaMessage.isImage) 2 else 3)
             }
         } catch (e: Exception) {
             Log.d(UPLOAD, "Big file upload error --->>> $e")
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private suspend fun uploadThumbnail(mediaMessage: MediaMessage): SingleUploadRep {
+        val bmp = if (mediaMessage.isImage) {
+            ThumbnailUtils.createImageThumbnail(
+                mediaMessage.file, Size(mediaMessage.width, mediaMessage.height), null
+            )
+        } else {
+            ThumbnailUtils.createVideoThumbnail(
+                mediaMessage.file, Size(mediaMessage.width, mediaMessage.height), null
+            )
+        }
+        val bao = ByteArrayOutputStream()
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, bao)
+        val buffer = bao.toByteArray()
+        val thumbnailResp = UploadRepository.singleUpload(
+            file = MultipartBody.Part.createFormData(
+                "file", "lbe_${uuidGen()}_${timeStampGen()}.png", buffer.toRequestBody()
+            ), signType = 2
+        )
+        bmp.recycle()
+        withContext(Dispatchers.IO) {
+            bao.close()
+        }
+        Log.d(UPLOAD, "thumbnail upload ---->>> ${thumbnailResp.data.paths[0]}")
+        return thumbnailResp
     }
 
     private fun attachMsgToUI(message: MessageEntity) {
