@@ -133,6 +133,60 @@ public object MsgEntityToFrontEndKt {
 
     public val MsgEntityToFrontEndKt.Dsl.createSessionMsgOrNull: IMMsg.CreateSessionMsg?
       get() = _builder.createSessionMsgOrNull
+
+    /**
+     * `.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;`
+     */
+    public var agentUserJoinSessionMsg: IMMsg.AgentUserJoinSessionMsg
+      @JvmName("getAgentUserJoinSessionMsg")
+      get() = _builder.agentUserJoinSessionMsg
+      @JvmName("setAgentUserJoinSessionMsg")
+      set(value) {
+        _builder.agentUserJoinSessionMsg = value
+      }
+    /**
+     * `.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;`
+     */
+    public fun clearAgentUserJoinSessionMsg() {
+      _builder.clearAgentUserJoinSessionMsg()
+    }
+    /**
+     * `.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;`
+     * @return Whether the agentUserJoinSessionMsg field is set.
+     */
+    public fun hasAgentUserJoinSessionMsg(): kotlin.Boolean {
+      return _builder.hasAgentUserJoinSessionMsg()
+    }
+
+    public val MsgEntityToFrontEndKt.Dsl.agentUserJoinSessionMsgOrNull: IMMsg.AgentUserJoinSessionMsg?
+      get() = _builder.agentUserJoinSessionMsgOrNull
+
+    /**
+     * `.HasReadReceiptMsg hasReadReceiptMsg = 6;`
+     */
+    public var hasReadReceiptMsg: IMMsg.HasReadReceiptMsg
+      @JvmName("getHasReadReceiptMsg")
+      get() = _builder.hasReadReceiptMsg
+      @JvmName("setHasReadReceiptMsg")
+      set(value) {
+        _builder.hasReadReceiptMsg = value
+      }
+    /**
+     * `.HasReadReceiptMsg hasReadReceiptMsg = 6;`
+     */
+    public fun clearHasReadReceiptMsg() {
+      _builder.clearHasReadReceiptMsg()
+    }
+    /**
+     * `.HasReadReceiptMsg hasReadReceiptMsg = 6;`
+     * @return Whether the hasReadReceiptMsg field is set.
+     */
+    public fun hasHasReadReceiptMsg(): kotlin.Boolean {
+      return _builder.hasHasReadReceiptMsg()
+    }
+
+    public val MsgEntityToFrontEndKt.Dsl.hasReadReceiptMsgOrNull: IMMsg.HasReadReceiptMsg?
+      get() = _builder.hasReadReceiptMsgOrNull
   }
 }
 @kotlin.jvm.JvmSynthetic
@@ -147,4 +201,10 @@ public val IMMsg.MsgEntityToFrontEndOrBuilder.msgBodyOrNull: IMMsg.MsgBody?
 
 public val IMMsg.MsgEntityToFrontEndOrBuilder.createSessionMsgOrNull: IMMsg.CreateSessionMsg?
   get() = if (hasCreateSessionMsg()) getCreateSessionMsg() else null
+
+public val IMMsg.MsgEntityToFrontEndOrBuilder.agentUserJoinSessionMsgOrNull: IMMsg.AgentUserJoinSessionMsg?
+  get() = if (hasAgentUserJoinSessionMsg()) getAgentUserJoinSessionMsg() else null
+
+public val IMMsg.MsgEntityToFrontEndOrBuilder.hasReadReceiptMsgOrNull: IMMsg.HasReadReceiptMsg?
+  get() = if (hasHasReadReceiptMsg()) getHasReadReceiptMsg() else null
 

@@ -19,6 +19,8 @@ class MessageEntity : RealmObject {
 
     var sendStamp: Long = 0L
 
+    var sendTime: String = ""
+
     // true: send success; false: send fail
     var sendSuccess: Boolean = true
 

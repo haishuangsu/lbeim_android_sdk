@@ -285,6 +285,31 @@ public object MsgBodyKt {
     public fun clearSessionId() {
       _builder.clearSessionId()
     }
+
+    /**
+     * ```
+     * 客户端创建的发送时间
+     * ```
+     *
+     * `string sendTime = 11;`
+     */
+    public var sendTime: kotlin.String
+      @JvmName("getSendTime")
+      get() = _builder.sendTime
+      @JvmName("setSendTime")
+      set(value) {
+        _builder.sendTime = value
+      }
+    /**
+     * ```
+     * 客户端创建的发送时间
+     * ```
+     *
+     * `string sendTime = 11;`
+     */
+    public fun clearSendTime() {
+      _builder.clearSendTime()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic

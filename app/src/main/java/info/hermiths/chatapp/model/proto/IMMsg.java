@@ -4,6 +4,7 @@ package info.hermiths.chatapp.model.proto;
 // source: msggateway.proto
 // Protobuf Java Version: 4.29.0-rc1
 
+
 public final class IMMsg {
   private IMMsg() {}
   static {
@@ -49,6 +50,22 @@ public final class IMMsg {
      * <code>CreateSessionMsgType = 4;</code>
      */
     CreateSessionMsgType(4),
+    /**
+     * <pre>
+     * 客服接入推送
+     * </pre>
+     *
+     * <code>AgentUserJoinSessionMsgType = 5;</code>
+     */
+    AgentUserJoinSessionMsgType(5),
+    /**
+     * <pre>
+     * 已读推送
+     * </pre>
+     *
+     * <code>HasReadReceiptMsgType = 6;</code>
+     */
+    HasReadReceiptMsgType(6),
     UNRECOGNIZED(-1),
     ;
 
@@ -81,6 +98,22 @@ public final class IMMsg {
      * <code>CreateSessionMsgType = 4;</code>
      */
     public static final int CreateSessionMsgType_VALUE = 4;
+    /**
+     * <pre>
+     * 客服接入推送
+     * </pre>
+     *
+     * <code>AgentUserJoinSessionMsgType = 5;</code>
+     */
+    public static final int AgentUserJoinSessionMsgType_VALUE = 5;
+    /**
+     * <pre>
+     * 已读推送
+     * </pre>
+     *
+     * <code>HasReadReceiptMsgType = 6;</code>
+     */
+    public static final int HasReadReceiptMsgType_VALUE = 6;
 
 
     public final int getNumber() {
@@ -112,6 +145,8 @@ public final class IMMsg {
         case 2: return ImgMsgType;
         case 3: return VideoMsgType;
         case 4: return CreateSessionMsgType;
+        case 5: return AgentUserJoinSessionMsgType;
+        case 6: return HasReadReceiptMsgType;
         default: return null;
       }
     }
@@ -1757,6 +1792,36 @@ public final class IMMsg {
      * <code>.CreateSessionMsg createSessionMsg = 4;</code>
      */
     IMMsg.CreateSessionMsgOrBuilder getCreateSessionMsgOrBuilder();
+
+    /**
+     * <code>.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;</code>
+     * @return Whether the agentUserJoinSessionMsg field is set.
+     */
+    boolean hasAgentUserJoinSessionMsg();
+    /**
+     * <code>.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;</code>
+     * @return The agentUserJoinSessionMsg.
+     */
+    IMMsg.AgentUserJoinSessionMsg getAgentUserJoinSessionMsg();
+    /**
+     * <code>.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;</code>
+     */
+    IMMsg.AgentUserJoinSessionMsgOrBuilder getAgentUserJoinSessionMsgOrBuilder();
+
+    /**
+     * <code>.HasReadReceiptMsg hasReadReceiptMsg = 6;</code>
+     * @return Whether the hasReadReceiptMsg field is set.
+     */
+    boolean hasHasReadReceiptMsg();
+    /**
+     * <code>.HasReadReceiptMsg hasReadReceiptMsg = 6;</code>
+     * @return The hasReadReceiptMsg.
+     */
+    IMMsg.HasReadReceiptMsg getHasReadReceiptMsg();
+    /**
+     * <code>.HasReadReceiptMsg hasReadReceiptMsg = 6;</code>
+     */
+    IMMsg.HasReadReceiptMsgOrBuilder getHasReadReceiptMsgOrBuilder();
   }
   /**
    * Protobuf type {@code MsgEntityToFrontEnd}
@@ -1893,6 +1958,58 @@ public final class IMMsg {
       return createSessionMsg_ == null ? IMMsg.CreateSessionMsg.getDefaultInstance() : createSessionMsg_;
     }
 
+    public static final int AGENTUSERJOINSESSIONMSG_FIELD_NUMBER = 5;
+    private IMMsg.AgentUserJoinSessionMsg agentUserJoinSessionMsg_;
+    /**
+     * <code>.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;</code>
+     * @return Whether the agentUserJoinSessionMsg field is set.
+     */
+    @java.lang.Override
+    public boolean hasAgentUserJoinSessionMsg() {
+      return ((bitField0_ & 0x00000008) != 0);
+    }
+    /**
+     * <code>.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;</code>
+     * @return The agentUserJoinSessionMsg.
+     */
+    @java.lang.Override
+    public IMMsg.AgentUserJoinSessionMsg getAgentUserJoinSessionMsg() {
+      return agentUserJoinSessionMsg_ == null ? IMMsg.AgentUserJoinSessionMsg.getDefaultInstance() : agentUserJoinSessionMsg_;
+    }
+    /**
+     * <code>.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;</code>
+     */
+    @java.lang.Override
+    public IMMsg.AgentUserJoinSessionMsgOrBuilder getAgentUserJoinSessionMsgOrBuilder() {
+      return agentUserJoinSessionMsg_ == null ? IMMsg.AgentUserJoinSessionMsg.getDefaultInstance() : agentUserJoinSessionMsg_;
+    }
+
+    public static final int HASREADRECEIPTMSG_FIELD_NUMBER = 6;
+    private IMMsg.HasReadReceiptMsg hasReadReceiptMsg_;
+    /**
+     * <code>.HasReadReceiptMsg hasReadReceiptMsg = 6;</code>
+     * @return Whether the hasReadReceiptMsg field is set.
+     */
+    @java.lang.Override
+    public boolean hasHasReadReceiptMsg() {
+      return ((bitField0_ & 0x00000010) != 0);
+    }
+    /**
+     * <code>.HasReadReceiptMsg hasReadReceiptMsg = 6;</code>
+     * @return The hasReadReceiptMsg.
+     */
+    @java.lang.Override
+    public IMMsg.HasReadReceiptMsg getHasReadReceiptMsg() {
+      return hasReadReceiptMsg_ == null ? IMMsg.HasReadReceiptMsg.getDefaultInstance() : hasReadReceiptMsg_;
+    }
+    /**
+     * <code>.HasReadReceiptMsg hasReadReceiptMsg = 6;</code>
+     */
+    @java.lang.Override
+    public IMMsg.HasReadReceiptMsgOrBuilder getHasReadReceiptMsgOrBuilder() {
+      return hasReadReceiptMsg_ == null ? IMMsg.HasReadReceiptMsg.getDefaultInstance() : hasReadReceiptMsg_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -1919,6 +2036,12 @@ public final class IMMsg {
       if (((bitField0_ & 0x00000004) != 0)) {
         output.writeMessage(4, getCreateSessionMsg());
       }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        output.writeMessage(5, getAgentUserJoinSessionMsg());
+      }
+      if (((bitField0_ & 0x00000010) != 0)) {
+        output.writeMessage(6, getHasReadReceiptMsg());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -1943,6 +2066,14 @@ public final class IMMsg {
       if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, getCreateSessionMsg());
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(5, getAgentUserJoinSessionMsg());
+      }
+      if (((bitField0_ & 0x00000010) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(6, getHasReadReceiptMsg());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -1975,6 +2106,16 @@ public final class IMMsg {
         if (!getCreateSessionMsg()
             .equals(other.getCreateSessionMsg())) return false;
       }
+      if (hasAgentUserJoinSessionMsg() != other.hasAgentUserJoinSessionMsg()) return false;
+      if (hasAgentUserJoinSessionMsg()) {
+        if (!getAgentUserJoinSessionMsg()
+            .equals(other.getAgentUserJoinSessionMsg())) return false;
+      }
+      if (hasHasReadReceiptMsg() != other.hasHasReadReceiptMsg()) return false;
+      if (hasHasReadReceiptMsg()) {
+        if (!getHasReadReceiptMsg()
+            .equals(other.getHasReadReceiptMsg())) return false;
+      }
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -1999,6 +2140,14 @@ public final class IMMsg {
       if (hasCreateSessionMsg()) {
         hash = (37 * hash) + CREATESESSIONMSG_FIELD_NUMBER;
         hash = (53 * hash) + getCreateSessionMsg().hashCode();
+      }
+      if (hasAgentUserJoinSessionMsg()) {
+        hash = (37 * hash) + AGENTUSERJOINSESSIONMSG_FIELD_NUMBER;
+        hash = (53 * hash) + getAgentUserJoinSessionMsg().hashCode();
+      }
+      if (hasHasReadReceiptMsg()) {
+        hash = (37 * hash) + HASREADRECEIPTMSG_FIELD_NUMBER;
+        hash = (53 * hash) + getHasReadReceiptMsg().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -2133,6 +2282,8 @@ public final class IMMsg {
           getStateFieldBuilder();
           getMsgBodyFieldBuilder();
           getCreateSessionMsgFieldBuilder();
+          getAgentUserJoinSessionMsgFieldBuilder();
+          getHasReadReceiptMsgFieldBuilder();
         }
       }
       @java.lang.Override
@@ -2154,6 +2305,16 @@ public final class IMMsg {
         if (createSessionMsgBuilder_ != null) {
           createSessionMsgBuilder_.dispose();
           createSessionMsgBuilder_ = null;
+        }
+        agentUserJoinSessionMsg_ = null;
+        if (agentUserJoinSessionMsgBuilder_ != null) {
+          agentUserJoinSessionMsgBuilder_.dispose();
+          agentUserJoinSessionMsgBuilder_ = null;
+        }
+        hasReadReceiptMsg_ = null;
+        if (hasReadReceiptMsgBuilder_ != null) {
+          hasReadReceiptMsgBuilder_.dispose();
+          hasReadReceiptMsgBuilder_ = null;
         }
         return this;
       }
@@ -2210,6 +2371,18 @@ public final class IMMsg {
               : createSessionMsgBuilder_.build();
           to_bitField0_ |= 0x00000004;
         }
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          result.agentUserJoinSessionMsg_ = agentUserJoinSessionMsgBuilder_ == null
+              ? agentUserJoinSessionMsg_
+              : agentUserJoinSessionMsgBuilder_.build();
+          to_bitField0_ |= 0x00000008;
+        }
+        if (((from_bitField0_ & 0x00000020) != 0)) {
+          result.hasReadReceiptMsg_ = hasReadReceiptMsgBuilder_ == null
+              ? hasReadReceiptMsg_
+              : hasReadReceiptMsgBuilder_.build();
+          to_bitField0_ |= 0x00000010;
+        }
         result.bitField0_ |= to_bitField0_;
       }
 
@@ -2236,6 +2409,12 @@ public final class IMMsg {
         }
         if (other.hasCreateSessionMsg()) {
           mergeCreateSessionMsg(other.getCreateSessionMsg());
+        }
+        if (other.hasAgentUserJoinSessionMsg()) {
+          mergeAgentUserJoinSessionMsg(other.getAgentUserJoinSessionMsg());
+        }
+        if (other.hasHasReadReceiptMsg()) {
+          mergeHasReadReceiptMsg(other.getHasReadReceiptMsg());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
@@ -2289,6 +2468,20 @@ public final class IMMsg {
                 bitField0_ |= 0x00000008;
                 break;
               } // case 34
+              case 42: {
+                input.readMessage(
+                    getAgentUserJoinSessionMsgFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 42
+              case 50: {
+                input.readMessage(
+                    getHasReadReceiptMsgFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 50
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -2720,6 +2913,248 @@ public final class IMMsg {
           createSessionMsg_ = null;
         }
         return createSessionMsgBuilder_;
+      }
+
+      private IMMsg.AgentUserJoinSessionMsg agentUserJoinSessionMsg_;
+      private com.google.protobuf.SingleFieldBuilder<
+          IMMsg.AgentUserJoinSessionMsg, IMMsg.AgentUserJoinSessionMsg.Builder, IMMsg.AgentUserJoinSessionMsgOrBuilder> agentUserJoinSessionMsgBuilder_;
+      /**
+       * <code>.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;</code>
+       * @return Whether the agentUserJoinSessionMsg field is set.
+       */
+      public boolean hasAgentUserJoinSessionMsg() {
+        return ((bitField0_ & 0x00000010) != 0);
+      }
+      /**
+       * <code>.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;</code>
+       * @return The agentUserJoinSessionMsg.
+       */
+      public IMMsg.AgentUserJoinSessionMsg getAgentUserJoinSessionMsg() {
+        if (agentUserJoinSessionMsgBuilder_ == null) {
+          return agentUserJoinSessionMsg_ == null ? IMMsg.AgentUserJoinSessionMsg.getDefaultInstance() : agentUserJoinSessionMsg_;
+        } else {
+          return agentUserJoinSessionMsgBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;</code>
+       */
+      public Builder setAgentUserJoinSessionMsg(IMMsg.AgentUserJoinSessionMsg value) {
+        if (agentUserJoinSessionMsgBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          agentUserJoinSessionMsg_ = value;
+        } else {
+          agentUserJoinSessionMsgBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;</code>
+       */
+      public Builder setAgentUserJoinSessionMsg(
+          IMMsg.AgentUserJoinSessionMsg.Builder builderForValue) {
+        if (agentUserJoinSessionMsgBuilder_ == null) {
+          agentUserJoinSessionMsg_ = builderForValue.build();
+        } else {
+          agentUserJoinSessionMsgBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;</code>
+       */
+      public Builder mergeAgentUserJoinSessionMsg(IMMsg.AgentUserJoinSessionMsg value) {
+        if (agentUserJoinSessionMsgBuilder_ == null) {
+          if (((bitField0_ & 0x00000010) != 0) &&
+            agentUserJoinSessionMsg_ != null &&
+            agentUserJoinSessionMsg_ != IMMsg.AgentUserJoinSessionMsg.getDefaultInstance()) {
+            getAgentUserJoinSessionMsgBuilder().mergeFrom(value);
+          } else {
+            agentUserJoinSessionMsg_ = value;
+          }
+        } else {
+          agentUserJoinSessionMsgBuilder_.mergeFrom(value);
+        }
+        if (agentUserJoinSessionMsg_ != null) {
+          bitField0_ |= 0x00000010;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;</code>
+       */
+      public Builder clearAgentUserJoinSessionMsg() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        agentUserJoinSessionMsg_ = null;
+        if (agentUserJoinSessionMsgBuilder_ != null) {
+          agentUserJoinSessionMsgBuilder_.dispose();
+          agentUserJoinSessionMsgBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;</code>
+       */
+      public IMMsg.AgentUserJoinSessionMsg.Builder getAgentUserJoinSessionMsgBuilder() {
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return getAgentUserJoinSessionMsgFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;</code>
+       */
+      public IMMsg.AgentUserJoinSessionMsgOrBuilder getAgentUserJoinSessionMsgOrBuilder() {
+        if (agentUserJoinSessionMsgBuilder_ != null) {
+          return agentUserJoinSessionMsgBuilder_.getMessageOrBuilder();
+        } else {
+          return agentUserJoinSessionMsg_ == null ?
+              IMMsg.AgentUserJoinSessionMsg.getDefaultInstance() : agentUserJoinSessionMsg_;
+        }
+      }
+      /**
+       * <code>.AgentUserJoinSessionMsg agentUserJoinSessionMsg = 5;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          IMMsg.AgentUserJoinSessionMsg, IMMsg.AgentUserJoinSessionMsg.Builder, IMMsg.AgentUserJoinSessionMsgOrBuilder> 
+          getAgentUserJoinSessionMsgFieldBuilder() {
+        if (agentUserJoinSessionMsgBuilder_ == null) {
+          agentUserJoinSessionMsgBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              IMMsg.AgentUserJoinSessionMsg, IMMsg.AgentUserJoinSessionMsg.Builder, IMMsg.AgentUserJoinSessionMsgOrBuilder>(
+                  getAgentUserJoinSessionMsg(),
+                  getParentForChildren(),
+                  isClean());
+          agentUserJoinSessionMsg_ = null;
+        }
+        return agentUserJoinSessionMsgBuilder_;
+      }
+
+      private IMMsg.HasReadReceiptMsg hasReadReceiptMsg_;
+      private com.google.protobuf.SingleFieldBuilder<
+          IMMsg.HasReadReceiptMsg, IMMsg.HasReadReceiptMsg.Builder, IMMsg.HasReadReceiptMsgOrBuilder> hasReadReceiptMsgBuilder_;
+      /**
+       * <code>.HasReadReceiptMsg hasReadReceiptMsg = 6;</code>
+       * @return Whether the hasReadReceiptMsg field is set.
+       */
+      public boolean hasHasReadReceiptMsg() {
+        return ((bitField0_ & 0x00000020) != 0);
+      }
+      /**
+       * <code>.HasReadReceiptMsg hasReadReceiptMsg = 6;</code>
+       * @return The hasReadReceiptMsg.
+       */
+      public IMMsg.HasReadReceiptMsg getHasReadReceiptMsg() {
+        if (hasReadReceiptMsgBuilder_ == null) {
+          return hasReadReceiptMsg_ == null ? IMMsg.HasReadReceiptMsg.getDefaultInstance() : hasReadReceiptMsg_;
+        } else {
+          return hasReadReceiptMsgBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.HasReadReceiptMsg hasReadReceiptMsg = 6;</code>
+       */
+      public Builder setHasReadReceiptMsg(IMMsg.HasReadReceiptMsg value) {
+        if (hasReadReceiptMsgBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          hasReadReceiptMsg_ = value;
+        } else {
+          hasReadReceiptMsgBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.HasReadReceiptMsg hasReadReceiptMsg = 6;</code>
+       */
+      public Builder setHasReadReceiptMsg(
+          IMMsg.HasReadReceiptMsg.Builder builderForValue) {
+        if (hasReadReceiptMsgBuilder_ == null) {
+          hasReadReceiptMsg_ = builderForValue.build();
+        } else {
+          hasReadReceiptMsgBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.HasReadReceiptMsg hasReadReceiptMsg = 6;</code>
+       */
+      public Builder mergeHasReadReceiptMsg(IMMsg.HasReadReceiptMsg value) {
+        if (hasReadReceiptMsgBuilder_ == null) {
+          if (((bitField0_ & 0x00000020) != 0) &&
+            hasReadReceiptMsg_ != null &&
+            hasReadReceiptMsg_ != IMMsg.HasReadReceiptMsg.getDefaultInstance()) {
+            getHasReadReceiptMsgBuilder().mergeFrom(value);
+          } else {
+            hasReadReceiptMsg_ = value;
+          }
+        } else {
+          hasReadReceiptMsgBuilder_.mergeFrom(value);
+        }
+        if (hasReadReceiptMsg_ != null) {
+          bitField0_ |= 0x00000020;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>.HasReadReceiptMsg hasReadReceiptMsg = 6;</code>
+       */
+      public Builder clearHasReadReceiptMsg() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        hasReadReceiptMsg_ = null;
+        if (hasReadReceiptMsgBuilder_ != null) {
+          hasReadReceiptMsgBuilder_.dispose();
+          hasReadReceiptMsgBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.HasReadReceiptMsg hasReadReceiptMsg = 6;</code>
+       */
+      public IMMsg.HasReadReceiptMsg.Builder getHasReadReceiptMsgBuilder() {
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return getHasReadReceiptMsgFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.HasReadReceiptMsg hasReadReceiptMsg = 6;</code>
+       */
+      public IMMsg.HasReadReceiptMsgOrBuilder getHasReadReceiptMsgOrBuilder() {
+        if (hasReadReceiptMsgBuilder_ != null) {
+          return hasReadReceiptMsgBuilder_.getMessageOrBuilder();
+        } else {
+          return hasReadReceiptMsg_ == null ?
+              IMMsg.HasReadReceiptMsg.getDefaultInstance() : hasReadReceiptMsg_;
+        }
+      }
+      /**
+       * <code>.HasReadReceiptMsg hasReadReceiptMsg = 6;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          IMMsg.HasReadReceiptMsg, IMMsg.HasReadReceiptMsg.Builder, IMMsg.HasReadReceiptMsgOrBuilder> 
+          getHasReadReceiptMsgFieldBuilder() {
+        if (hasReadReceiptMsgBuilder_ == null) {
+          hasReadReceiptMsgBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              IMMsg.HasReadReceiptMsg, IMMsg.HasReadReceiptMsg.Builder, IMMsg.HasReadReceiptMsgOrBuilder>(
+                  getHasReadReceiptMsg(),
+                  getParentForChildren(),
+                  isClean());
+          hasReadReceiptMsg_ = null;
+        }
+        return hasReadReceiptMsgBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:MsgEntityToFrontEnd)
@@ -4409,6 +4844,26 @@ public final class IMMsg {
      */
     com.google.protobuf.ByteString
         getSessionIdBytes();
+
+    /**
+     * <pre>
+     * 客户端创建的发送时间
+     * </pre>
+     *
+     * <code>string sendTime = 11;</code>
+     * @return The sendTime.
+     */
+    java.lang.String getSendTime();
+    /**
+     * <pre>
+     * 客户端创建的发送时间
+     * </pre>
+     *
+     * <code>string sendTime = 11;</code>
+     * @return The bytes for sendTime.
+     */
+    com.google.protobuf.ByteString
+        getSendTimeBytes();
   }
   /**
    * Protobuf type {@code MsgBody}
@@ -4439,6 +4894,7 @@ public final class IMMsg {
       msgBody_ = "";
       clientMsgID_ = "";
       sessionId_ = "";
+      sendTime_ = "";
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
@@ -4807,6 +5263,53 @@ public final class IMMsg {
       }
     }
 
+    public static final int SENDTIME_FIELD_NUMBER = 11;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object sendTime_ = "";
+    /**
+     * <pre>
+     * 客户端创建的发送时间
+     * </pre>
+     *
+     * <code>string sendTime = 11;</code>
+     * @return The sendTime.
+     */
+    @java.lang.Override
+    public java.lang.String getSendTime() {
+      java.lang.Object ref = sendTime_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        sendTime_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * 客户端创建的发送时间
+     * </pre>
+     *
+     * <code>string sendTime = 11;</code>
+     * @return The bytes for sendTime.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getSendTimeBytes() {
+      java.lang.Object ref = sendTime_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        sendTime_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -4851,6 +5354,9 @@ public final class IMMsg {
       if (!com.google.protobuf.GeneratedMessage.isStringEmpty(sessionId_)) {
         com.google.protobuf.GeneratedMessage.writeString(output, 10, sessionId_);
       }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(sendTime_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 11, sendTime_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -4894,6 +5400,9 @@ public final class IMMsg {
       if (!com.google.protobuf.GeneratedMessage.isStringEmpty(sessionId_)) {
         size += com.google.protobuf.GeneratedMessage.computeStringSize(10, sessionId_);
       }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(sendTime_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(11, sendTime_);
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -4928,6 +5437,8 @@ public final class IMMsg {
           .equals(other.getClientMsgID())) return false;
       if (!getSessionId()
           .equals(other.getSessionId())) return false;
+      if (!getSendTime()
+          .equals(other.getSendTime())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -4960,6 +5471,8 @@ public final class IMMsg {
       hash = (53 * hash) + getClientMsgID().hashCode();
       hash = (37 * hash) + SESSIONID_FIELD_NUMBER;
       hash = (53 * hash) + getSessionId().hashCode();
+      hash = (37 * hash) + SENDTIME_FIELD_NUMBER;
+      hash = (53 * hash) + getSendTime().hashCode();
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -5101,6 +5614,7 @@ public final class IMMsg {
         createTime_ = 0L;
         clientMsgID_ = "";
         sessionId_ = "";
+        sendTime_ = "";
         return this;
       }
 
@@ -5164,6 +5678,9 @@ public final class IMMsg {
         if (((from_bitField0_ & 0x00000200) != 0)) {
           result.sessionId_ = sessionId_;
         }
+        if (((from_bitField0_ & 0x00000400) != 0)) {
+          result.sendTime_ = sendTime_;
+        }
       }
 
       @java.lang.Override
@@ -5218,6 +5735,11 @@ public final class IMMsg {
         if (!other.getSessionId().isEmpty()) {
           sessionId_ = other.sessionId_;
           bitField0_ |= 0x00000200;
+          onChanged();
+        }
+        if (!other.getSendTime().isEmpty()) {
+          sendTime_ = other.sendTime_;
+          bitField0_ |= 0x00000400;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -5296,6 +5818,11 @@ public final class IMMsg {
                 bitField0_ |= 0x00000200;
                 break;
               } // case 82
+              case 90: {
+                sendTime_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000400;
+                break;
+              } // case 90
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -6066,6 +6593,98 @@ public final class IMMsg {
         checkByteStringIsUtf8(value);
         sessionId_ = value;
         bitField0_ |= 0x00000200;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object sendTime_ = "";
+      /**
+       * <pre>
+       * 客户端创建的发送时间
+       * </pre>
+       *
+       * <code>string sendTime = 11;</code>
+       * @return The sendTime.
+       */
+      public java.lang.String getSendTime() {
+        java.lang.Object ref = sendTime_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          sendTime_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 客户端创建的发送时间
+       * </pre>
+       *
+       * <code>string sendTime = 11;</code>
+       * @return The bytes for sendTime.
+       */
+      public com.google.protobuf.ByteString
+          getSendTimeBytes() {
+        java.lang.Object ref = sendTime_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          sendTime_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 客户端创建的发送时间
+       * </pre>
+       *
+       * <code>string sendTime = 11;</code>
+       * @param value The sendTime to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSendTime(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        sendTime_ = value;
+        bitField0_ |= 0x00000400;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 客户端创建的发送时间
+       * </pre>
+       *
+       * <code>string sendTime = 11;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearSendTime() {
+        sendTime_ = getDefaultInstance().getSendTime();
+        bitField0_ = (bitField0_ & ~0x00000400);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 客户端创建的发送时间
+       * </pre>
+       *
+       * <code>string sendTime = 11;</code>
+       * @param value The bytes for sendTime to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSendTimeBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        sendTime_ = value;
+        bitField0_ |= 0x00000400;
         onChanged();
         return this;
       }
@@ -8886,6 +9505,1254 @@ public final class IMMsg {
 
   }
 
+  public interface AgentUserJoinSessionMsgOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:AgentUserJoinSessionMsg)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     * 客服用户名
+     * </pre>
+     *
+     * <code>string username = 1;</code>
+     * @return The username.
+     */
+    java.lang.String getUsername();
+    /**
+     * <pre>
+     * 客服用户名
+     * </pre>
+     *
+     * <code>string username = 1;</code>
+     * @return The bytes for username.
+     */
+    com.google.protobuf.ByteString
+        getUsernameBytes();
+  }
+  /**
+   * Protobuf type {@code AgentUserJoinSessionMsg}
+   */
+  public static final class AgentUserJoinSessionMsg extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:AgentUserJoinSessionMsg)
+      AgentUserJoinSessionMsgOrBuilder {
+  private static final long serialVersionUID = 0L;
+    static {
+      com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
+        com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,
+        /* major= */ 4,
+        /* minor= */ 29,
+        /* patch= */ 0,
+        /* suffix= */ "-rc1",
+        AgentUserJoinSessionMsg.class.getName());
+    }
+    // Use AgentUserJoinSessionMsg.newBuilder() to construct.
+    private AgentUserJoinSessionMsg(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+    }
+    private AgentUserJoinSessionMsg() {
+      username_ = "";
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return IMMsg.internal_static_AgentUserJoinSessionMsg_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return IMMsg.internal_static_AgentUserJoinSessionMsg_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              IMMsg.AgentUserJoinSessionMsg.class, IMMsg.AgentUserJoinSessionMsg.Builder.class);
+    }
+
+    public static final int USERNAME_FIELD_NUMBER = 1;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object username_ = "";
+    /**
+     * <pre>
+     * 客服用户名
+     * </pre>
+     *
+     * <code>string username = 1;</code>
+     * @return The username.
+     */
+    @java.lang.Override
+    public java.lang.String getUsername() {
+      java.lang.Object ref = username_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        username_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * 客服用户名
+     * </pre>
+     *
+     * <code>string username = 1;</code>
+     * @return The bytes for username.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getUsernameBytes() {
+      java.lang.Object ref = username_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        username_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(username_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 1, username_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(username_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(1, username_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof IMMsg.AgentUserJoinSessionMsg)) {
+        return super.equals(obj);
+      }
+      IMMsg.AgentUserJoinSessionMsg other = (IMMsg.AgentUserJoinSessionMsg) obj;
+
+      if (!getUsername()
+          .equals(other.getUsername())) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + USERNAME_FIELD_NUMBER;
+      hash = (53 * hash) + getUsername().hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static IMMsg.AgentUserJoinSessionMsg parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.AgentUserJoinSessionMsg parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.AgentUserJoinSessionMsg parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.AgentUserJoinSessionMsg parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.AgentUserJoinSessionMsg parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.AgentUserJoinSessionMsg parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.AgentUserJoinSessionMsg parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.AgentUserJoinSessionMsg parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static IMMsg.AgentUserJoinSessionMsg parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static IMMsg.AgentUserJoinSessionMsg parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static IMMsg.AgentUserJoinSessionMsg parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.AgentUserJoinSessionMsg parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(IMMsg.AgentUserJoinSessionMsg prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code AgentUserJoinSessionMsg}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:AgentUserJoinSessionMsg)
+        IMMsg.AgentUserJoinSessionMsgOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return IMMsg.internal_static_AgentUserJoinSessionMsg_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return IMMsg.internal_static_AgentUserJoinSessionMsg_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                IMMsg.AgentUserJoinSessionMsg.class, IMMsg.AgentUserJoinSessionMsg.Builder.class);
+      }
+
+      // Construct using IMMsg.AgentUserJoinSessionMsg.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        username_ = "";
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return IMMsg.internal_static_AgentUserJoinSessionMsg_descriptor;
+      }
+
+      @java.lang.Override
+      public IMMsg.AgentUserJoinSessionMsg getDefaultInstanceForType() {
+        return IMMsg.AgentUserJoinSessionMsg.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public IMMsg.AgentUserJoinSessionMsg build() {
+        IMMsg.AgentUserJoinSessionMsg result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public IMMsg.AgentUserJoinSessionMsg buildPartial() {
+        IMMsg.AgentUserJoinSessionMsg result = new IMMsg.AgentUserJoinSessionMsg(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(IMMsg.AgentUserJoinSessionMsg result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.username_ = username_;
+        }
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof IMMsg.AgentUserJoinSessionMsg) {
+          return mergeFrom((IMMsg.AgentUserJoinSessionMsg)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(IMMsg.AgentUserJoinSessionMsg other) {
+        if (other == IMMsg.AgentUserJoinSessionMsg.getDefaultInstance()) return this;
+        if (!other.getUsername().isEmpty()) {
+          username_ = other.username_;
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                username_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object username_ = "";
+      /**
+       * <pre>
+       * 客服用户名
+       * </pre>
+       *
+       * <code>string username = 1;</code>
+       * @return The username.
+       */
+      public java.lang.String getUsername() {
+        java.lang.Object ref = username_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          username_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 客服用户名
+       * </pre>
+       *
+       * <code>string username = 1;</code>
+       * @return The bytes for username.
+       */
+      public com.google.protobuf.ByteString
+          getUsernameBytes() {
+        java.lang.Object ref = username_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          username_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 客服用户名
+       * </pre>
+       *
+       * <code>string username = 1;</code>
+       * @param value The username to set.
+       * @return This builder for chaining.
+       */
+      public Builder setUsername(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        username_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 客服用户名
+       * </pre>
+       *
+       * <code>string username = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearUsername() {
+        username_ = getDefaultInstance().getUsername();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 客服用户名
+       * </pre>
+       *
+       * <code>string username = 1;</code>
+       * @param value The bytes for username to set.
+       * @return This builder for chaining.
+       */
+      public Builder setUsernameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        username_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:AgentUserJoinSessionMsg)
+    }
+
+    // @@protoc_insertion_point(class_scope:AgentUserJoinSessionMsg)
+    private static final IMMsg.AgentUserJoinSessionMsg DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new IMMsg.AgentUserJoinSessionMsg();
+    }
+
+    public static IMMsg.AgentUserJoinSessionMsg getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<AgentUserJoinSessionMsg>
+        PARSER = new com.google.protobuf.AbstractParser<AgentUserJoinSessionMsg>() {
+      @java.lang.Override
+      public AgentUserJoinSessionMsg parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<AgentUserJoinSessionMsg> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AgentUserJoinSessionMsg> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public IMMsg.AgentUserJoinSessionMsg getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface HasReadReceiptMsgOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:HasReadReceiptMsg)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>string sessionID = 1;</code>
+     * @return The sessionID.
+     */
+    java.lang.String getSessionID();
+    /**
+     * <code>string sessionID = 1;</code>
+     * @return The bytes for sessionID.
+     */
+    com.google.protobuf.ByteString
+        getSessionIDBytes();
+
+    /**
+     * <code>repeated int64 hasReadSeqs = 2;</code>
+     * @return A list containing the hasReadSeqs.
+     */
+    java.util.List<java.lang.Long> getHasReadSeqsList();
+    /**
+     * <code>repeated int64 hasReadSeqs = 2;</code>
+     * @return The count of hasReadSeqs.
+     */
+    int getHasReadSeqsCount();
+    /**
+     * <code>repeated int64 hasReadSeqs = 2;</code>
+     * @param index The index of the element to return.
+     * @return The hasReadSeqs at the given index.
+     */
+    long getHasReadSeqs(int index);
+  }
+  /**
+   * Protobuf type {@code HasReadReceiptMsg}
+   */
+  public static final class HasReadReceiptMsg extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:HasReadReceiptMsg)
+      HasReadReceiptMsgOrBuilder {
+  private static final long serialVersionUID = 0L;
+    static {
+      com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
+        com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,
+        /* major= */ 4,
+        /* minor= */ 29,
+        /* patch= */ 0,
+        /* suffix= */ "-rc1",
+        HasReadReceiptMsg.class.getName());
+    }
+    // Use HasReadReceiptMsg.newBuilder() to construct.
+    private HasReadReceiptMsg(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+    }
+    private HasReadReceiptMsg() {
+      sessionID_ = "";
+      hasReadSeqs_ = emptyLongList();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return IMMsg.internal_static_HasReadReceiptMsg_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return IMMsg.internal_static_HasReadReceiptMsg_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              IMMsg.HasReadReceiptMsg.class, IMMsg.HasReadReceiptMsg.Builder.class);
+    }
+
+    public static final int SESSIONID_FIELD_NUMBER = 1;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object sessionID_ = "";
+    /**
+     * <code>string sessionID = 1;</code>
+     * @return The sessionID.
+     */
+    @java.lang.Override
+    public java.lang.String getSessionID() {
+      java.lang.Object ref = sessionID_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        sessionID_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string sessionID = 1;</code>
+     * @return The bytes for sessionID.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getSessionIDBytes() {
+      java.lang.Object ref = sessionID_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        sessionID_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int HASREADSEQS_FIELD_NUMBER = 2;
+    @SuppressWarnings("serial")
+    private com.google.protobuf.Internal.LongList hasReadSeqs_ =
+        emptyLongList();
+    /**
+     * <code>repeated int64 hasReadSeqs = 2;</code>
+     * @return A list containing the hasReadSeqs.
+     */
+    @java.lang.Override
+    public java.util.List<java.lang.Long>
+        getHasReadSeqsList() {
+      return hasReadSeqs_;
+    }
+    /**
+     * <code>repeated int64 hasReadSeqs = 2;</code>
+     * @return The count of hasReadSeqs.
+     */
+    public int getHasReadSeqsCount() {
+      return hasReadSeqs_.size();
+    }
+    /**
+     * <code>repeated int64 hasReadSeqs = 2;</code>
+     * @param index The index of the element to return.
+     * @return The hasReadSeqs at the given index.
+     */
+    public long getHasReadSeqs(int index) {
+      return hasReadSeqs_.getLong(index);
+    }
+    private int hasReadSeqsMemoizedSerializedSize = -1;
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(sessionID_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 1, sessionID_);
+      }
+      if (getHasReadSeqsList().size() > 0) {
+        output.writeUInt32NoTag(18);
+        output.writeUInt32NoTag(hasReadSeqsMemoizedSerializedSize);
+      }
+      for (int i = 0; i < hasReadSeqs_.size(); i++) {
+        output.writeInt64NoTag(hasReadSeqs_.getLong(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(sessionID_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(1, sessionID_);
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < hasReadSeqs_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeInt64SizeNoTag(hasReadSeqs_.getLong(i));
+        }
+        size += dataSize;
+        if (!getHasReadSeqsList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        hasReadSeqsMemoizedSerializedSize = dataSize;
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof IMMsg.HasReadReceiptMsg)) {
+        return super.equals(obj);
+      }
+      IMMsg.HasReadReceiptMsg other = (IMMsg.HasReadReceiptMsg) obj;
+
+      if (!getSessionID()
+          .equals(other.getSessionID())) return false;
+      if (!getHasReadSeqsList()
+          .equals(other.getHasReadSeqsList())) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + SESSIONID_FIELD_NUMBER;
+      hash = (53 * hash) + getSessionID().hashCode();
+      if (getHasReadSeqsCount() > 0) {
+        hash = (37 * hash) + HASREADSEQS_FIELD_NUMBER;
+        hash = (53 * hash) + getHasReadSeqsList().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static IMMsg.HasReadReceiptMsg parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.HasReadReceiptMsg parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.HasReadReceiptMsg parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.HasReadReceiptMsg parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.HasReadReceiptMsg parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.HasReadReceiptMsg parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.HasReadReceiptMsg parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.HasReadReceiptMsg parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static IMMsg.HasReadReceiptMsg parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static IMMsg.HasReadReceiptMsg parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static IMMsg.HasReadReceiptMsg parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.HasReadReceiptMsg parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(IMMsg.HasReadReceiptMsg prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code HasReadReceiptMsg}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:HasReadReceiptMsg)
+        IMMsg.HasReadReceiptMsgOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return IMMsg.internal_static_HasReadReceiptMsg_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return IMMsg.internal_static_HasReadReceiptMsg_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                IMMsg.HasReadReceiptMsg.class, IMMsg.HasReadReceiptMsg.Builder.class);
+      }
+
+      // Construct using IMMsg.HasReadReceiptMsg.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        sessionID_ = "";
+        hasReadSeqs_ = emptyLongList();
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return IMMsg.internal_static_HasReadReceiptMsg_descriptor;
+      }
+
+      @java.lang.Override
+      public IMMsg.HasReadReceiptMsg getDefaultInstanceForType() {
+        return IMMsg.HasReadReceiptMsg.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public IMMsg.HasReadReceiptMsg build() {
+        IMMsg.HasReadReceiptMsg result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public IMMsg.HasReadReceiptMsg buildPartial() {
+        IMMsg.HasReadReceiptMsg result = new IMMsg.HasReadReceiptMsg(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(IMMsg.HasReadReceiptMsg result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.sessionID_ = sessionID_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          hasReadSeqs_.makeImmutable();
+          result.hasReadSeqs_ = hasReadSeqs_;
+        }
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof IMMsg.HasReadReceiptMsg) {
+          return mergeFrom((IMMsg.HasReadReceiptMsg)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(IMMsg.HasReadReceiptMsg other) {
+        if (other == IMMsg.HasReadReceiptMsg.getDefaultInstance()) return this;
+        if (!other.getSessionID().isEmpty()) {
+          sessionID_ = other.sessionID_;
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        if (!other.hasReadSeqs_.isEmpty()) {
+          if (hasReadSeqs_.isEmpty()) {
+            hasReadSeqs_ = other.hasReadSeqs_;
+            hasReadSeqs_.makeImmutable();
+            bitField0_ |= 0x00000002;
+          } else {
+            ensureHasReadSeqsIsMutable();
+            hasReadSeqs_.addAll(other.hasReadSeqs_);
+          }
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                sessionID_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 16: {
+                long v = input.readInt64();
+                ensureHasReadSeqsIsMutable();
+                hasReadSeqs_.addLong(v);
+                break;
+              } // case 16
+              case 18: {
+                int length = input.readRawVarint32();
+                int limit = input.pushLimit(length);
+                ensureHasReadSeqsIsMutable();
+                while (input.getBytesUntilLimit() > 0) {
+                  hasReadSeqs_.addLong(input.readInt64());
+                }
+                input.popLimit(limit);
+                break;
+              } // case 18
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object sessionID_ = "";
+      /**
+       * <code>string sessionID = 1;</code>
+       * @return The sessionID.
+       */
+      public java.lang.String getSessionID() {
+        java.lang.Object ref = sessionID_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          sessionID_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string sessionID = 1;</code>
+       * @return The bytes for sessionID.
+       */
+      public com.google.protobuf.ByteString
+          getSessionIDBytes() {
+        java.lang.Object ref = sessionID_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          sessionID_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string sessionID = 1;</code>
+       * @param value The sessionID to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSessionID(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        sessionID_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string sessionID = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearSessionID() {
+        sessionID_ = getDefaultInstance().getSessionID();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string sessionID = 1;</code>
+       * @param value The bytes for sessionID to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSessionIDBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        sessionID_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.Internal.LongList hasReadSeqs_ = emptyLongList();
+      private void ensureHasReadSeqsIsMutable() {
+        if (!hasReadSeqs_.isModifiable()) {
+          hasReadSeqs_ = makeMutableCopy(hasReadSeqs_);
+        }
+        bitField0_ |= 0x00000002;
+      }
+      /**
+       * <code>repeated int64 hasReadSeqs = 2;</code>
+       * @return A list containing the hasReadSeqs.
+       */
+      public java.util.List<java.lang.Long>
+          getHasReadSeqsList() {
+        hasReadSeqs_.makeImmutable();
+        return hasReadSeqs_;
+      }
+      /**
+       * <code>repeated int64 hasReadSeqs = 2;</code>
+       * @return The count of hasReadSeqs.
+       */
+      public int getHasReadSeqsCount() {
+        return hasReadSeqs_.size();
+      }
+      /**
+       * <code>repeated int64 hasReadSeqs = 2;</code>
+       * @param index The index of the element to return.
+       * @return The hasReadSeqs at the given index.
+       */
+      public long getHasReadSeqs(int index) {
+        return hasReadSeqs_.getLong(index);
+      }
+      /**
+       * <code>repeated int64 hasReadSeqs = 2;</code>
+       * @param index The index to set the value at.
+       * @param value The hasReadSeqs to set.
+       * @return This builder for chaining.
+       */
+      public Builder setHasReadSeqs(
+          int index, long value) {
+
+        ensureHasReadSeqsIsMutable();
+        hasReadSeqs_.setLong(index, value);
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int64 hasReadSeqs = 2;</code>
+       * @param value The hasReadSeqs to add.
+       * @return This builder for chaining.
+       */
+      public Builder addHasReadSeqs(long value) {
+
+        ensureHasReadSeqsIsMutable();
+        hasReadSeqs_.addLong(value);
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int64 hasReadSeqs = 2;</code>
+       * @param values The hasReadSeqs to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllHasReadSeqs(
+          java.lang.Iterable<? extends java.lang.Long> values) {
+        ensureHasReadSeqsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, hasReadSeqs_);
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int64 hasReadSeqs = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearHasReadSeqs() {
+        hasReadSeqs_ = emptyLongList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:HasReadReceiptMsg)
+    }
+
+    // @@protoc_insertion_point(class_scope:HasReadReceiptMsg)
+    private static final IMMsg.HasReadReceiptMsg DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new IMMsg.HasReadReceiptMsg();
+    }
+
+    public static IMMsg.HasReadReceiptMsg getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<HasReadReceiptMsg>
+        PARSER = new com.google.protobuf.AbstractParser<HasReadReceiptMsg>() {
+      @java.lang.Override
+      public HasReadReceiptMsg parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<HasReadReceiptMsg> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<HasReadReceiptMsg> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public IMMsg.HasReadReceiptMsg getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_State_descriptor;
   private static final 
@@ -8926,6 +10793,16 @@ public final class IMMsg {
   private static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_CreateSessionMsg_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_AgentUserJoinSessionMsg_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_AgentUserJoinSessionMsg_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_HasReadReceiptMsg_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_HasReadReceiptMsg_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -8939,27 +10816,35 @@ public final class IMMsg {
       "\005\022\017\n\007message\030\002 \001(\t\"k\n\021MsgEntityToServer\022" +
       "\031\n\007msgType\030\001 \001(\0162\010.MsgType\022\013\n\003seq\030\002 \001(\003\022" +
       "\023\n\004join\030\003 \001(\0132\005.Join\022\031\n\007msgBody\030\004 \001(\0132\010." +
-      "MsgBody\"\217\001\n\023MsgEntityToFrontEnd\022\031\n\007msgTy" +
+      "MsgBody\"\371\001\n\023MsgEntityToFrontEnd\022\031\n\007msgTy" +
       "pe\030\001 \001(\0162\010.MsgType\022\025\n\005state\030\002 \001(\0132\006.Stat" +
       "e\022\031\n\007msgBody\030\003 \001(\0132\010.MsgBody\022+\n\020createSe" +
-      "ssionMsg\030\004 \001(\0132\021.CreateSessionMsg\"5\n\004Joi" +
-      "n\022\013\n\003uid\030\001 \001(\t\022\021\n\tsessionId\030\002 \001(\t\022\r\n\005tok" +
-      "en\030\003 \001(\t\"/\n\010JoinResp\022\021\n\tsessionId\030\001 \001(\t\022" +
-      "\020\n\010serverId\030\002 \001(\t\"\311\001\n\007MsgBody\022\021\n\tsenderU" +
-      "id\030\001 \001(\t\022\023\n\013receiverUid\030\002 \001(\t\022\031\n\007msgType" +
-      "\030\003 \001(\0162\010.MsgType\022\016\n\006msgSeq\030\004 \001(\005\022\016\n\006encK" +
-      "ey\030\005 \001(\t\022\017\n\007msgBody\030\006 \001(\t\022\016\n\006status\030\007 \001(" +
-      "\005\022\022\n\ncreateTime\030\010 \001(\003\022\023\n\013clientMsgID\030\t \001" +
-      "(\t\022\021\n\tsessionId\030\n \001(\t\"\303\001\n\014SessionBasic\022\021" +
-      "\n\tsessionId\030\001 \001(\t\022\020\n\010headIcon\030\002 \001(\t\022\013\n\003u" +
-      "id\030\003 \001(\t\022\016\n\006source\030\004 \001(\t\022\020\n\010nickName\030\005 \001" +
-      "(\t\022\r\n\005devNo\030\006 \001(\t\022\022\n\ncreateTime\030\007 \001(\003\022\020\n" +
-      "\010language\030\010 \001(\t\022\r\n\005extra\030\t \001(\t\022\033\n\tlatest" +
-      "Msg\030\n \001(\0132\010.MsgBody\"7\n\020CreateSessionMsg\022" +
-      "#\n\014sessionBasic\030\001 \001(\0132\r.SessionBasic*f\n\007" +
-      "MsgType\022\016\n\nJoinServer\020\000\022\017\n\013TextMsgType\020\001" +
-      "\022\016\n\nImgMsgType\020\002\022\020\n\014VideoMsgType\020\003\022\030\n\024Cr" +
-      "eateSessionMsgType\020\004B\tB\005IMMsgP\000b\006proto3"
+      "ssionMsg\030\004 \001(\0132\021.CreateSessionMsg\0229\n\027age" +
+      "ntUserJoinSessionMsg\030\005 \001(\0132\030.AgentUserJo" +
+      "inSessionMsg\022-\n\021hasReadReceiptMsg\030\006 \001(\0132" +
+      "\022.HasReadReceiptMsg\"5\n\004Join\022\013\n\003uid\030\001 \001(\t" +
+      "\022\021\n\tsessionId\030\002 \001(\t\022\r\n\005token\030\003 \001(\t\"/\n\010Jo" +
+      "inResp\022\021\n\tsessionId\030\001 \001(\t\022\020\n\010serverId\030\002 " +
+      "\001(\t\"\333\001\n\007MsgBody\022\021\n\tsenderUid\030\001 \001(\t\022\023\n\013re" +
+      "ceiverUid\030\002 \001(\t\022\031\n\007msgType\030\003 \001(\0162\010.MsgTy" +
+      "pe\022\016\n\006msgSeq\030\004 \001(\005\022\016\n\006encKey\030\005 \001(\t\022\017\n\007ms" +
+      "gBody\030\006 \001(\t\022\016\n\006status\030\007 \001(\005\022\022\n\ncreateTim" +
+      "e\030\010 \001(\003\022\023\n\013clientMsgID\030\t \001(\t\022\021\n\tsessionI" +
+      "d\030\n \001(\t\022\020\n\010sendTime\030\013 \001(\t\"\303\001\n\014SessionBas" +
+      "ic\022\021\n\tsessionId\030\001 \001(\t\022\020\n\010headIcon\030\002 \001(\t\022" +
+      "\013\n\003uid\030\003 \001(\t\022\016\n\006source\030\004 \001(\t\022\020\n\010nickName" +
+      "\030\005 \001(\t\022\r\n\005devNo\030\006 \001(\t\022\022\n\ncreateTime\030\007 \001(" +
+      "\003\022\020\n\010language\030\010 \001(\t\022\r\n\005extra\030\t \001(\t\022\033\n\tla" +
+      "testMsg\030\n \001(\0132\010.MsgBody\"7\n\020CreateSession" +
+      "Msg\022#\n\014sessionBasic\030\001 \001(\0132\r.SessionBasic" +
+      "\"+\n\027AgentUserJoinSessionMsg\022\020\n\010username\030" +
+      "\001 \001(\t\";\n\021HasReadReceiptMsg\022\021\n\tsessionID\030" +
+      "\001 \001(\t\022\023\n\013hasReadSeqs\030\002 \003(\003*\242\001\n\007MsgType\022\016" +
+      "\n\nJoinServer\020\000\022\017\n\013TextMsgType\020\001\022\016\n\nImgMs" +
+      "gType\020\002\022\020\n\014VideoMsgType\020\003\022\030\n\024CreateSessi" +
+      "onMsgType\020\004\022\037\n\033AgentUserJoinSessionMsgTy" +
+      "pe\020\005\022\031\n\025HasReadReceiptMsgType\020\006B\tB\005IMMsg" +
+      "P\000b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -8982,7 +10867,7 @@ public final class IMMsg {
     internal_static_MsgEntityToFrontEnd_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_MsgEntityToFrontEnd_descriptor,
-        new java.lang.String[] { "MsgType", "State", "MsgBody", "CreateSessionMsg", });
+        new java.lang.String[] { "MsgType", "State", "MsgBody", "CreateSessionMsg", "AgentUserJoinSessionMsg", "HasReadReceiptMsg", });
     internal_static_Join_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_Join_fieldAccessorTable = new
@@ -9000,7 +10885,7 @@ public final class IMMsg {
     internal_static_MsgBody_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_MsgBody_descriptor,
-        new java.lang.String[] { "SenderUid", "ReceiverUid", "MsgType", "MsgSeq", "EncKey", "MsgBody", "Status", "CreateTime", "ClientMsgID", "SessionId", });
+        new java.lang.String[] { "SenderUid", "ReceiverUid", "MsgType", "MsgSeq", "EncKey", "MsgBody", "Status", "CreateTime", "ClientMsgID", "SessionId", "SendTime", });
     internal_static_SessionBasic_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_SessionBasic_fieldAccessorTable = new
@@ -9013,6 +10898,18 @@ public final class IMMsg {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_CreateSessionMsg_descriptor,
         new java.lang.String[] { "SessionBasic", });
+    internal_static_AgentUserJoinSessionMsg_descriptor =
+      getDescriptor().getMessageTypes().get(8);
+    internal_static_AgentUserJoinSessionMsg_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_AgentUserJoinSessionMsg_descriptor,
+        new java.lang.String[] { "Username", });
+    internal_static_HasReadReceiptMsg_descriptor =
+      getDescriptor().getMessageTypes().get(9);
+    internal_static_HasReadReceiptMsg_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_HasReadReceiptMsg_descriptor,
+        new java.lang.String[] { "SessionID", "HasReadSeqs", });
     descriptor.resolveAllFeaturesImmutable();
   }
 

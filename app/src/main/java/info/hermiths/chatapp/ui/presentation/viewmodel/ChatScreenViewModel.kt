@@ -76,7 +76,7 @@ class ChatScreenViewModel : ViewModel() {
         const val FILESELECT = "File Select"
         const val IMAGEENCRYPTION = "Image Encryption"
         var lbeSign = BuildConfig.lbeSign
-        var uid = "c-4385obtijcnd"
+        var uid = "c-43pambl7mx8q"
         var wssHost = ""
         var lbeToken = ""
         var lbeSession = ""
@@ -105,6 +105,15 @@ class ChatScreenViewModel : ViewModel() {
     init {
         // TODO
         // prepare()
+    }
+
+    private fun testOfflineTakeByCache() {
+        currentSession = SessionEntry(sessionId = "cn-43pamblhmimi", latestMsg = null)
+        lbeSession = "cn-43pamblhmimi"
+        syncPageInfo()
+        viewModelScope.launch(Dispatchers.IO) {
+            filterLocalMessages(needScrollEnd = true)
+        }
     }
 
     fun setNickId(nid: String, nName: String, identity: String) {
@@ -397,7 +406,7 @@ class ChatScreenViewModel : ViewModel() {
         val timeStamp = timeStampGen()
         val clientMsgId = "${uuid}-${timeStamp}"
         val body = MsgBody(
-            msgBody = msg, msgSeq = seq, msgType = msgType, clientMsgId = clientMsgId, source = 100
+            msgBody = msg, msgSeq = seq, msgType = msgType, clientMsgId = clientMsgId, source = 100 , sendTime = timeStamp.toString()
         )
         val entity = sendBodyToEntity(body)
         viewModelScope.launch(Dispatchers.IO) {
@@ -471,7 +480,7 @@ class ChatScreenViewModel : ViewModel() {
                 val rep = UploadRepository.singleUpload(
                     file = MultipartBody.Part.createFormData(
                         "file", mediaMessage.file.name, mediaMessage.file.asRequestBody()
-                    ), signType = 1
+                    ), signType = 2
                 )
                 Log.d(UPLOAD, "single upload ---->>> ${rep.data.paths[0]}")
                 val mediaSource = MediaSource(
