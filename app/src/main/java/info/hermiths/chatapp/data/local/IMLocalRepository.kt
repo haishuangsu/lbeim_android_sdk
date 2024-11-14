@@ -21,6 +21,12 @@ object IMLocalRepository {
         ).first().find()
     }
 
+    fun findAllMediaMessages(sessionId: String): List<MessageEntity> {
+        return realm.query<MessageEntity>(
+            query = "sessionId == $0 AND (msgType == 2 || msgType == 3)", sessionId
+        ).sort("sendStamp", Sort.ASCENDING).find()
+    }
+
     suspend fun findMsgAndSetStatus(clientMsgID: String, success: Boolean) {
         realm.write {
             val msg = query<MessageEntity>(

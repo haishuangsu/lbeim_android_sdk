@@ -79,7 +79,7 @@ class ChatScreenViewModel : ViewModel() {
 
     companion object {
         private const val TAG = "IM Websocket"
-        private const val REALM = "RealmTAG"
+        const val REALM = "RealmTAG"
         private const val UPLOAD = "IM UPLOAD"
         const val FILESELECT = "File Select"
         const val IMAGEENCRYPTION = "Image Encryption"
@@ -581,7 +581,10 @@ class ChatScreenViewModel : ViewModel() {
                         url = mergeUpload.data.location, key = ""
                     )
                 )
-                senMessageFromMedia(msg = Gson().toJson(mediaSource), msgType = if (mediaMessage.isImage) 2 else 3)
+                senMessageFromMedia(
+                    msg = Gson().toJson(mediaSource),
+                    msgType = if (mediaMessage.isImage) 2 else 3
+                )
             }
         } catch (e: Exception) {
             Log.d(UPLOAD, "Big file upload error --->>> $e")

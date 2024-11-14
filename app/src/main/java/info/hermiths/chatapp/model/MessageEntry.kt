@@ -1,8 +1,5 @@
 package info.hermiths.chatapp.model
 
-import info.hermiths.chatapp.model.resp.Resource
-import info.hermiths.chatapp.model.resp.Thumbnail
-import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.RealmInstant
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
@@ -30,7 +27,7 @@ class MessageEntity : RealmObject {
     // true: read; false: no read yet
     var readed: Boolean = false
 
-    var mediaSrc: MediaSrc? = null
+//    var mediaSrc: MediaSrc? = null
 
     var timestamp: RealmInstant = RealmInstant.now()
 
@@ -39,19 +36,19 @@ class MessageEntity : RealmObject {
     }
 }
 
-class MediaSrc : EmbeddedRealmObject {
-    val width: Int = 0
-    val height: Int = 0
-    val thumbnail: Thumb? = null
-    val resource: Rsc? = null
-}
-
-class Thumb : EmbeddedRealmObject {
-    val url: String = ""
-    val key: String = ""
-}
-
-class Rsc : EmbeddedRealmObject {
-    val url: String = ""
-    val key: String = ""
-}
+//class MediaSrc : EmbeddedRealmObject {
+//    var width: Int = 0
+//    var height: Int = 0
+//    var thumbnail: Thumb? = null
+//    var resource: Rsc? = null
+//}
+//
+//class Thumb : EmbeddedRealmObject {
+//    var url: String = ""
+//    var key: String = ""
+//}
+//
+//class Rsc : EmbeddedRealmObject {
+//    var url: String = ""
+//    var key: String = ""
+//}
