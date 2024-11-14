@@ -1,5 +1,6 @@
 package info.hermiths.chatapp.ui.presentation.components
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -39,6 +40,7 @@ fun ExoPlayerView(url: String) {
     // Manage lifecycle events
     DisposableEffect(Unit) {
         onDispose {
+            println("HorizontalPager ---> video release")
             exoPlayer.release()
         }
     }
@@ -50,9 +52,9 @@ fun ExoPlayerView(url: String) {
                 player = exoPlayer
             }
         }, modifier = Modifier
-            .fillMaxWidth()
-            .height(170.dp)
+            .fillMaxSize()
+//            .height(170.dp)
 //            .size(width = 160.dp, height = 90.dp)
-            .clip(RoundedCornerShape(16.dp))// Set your desired height
+//            .clip(RoundedCornerShape(16.dp))// Set your desired height
     )
 }

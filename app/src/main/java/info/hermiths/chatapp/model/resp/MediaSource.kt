@@ -3,7 +3,7 @@ package info.hermiths.chatapp.model.resp
 data class MediaSource(
     val width: Int,
     val height: Int,
-    val thumbnail: Thumbnail? = null,
+    val thumbnail: Thumbnail,
     val resource: Resource,
 )
 

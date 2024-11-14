@@ -1,6 +1,10 @@
 package info.hermiths.chatapp.ui.presentation.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -13,41 +17,72 @@ import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import com.google.gson.Gson
+import info.hermiths.chatapp.model.MessageEntity
 import info.hermiths.chatapp.model.resp.MediaSource
 
 
 @Composable
-fun DecryptedOrNotImageView(msgBody: String) {
+fun DecryptedOrNotImageView(
+    message: MessageEntity,
+    loadSource: Boolean = false,
+    fullScreen: Boolean = true,
+    onClick: () -> Unit
+) {
     var url = ""
     var key = ""
     try {
-        val media = Gson().fromJson(msgBody, MediaSource::class.java)
-        url = media.resource.url
-        key = media.resource.key
+        val media = Gson().fromJson(message.msgBody, MediaSource::class.java)
+        if (loadSource) {
+            url = media.resource.url
+            key = media.resource.key
+        } else {
+            url = media.thumbnail.url
+            key = media.thumbnail.key
+        }
+
     } catch (e: Exception) {
-        println("Json parse error -->> $msgBody")
+        println("DecryptedOrNotImageView Json parse error -->> ${message.msgBody}")
     }
     if (key.isEmpty()) {
         AsyncImage(
             model = url,
             contentDescription = "Yo",
             contentScale = ContentScale.FillBounds,
-            modifier = Modifier
-                .size(width = 160.dp, height = 90.dp)
+            modifier = if (fullScreen) Modifier
+                .fillMaxWidth()
+                .height(500.dp)
+                .clickable {
+                    onClick()
+                } else Modifier
+                .size(
+                    width = 160.dp, height = 90.dp
+                )
                 .clip(RoundedCornerShape(16.dp))
+                .clickable {
+                    onClick()
+                },
         )
     } else {
         Image(
             painter = rememberAsyncImagePainter(
                 model = ImageRequest.Builder(LocalPlatformContext.current).data(url)
-                    .decoderFactory(DecryptedDecoder.Factory(url = url, key = key))
-                    .build(),
+                    .decoderFactory(DecryptedDecoder.Factory(url = url, key = key)).build(),
             ),
             contentDescription = "Yo",
             contentScale = ContentScale.FillBounds,
-            modifier = Modifier
-                .size(width = 160.dp, height = 90.dp)
-                .clip(RoundedCornerShape(16.dp)),
+            modifier = if (fullScreen) Modifier
+                .fillMaxWidth()
+                .height(500.dp)
+                .clickable {
+                    onClick()
+                } else Modifier
+                .size(
+                    width = 160.dp, height = 90.dp
+                )
+                .clip(RoundedCornerShape(16.dp))
+                .clickable {
+                    onClick()
+                },
         )
     }
 }
