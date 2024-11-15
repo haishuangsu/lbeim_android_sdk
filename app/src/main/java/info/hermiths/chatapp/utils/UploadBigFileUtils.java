@@ -34,4 +34,11 @@ public class UploadBigFileUtils {
         blocks.put(file.hashCode(), buffers);
         fileInputStream.close();
     }
+
+    public static void releaseMemory(int hashCode) {
+        ArrayList<ByteBuffer> buffers = blocks.get(hashCode);
+        assert buffers != null;
+        buffers.clear();
+        blocks.remove(hashCode);
+    }
 }
