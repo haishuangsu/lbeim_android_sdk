@@ -2,6 +2,7 @@ package info.hermiths.chatapp.data.local
 
 import android.util.Log
 import info.hermiths.chatapp.model.MessageEntity
+import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.query.Sort
 import org.mongodb.kbson.ObjectId
@@ -27,7 +28,18 @@ object IMLocalRepository {
         ).sort("sendStamp", Sort.ASCENDING).find()
     }
 
+    suspend fun findMediaMsgAndUpdateBody(clientMsgID: String, msgBody: String) {
+        Log.d(ChatScreenViewModel.REALM, "发送 Media 消息 --- $clientMsgID 更新 Body： $msgBody")
+        realm.write {
+            val msg = query<MessageEntity>(
+                query = "clientMsgID == $0", clientMsgID
+            ).first().find()
+            msg?.msgBody = msgBody
+        }
+    }
+
     suspend fun findMsgAndSetStatus(clientMsgID: String, success: Boolean) {
+        Log.d(ChatScreenViewModel.REALM, "发送消息 --- $clientMsgID 更新状态： $success")
         realm.write {
             val msg = query<MessageEntity>(
                 query = "clientMsgID == $0", clientMsgID

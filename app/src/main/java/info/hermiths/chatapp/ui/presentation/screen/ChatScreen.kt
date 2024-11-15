@@ -1,7 +1,6 @@
 package info.hermiths.chatapp.ui.presentation.screen
 
 import android.Manifest
-import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -196,7 +195,7 @@ fun ChatScreen(
                                         ChatScreenViewModel.currentPage -= 1
                                         Log.d(
                                             "列表滑动",
-                                            "分页时的 old index: $index, msgs size: ${uiState.messages.size}, msg: ${uiState.messages[index].msgBody}"
+                                            "分页时的 old index: $index, msgs size: ${uiState.messages.size}, msg: ${uiState.messages[index].msgBody}, currentPage: ${ChatScreenViewModel.currentPage}"
                                         )
                                         viewModel.filterLocalMessages(
                                             send = false,
@@ -321,7 +320,7 @@ fun ChatScreen(
                                         modifier = Modifier
                                             .size(18.dp)
                                             .clickable {
-                                                viewModel.sendMessageFromInput(messageSent = {
+                                                viewModel.sendMessageFromTextInput(messageSent = {
                                                     currentFocus.clearFocus()
                                                 })
                                             })
