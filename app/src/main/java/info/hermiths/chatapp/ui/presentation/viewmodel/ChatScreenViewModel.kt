@@ -51,6 +51,7 @@ import info.hermiths.chatapp.service.ChatService
 import info.hermiths.chatapp.service.DynamicHeaderUrlRequestFactory
 import info.hermiths.chatapp.service.RetrofitInstance
 import info.hermiths.chatapp.ui.presentation.components.ProgressRequestBody
+import info.hermiths.chatapp.ui.presentation.components.ProgressRequestBody.Companion.toRequestBody
 import info.hermiths.chatapp.ui.presentation.screen.ChatScreenUiState
 import info.hermiths.chatapp.utils.Converts.entityToSendBody
 import info.hermiths.chatapp.utils.Converts.protoToEntity
@@ -66,7 +67,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
+//import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 

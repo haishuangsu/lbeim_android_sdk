@@ -2,12 +2,14 @@ package info.hermiths.chatapp.ui.presentation.components
 
 import okhttp3.MediaType
 import okhttp3.RequestBody
+import okhttp3.internal.checkOffsetAndCount
 
 import okio.Buffer
 import okio.BufferedSink
 import okio.ForwardingSink
 import okio.Sink
 import okio.buffer
+import okio.source
 import java.io.IOException
 
 
@@ -47,25 +49,25 @@ class ProgressRequestBody(private val delegate: RequestBody, private val listene
         }
     }
 
-//    companion object {
-//        @JvmOverloads
-//        @JvmStatic
-//        @JvmName("create")
-//        fun ByteArray.toRequestBody(
-//            contentType: MediaType? = null, offset: Int = 0, byteCount: Int = size
-//        ): RequestBody {
-//            checkOffsetAndCount(size.toLong(), offset.toLong(), byteCount.toLong())
-//            return object : RequestBody() {
-//                override fun contentType() = contentType
-//
-//                override fun contentLength() = byteCount.toLong()
-//
-//                override fun writeTo(sink: BufferedSink) {
-//                    sink.writeAll(this@toRequestBody)
-//                }
-//            }
-//        }
-//    }
+    companion object {
+        @JvmOverloads
+        @JvmStatic
+        @JvmName("create")
+        fun ByteArray.toRequestBody(
+            contentType: MediaType? = null, offset: Int = 0, byteCount: Int = size
+        ): RequestBody {
+            checkOffsetAndCount(size.toLong(), offset.toLong(), byteCount.toLong())
+            return object : RequestBody() {
+                override fun contentType() = contentType
+
+                override fun contentLength() = byteCount.toLong()
+
+                override fun writeTo(sink: BufferedSink) {
+                    this@toRequestBody.inputStream().use { source -> sink.writeAll(source.source()) }
+                }
+            }
+        }
+    }
 
     fun interface Listener {
         fun onRequestProgress(bytesWritten: Long, contentLength: Long)
