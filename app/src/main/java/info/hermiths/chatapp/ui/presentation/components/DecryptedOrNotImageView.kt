@@ -1,25 +1,36 @@
 package info.hermiths.chatapp.ui.presentation.components
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import com.google.gson.Gson
+import info.hermiths.chatapp.R
 import info.hermiths.chatapp.model.MessageEntity
 import info.hermiths.chatapp.model.resp.MediaSource
-
+import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 
 @Composable
 fun DecryptedOrNotImageView(
@@ -28,24 +39,23 @@ fun DecryptedOrNotImageView(
     fullScreen: Boolean = true,
     onClick: () -> Unit
 ) {
-    var url = ""
-    var key = ""
+    var thumbUrl = ""
+    var thumbKey = ""
+    var fullUrl = ""
+    var fullKey = ""
     try {
         val media = Gson().fromJson(message.msgBody, MediaSource::class.java)
-        if (loadSource) {
-            url = media.resource.url
-            key = media.resource.key
-        } else {
-            url = media.thumbnail.url
-            key = media.thumbnail.key
-        }
-
+        fullUrl = media.resource.url
+        fullKey = media.resource.key
+        thumbUrl = media.thumbnail.url
+        thumbKey = media.thumbnail.key
     } catch (e: Exception) {
         println("DecryptedOrNotImageView Json parse error -->> ${message.msgBody}")
     }
-    if (key.isEmpty()) {
+
+    if (thumbKey.isEmpty()) {
         AsyncImage(
-            model = url,
+            model = thumbUrl,
             contentDescription = "Yo",
             contentScale = ContentScale.FillBounds,
             modifier = if (fullScreen) Modifier
@@ -63,26 +73,81 @@ fun DecryptedOrNotImageView(
                 },
         )
     } else {
-        Image(
-            painter = rememberAsyncImagePainter(
-                model = ImageRequest.Builder(LocalPlatformContext.current).data(url)
-                    .decoderFactory(DecryptedDecoder.Factory(url = url, key = key)).build(),
-            ),
-            contentDescription = "Yo",
-            contentScale = ContentScale.FillBounds,
-            modifier = if (fullScreen) Modifier
-                .fillMaxWidth()
-                .height(500.dp)
-                .clickable {
-                    onClick()
-                } else Modifier
-                .size(
-                    width = 160.dp, height = 90.dp
-                )
-                .clip(RoundedCornerShape(16.dp))
-                .clickable {
-                    onClick()
-                },
+        val progress = ChatScreenViewModel.progressList[message.clientMsgID]?.collectAsState()
+        Log.d(
+            ChatScreenViewModel.UPLOAD,
+            "DecryptedOrNotImageView progress --->>> ${progress?.value}, clientMsgID -->>> ${message.clientMsgID}, msg progress --->> ${message.progress}"
         )
+
+        Box(contentAlignment = Alignment.Center) {
+            Image(
+                painter = rememberAsyncImagePainter(
+                    model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .data(if (loadSource) fullUrl else thumbUrl).decoderFactory(
+                            DecryptedDecoder.Factory(
+                                url = if (loadSource) fullUrl else thumbUrl,
+                                key = if (loadSource) fullKey else thumbKey
+                            )
+                        ).build(),
+                ),
+                contentDescription = "Yo",
+                contentScale = ContentScale.FillBounds,
+                modifier = if (fullScreen) Modifier
+                    .fillMaxWidth()
+                    .height(500.dp)
+                    .clickable {
+                        onClick()
+                    } else Modifier
+                    .size(
+                        width = 160.dp, height = 90.dp
+                    )
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable {
+                        onClick()
+                    },
+            )
+            // TODO 还要判断缓存的进度，比如1.0的时候视频要放播放 icon
+            if (fullUrl.isNotEmpty()) {
+                if (message.msgType == 3) {
+                    Image(
+                        painterResource(R.drawable.play),
+                        contentDescription = "",
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            } else {
+                if (progress != null) {
+                    if (progress.value != 1.0f) {
+                        Box(contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(
+                                progress = {
+                                    progress.value
+                                },
+                                color = Color.White,
+                                strokeWidth = 2.dp,
+                            )
+                            Text(
+                                "${"${progress.value * 100}".substring(0, 5)}%", style = TextStyle(
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.W600,
+                                    color = Color.White
+                                )
+                            )
+                        }
+                    }
+                    // TODO 没下滑时，没更新？
+                    if (progress.value == 1.0f) {
+//                        if (message.msgType == 3) {
+//                            Image(
+//                                painterResource(R.drawable.play),
+//                                contentDescription = "",
+//                                modifier = Modifier.size(32.dp)
+//                            )
+//                        }
+                        ChatScreenViewModel.progressList.remove(message.clientMsgID)
+                    }
+                }
+            }
+        }
     }
 }

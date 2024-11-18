@@ -38,6 +38,16 @@ object IMLocalRepository {
         }
     }
 
+    suspend fun findMediaMsgAndUpdateProgress(clientMsgID: String, progress: Float) {
+        Log.d(ChatScreenViewModel.REALM, "发送 Media 消息 --- $clientMsgID 更新上传进度： $progress")
+        realm.write {
+            val msg = query<MessageEntity>(
+                query = "clientMsgID == $0", clientMsgID
+            ).first().find()
+            msg?.progress = progress
+        }
+    }
+
     suspend fun findMsgAndSetStatus(clientMsgID: String, success: Boolean) {
         Log.d(ChatScreenViewModel.REALM, "发送消息 --- $clientMsgID 更新状态： $success")
         realm.write {

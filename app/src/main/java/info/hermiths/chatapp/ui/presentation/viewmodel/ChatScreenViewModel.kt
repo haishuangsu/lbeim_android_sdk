@@ -26,6 +26,7 @@ import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import info.hermiths.chatapp.BuildConfig
 import info.hermiths.chatapp.data.local.IMLocalRepository
+import info.hermiths.chatapp.data.local.IMLocalRepository.findMediaMsgAndUpdateProgress
 import info.hermiths.chatapp.data.remote.LbeConfigRepository
 import info.hermiths.chatapp.data.remote.LbeImRepository
 import info.hermiths.chatapp.data.remote.UploadRepository
@@ -61,13 +62,13 @@ import info.hermiths.chatapp.utils.UUIDUtils.uuidGen
 import info.hermiths.chatapp.utils.UploadBigFileUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.asRequestBody
-//import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 
@@ -81,7 +82,7 @@ class ChatScreenViewModel : ViewModel() {
     companion object {
         private const val TAG = "IM Websocket"
         const val REALM = "RealmTAG"
-        private const val UPLOAD = "IM UPLOAD"
+        const val UPLOAD = "IM UPLOAD"
         const val FILESELECT = "File Select"
         const val IMAGEENCRYPTION = "Image Encryption"
         var lbeSign = BuildConfig.lbeSign
@@ -100,6 +101,8 @@ class ChatScreenViewModel : ViewModel() {
         var nickId: String = ""
         var nickName: String = ""
         var lbeIdentity: String = "" // 42nz10y3hhah
+
+        var progressList: MutableMap<String, MutableStateFlow<Float>> = mutableMapOf()
     }
 
     private val _uiState = MutableLiveData(ChatScreenUiState())
@@ -193,6 +196,7 @@ class ChatScreenViewModel : ViewModel() {
             remoteLastMsgType = currentSession?.latestMsg?.msgType ?: 0
             syncPageInfo(init = true)
             filterLocalMessages(needScrollEnd = true)
+            // TODO 查缓存同步未上传完列表, progressList
         } catch (e: Exception) {
             println("Fetch session list error: $e")
         }
@@ -519,7 +523,8 @@ class ChatScreenViewModel : ViewModel() {
                     type = if (mediaMessage.isImage) 2 else 3,
                     msgBody = Gson().toJson(thumbnailSource)
                 )
-                insertCacheMaybeUpdateUI(sendBody)
+
+                val entity = insertCacheMaybeUpdateUI(sendBody)
 
                 val rep = UploadRepository.singleUpload(
                     file = MultipartBody.Part.createFormData(
@@ -532,6 +537,18 @@ class ChatScreenViewModel : ViewModel() {
                                     UPLOAD,
                                     "Single upload  ${mediaMessage.file.name} ---->>>  bytesWritten: $bytesWritten, $contentLength, progress: $progress"
                                 )
+                                val emitProgress = progressList[entity.clientMsgID]
+                                if (emitProgress == null) {
+                                    progressList[entity.clientMsgID] =
+                                        MutableStateFlow(progress.toFloat())
+                                } else {
+                                    emitProgress.value = progress.toFloat()
+                                }
+                                if (emitProgress?.value == 1.0f) {
+                                    viewModelScope.launch(Dispatchers.IO) {
+                                        findMediaMsgAndUpdateProgress(entity.clientMsgID, 1.0f)
+                                    }
+                                }
                             })
                     ), signType = if (mediaMessage.isImage) 2 else 1
                 )
@@ -557,28 +574,23 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
-    private fun insertCacheMaybeUpdateUI(sendBody: MsgBody, updateUI: Boolean = true) {
+    private fun insertCacheMaybeUpdateUI(
+        sendBody: MsgBody, updateUI: Boolean = true
+    ): MessageEntity {
+        val entity = sendBodyToEntity(sendBody)
         viewModelScope.launch(Dispatchers.IO) {
-            val entity = sendBodyToEntity(sendBody)
             IMLocalRepository.insertMessage(entity)
             syncPageInfo()
             if (updateUI) {
                 filterLocalMessages(send = true, needScrollEnd = true)
             }
         }
+        return entity
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun bigFileUpload(mediaMessage: MediaMessage) {
         try {
-            val start = System.currentTimeMillis()
-            Log.d(
-                UPLOAD,
-                "Big file upload ---->>> fileName: ${mediaMessage.file.name}, Fs hash: ${mediaMessage.file.hashCode()}, split start: $start"
-            )
-            UploadBigFileUtils.splitFile(mediaMessage.file, UploadBigFileUtils.defaultChunkSize)
-            val end = System.currentTimeMillis()
-            Log.d(UPLOAD, "split end: $end, diff: ${end - start}")
             viewModelScope.launch(Dispatchers.IO) {
                 val thumbnailResp = uploadThumbnail(mediaMessage)
                 val thumbnailSource = MediaSource(
@@ -592,7 +604,8 @@ class ChatScreenViewModel : ViewModel() {
                     type = if (mediaMessage.isImage) 2 else 3,
                     msgBody = Gson().toJson(thumbnailSource)
                 )
-                insertCacheMaybeUpdateUI(sendBody)
+
+                val entity = insertCacheMaybeUpdateUI(sendBody)
 
                 val initRep = UploadRepository.initMultiPartUpload(
                     body = InitMultiPartUploadBody(
@@ -602,6 +615,24 @@ class ChatScreenViewModel : ViewModel() {
                     )
                 )
                 Log.d(UPLOAD, "init multi upload --->>> $initRep")
+                val start = System.currentTimeMillis()
+                Log.d(
+                    UPLOAD,
+                    "Big file upload ---->>> fileName: ${mediaMessage.file.name}, Fs hash: ${mediaMessage.file.hashCode()}, split start: $start"
+                )
+                if (initRep.data.node.size > 1) {
+                    UploadBigFileUtils.splitFile(
+                        mediaMessage.file, UploadBigFileUtils.defaultChunkSize
+                    )
+
+                } else {
+                    UploadBigFileUtils.splitFile(
+                        mediaMessage.file, initRep.data.node[0].size
+                    )
+                }
+                val end = System.currentTimeMillis()
+                Log.d(UPLOAD, "split end: $end, diff: ${end - start}")
+
 
                 val completeMultiPartUploadReq = CompleteMultiPartUploadReq(
                     uploadId = initRep.data.uploadId,
@@ -610,8 +641,8 @@ class ChatScreenViewModel : ViewModel() {
                 )
                 val buffers = UploadBigFileUtils.blocks[mediaMessage.file.hashCode()]
                 if (buffers != null) {
-//                    val buffer = buffers[0]
                     var index = 1
+                    var deltaSize = 0L
                     for (buffer in buffers) {
                         val md5 = MessageDigest.getInstance("MD5")
                         val sign = md5.digest(buffer.array())
@@ -625,37 +656,42 @@ class ChatScreenViewModel : ViewModel() {
                                 partNumber = index, etag = hexString
                             )
                         )
-
                         val bodyFromBuffer =
-//                        ProgressRequestBody(delegate = mediaMessage.file.asRequestBody(contentType = "application/octet-stream".toMediaTypeOrNull()),
-//                            listener = { bytesWritten, contentLength ->
-//                                val progress = (1.0 * bytesWritten) / contentLength
-//                                Log.d(
-//                                    UPLOAD, "Split Upload progress ${
-//                                        initRep.data.node[buffers.indexOf(
-//                                            buffer
-//                                        )].url
-//                                    } ---->>>  bytesWritten: $bytesWritten, $contentLength, progress: $progress"
-//                                )
-//
-//                            })
                             ProgressRequestBody(delegate = buffer.array().toRequestBody(
                                 contentType = "application/octet-stream".toMediaTypeOrNull(),
-                                offset = 0,
                                 byteCount = buffer.array().size
                             ), listener = { bytesWritten, contentLength ->
+                                val totalProgress =
+                                    (1.0 * (deltaSize + bytesWritten)) / mediaMessage.file.length()
                                 val progress = (1.0 * bytesWritten) / contentLength
+
                                 Log.d(
                                     UPLOAD, "Split Upload progress ${
                                         initRep.data.node[buffers.indexOf(
                                             buffer
                                         )].url
-                                    } ---->>>  bytesWritten: $bytesWritten, $contentLength, progress: $progress"
+                                    } ---->>>  split trunk bytesWritten: $bytesWritten, $contentLength, split trunk progress: $progress || Total progress: $totalProgress"
                                 )
+                                val emitProgress = progressList[entity.clientMsgID]
+                                viewModelScope.launch(Dispatchers.Main) {
+                                    if (emitProgress == null) {
+                                        progressList[entity.clientMsgID] = MutableStateFlow(
+                                            totalProgress.toFloat()
+                                        )
+                                    } else {
+                                        emitProgress.value = totalProgress.toFloat()
+                                    }
+                                }
+                                if (emitProgress?.value == 1.0f) {
+                                    viewModelScope.launch(Dispatchers.IO) {
+                                        findMediaMsgAndUpdateProgress(entity.clientMsgID, 1.0f)
+                                    }
+                                }
                             })
                         UploadRepository.uploadBinary(
                             url = initRep.data.node[buffers.indexOf(buffer)].url, bodyFromBuffer
                         )
+                        deltaSize += buffer.array().size
                         index++
                     }
                 }
@@ -727,3 +763,4 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 }
+
