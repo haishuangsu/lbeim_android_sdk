@@ -102,11 +102,6 @@ fun MsgTypeContent(
                 DecryptedOrNotImageView(message, fullScreen = false, onClick = {
                     navController.navigate("${NavRoute.MEDIA_VIEWER}/${message.clientMsgID}")
                 })
-                Image(
-                    painterResource(R.drawable.play),
-                    contentDescription = "",
-                    modifier = Modifier.size(32.dp)
-                )
             }
         }
 

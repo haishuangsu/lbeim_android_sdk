@@ -27,6 +27,8 @@ class MessageEntity : RealmObject {
     // true: read; false: no read yet
     var readed: Boolean = false
 
+    var progress: Float = 0.0f
+
 //    var mediaSrc: MediaSrc? = null
 
     var timestamp: RealmInstant = RealmInstant.now()

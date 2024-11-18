@@ -131,6 +131,15 @@ fun ChatScreen(
     val lazyListState = rememberLazyListState()
     viewModel.lazyListState = lazyListState
 
+    val pickFilesResult = remember { mutableStateOf<List<Uri>>(emptyList()) }
+
+    val launcher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.PickMultipleVisualMedia(
+            9
+        ), onResult = { uris: List<Uri> ->
+            pickFilesResult.value = uris
+        })
+
     val mediaPermissionState = rememberMultiplePermissionsState(
         permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) listOf(
             Manifest.permission.READ_MEDIA_IMAGES
@@ -138,16 +147,13 @@ fun ChatScreen(
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE,
         )
-    )
-    val hasMediaPermission = mediaPermissionState.allPermissionsGranted
+    ) {
+        launcher.launch(
+            PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+        )
+    }
 
-    val pickFilesResult = remember { mutableStateOf<List<Uri>>(emptyList()) }
-    val launcher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.PickMultipleVisualMedia(
-            9
-        ), onResult = { uris: List<Uri> ->
-            pickFilesResult.value = uris
-        })
+    val hasMediaPermission = mediaPermissionState.allPermissionsGranted
 
     Scaffold(modifier = Modifier.fillMaxSize(),
         topBar = { Appbar(navController) }) { innerPadding ->
@@ -222,16 +228,10 @@ fun ChatScreen(
                                 .padding(5.dp)
                                 .size(21.dp, 16.dp)
                                 .clickable {
-                                    if (hasMediaPermission) {
-                                        launcher.launch(
-                                            PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo)
-                                        )
+                                    if (!hasMediaPermission) {
+                                        mediaPermissionState.launchMultiplePermissionRequest()
                                     } else {
-                                        mediaPermissionState
-                                            .launchMultiplePermissionRequest()
-                                            .let {
-                                                PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo)
-                                            }
+                                        launcher.launch(PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo))
                                     }
 //                            open mime type
 //                            val mimeType = "image/gif"
@@ -342,8 +342,8 @@ fun ChatScreen(
 @Composable
 fun NickIdPrompt(onStart: (nid: String, nName: String, lbeIdentity: String) -> Unit) {
     // HermitK15
-    var nickId by remember { mutableStateOf("HermitK17") }
-    var nickName by remember { mutableStateOf("HermitK17") }
+    var nickId by remember { mutableStateOf("HermitK19") }
+    var nickName by remember { mutableStateOf("HermitK19") }
     // dev
 //     var lbeIdentity by remember { mutableStateOf("42nz10y3hhah") }
     // sit
