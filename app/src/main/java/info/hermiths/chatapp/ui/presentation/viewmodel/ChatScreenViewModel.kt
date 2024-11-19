@@ -63,6 +63,7 @@ import info.hermiths.chatapp.utils.UploadBigFileUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -94,19 +95,23 @@ class ChatScreenViewModel : ViewModel() {
         var sessionList: MutableList<SessionEntry> = mutableListOf()
         var currentSession: SessionEntry? = null
         var currentSessionIndex = 0
-        var currentSessionTotalPages = 0
+        var currentSessionTotalPages = 1
         var showPageSize = 20
-        var currentPage = 0
+        var currentPage = 1
         var remoteLastMsgType = -1
         var nickId: String = ""
         var nickName: String = ""
         var lbeIdentity: String = "" // 42nz10y3hhah
 
         var progressList: MutableMap<String, MutableStateFlow<Float>> = mutableMapOf()
+        var uploadImages: MutableMap<String, MutableStateFlow<Bitmap>> = mutableMapOf()
     }
 
     private val _uiState = MutableLiveData(ChatScreenUiState())
     val uiState: LiveData<ChatScreenUiState> = _uiState
+
+//    private val _messages = MutableStateFlow<MutableList<MessageEntity>>(mutableListOf())
+//    val messageList = _messages
 
     private val _inputMsg = MutableLiveData("")
     val inputMsg: LiveData<String> = _inputMsg
@@ -194,7 +199,7 @@ class ChatScreenViewModel : ViewModel() {
             currentSession = sessionList[currentSessionIndex]
             seq = currentSession?.latestMsg?.msgSeq ?: 0
             remoteLastMsgType = currentSession?.latestMsg?.msgType ?: 0
-            syncPageInfo(init = true)
+            syncPageInfo()
             filterLocalMessages(needScrollEnd = true)
             // TODO 查缓存同步未上传完列表, progressList
         } catch (e: Exception) {
@@ -259,11 +264,23 @@ class ChatScreenViewModel : ViewModel() {
             val messages = uiState.value?.messages?.toMutableList()
             if (!send) {
                 messages?.addAll(0, subList)
+
+//                _messages.update { currentState ->
+//                    currentState.addAll(0, subList)
+//                    currentState
+//                }
             } else {
                 // messages?.add(subList.last()) 失败消息重发时，旧消息没 clear
                 messages?.clear()
                 messages?.addAll(subList)
+
+//                _messages.update { currentState ->
+//                    currentState.clear()
+//                    currentState.addAll(subList)
+//                    currentState
+//                }
             }
+            Log.d(REALM, "分页后 messageList size --->> ${messages?.size}")
             _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
             if (needScrollEnd) {
                 scrollTo(messages?.size ?: 0)
@@ -271,15 +288,16 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
-    private fun syncPageInfo(init: Boolean = false) {
+    private fun syncPageInfo() {
         val cacheMessages = IMLocalRepository.filterMessages(lbeSession)
         Log.d(REALM, "update total pages cacheMessages size---->>> ${cacheMessages.size}")
         if (cacheMessages.isNotEmpty()) {
             currentSessionTotalPages = Math.max(cacheMessages.size / showPageSize, 1)
-            if (init) {
-                currentPage = currentSessionTotalPages
-            }
-            Log.d(REALM, "update total pages ---->>> $currentSessionTotalPages")
+            currentPage = currentSessionTotalPages
+            Log.d(
+                REALM,
+                "update total pages ---->>> currentSessionTotalPages: $currentSessionTotalPages, currentPage: $currentPage"
+            )
         } else {
             currentPage = 1
             currentSessionTotalPages = 1
@@ -300,7 +318,7 @@ class ChatScreenViewModel : ViewModel() {
                 lbeIdentity = lbeIdentity,
                 body = HistoryBody(
                     sessionId = currentSession?.sessionId ?: "",
-                    seqCondition = SeqCondition(startSeq = 0, endSeq = 1000)
+                    seqCondition = SeqCondition(startSeq = 0, endSeq = 230)
                 )
             )
             Log.d(REALM, "History sync")
@@ -524,7 +542,9 @@ class ChatScreenViewModel : ViewModel() {
                     msgBody = Gson().toJson(thumbnailSource)
                 )
 
+                // TODO pre deal
                 val entity = insertCacheMaybeUpdateUI(sendBody)
+                progressList[entity.clientMsgID] = MutableStateFlow(0.0f)
 
                 val rep = UploadRepository.singleUpload(
                     file = MultipartBody.Part.createFormData(
@@ -538,15 +558,15 @@ class ChatScreenViewModel : ViewModel() {
                                     "Single upload  ${mediaMessage.file.name} ---->>>  bytesWritten: $bytesWritten, $contentLength, progress: $progress"
                                 )
                                 val emitProgress = progressList[entity.clientMsgID]
-                                if (emitProgress == null) {
-                                    progressList[entity.clientMsgID] =
-                                        MutableStateFlow(progress.toFloat())
-                                } else {
-                                    emitProgress.value = progress.toFloat()
-                                }
-                                if (emitProgress?.value == 1.0f) {
-                                    viewModelScope.launch(Dispatchers.IO) {
-                                        findMediaMsgAndUpdateProgress(entity.clientMsgID, 1.0f)
+                                if (emitProgress != null) {
+                                    viewModelScope.launch(Dispatchers.Main) {
+                                        emitProgress.value = progress.toFloat()
+                                    }
+
+                                    if (emitProgress.value == 1.0f) {
+                                        viewModelScope.launch(Dispatchers.IO) {
+                                            findMediaMsgAndUpdateProgress(entity.clientMsgID, 1.0f)
+                                        }
                                     }
                                 }
                             })
@@ -606,6 +626,7 @@ class ChatScreenViewModel : ViewModel() {
                 )
 
                 val entity = insertCacheMaybeUpdateUI(sendBody)
+                progressList[entity.clientMsgID] = MutableStateFlow(0.0f)
 
                 val initRep = UploadRepository.initMultiPartUpload(
                     body = InitMultiPartUploadBody(
@@ -640,6 +661,7 @@ class ChatScreenViewModel : ViewModel() {
                     part = mutableListOf()
                 )
                 val buffers = UploadBigFileUtils.blocks[mediaMessage.file.hashCode()]
+
                 if (buffers != null) {
                     var index = 1
                     var deltaSize = 0L
@@ -656,6 +678,7 @@ class ChatScreenViewModel : ViewModel() {
                                 partNumber = index, etag = hexString
                             )
                         )
+
                         val bodyFromBuffer =
                             ProgressRequestBody(delegate = buffer.array().toRequestBody(
                                 contentType = "application/octet-stream".toMediaTypeOrNull(),
@@ -673,18 +696,17 @@ class ChatScreenViewModel : ViewModel() {
                                     } ---->>>  split trunk bytesWritten: $bytesWritten, $contentLength, split trunk progress: $progress || Total progress: $totalProgress"
                                 )
                                 val emitProgress = progressList[entity.clientMsgID]
-                                viewModelScope.launch(Dispatchers.Main) {
-                                    if (emitProgress == null) {
-                                        progressList[entity.clientMsgID] = MutableStateFlow(
-                                            totalProgress.toFloat()
-                                        )
-                                    } else {
+                                if (emitProgress != null) {
+                                    viewModelScope.launch(Dispatchers.Main) {
                                         emitProgress.value = totalProgress.toFloat()
                                     }
-                                }
-                                if (emitProgress?.value == 1.0f) {
-                                    viewModelScope.launch(Dispatchers.IO) {
-                                        findMediaMsgAndUpdateProgress(entity.clientMsgID, 1.0f)
+
+                                    if (emitProgress.value == 1.0f) {
+                                        viewModelScope.launch(Dispatchers.IO) {
+                                            findMediaMsgAndUpdateProgress(
+                                                entity.clientMsgID, 1.0f
+                                            )
+                                        }
                                     }
                                 }
                             })
@@ -741,8 +763,8 @@ class ChatScreenViewModel : ViewModel() {
                 "file", "lbe_${uuidGen()}_${timeStampGen()}.png", buffer.toRequestBody()
             ), signType = 2
         )
-        bmp.recycle()
         withContext(Dispatchers.IO) {
+            bmp.recycle()
             bao.close()
         }
         Log.d(UPLOAD, "thumbnail upload ---->>> ${thumbnailResp.data.paths[0]}")
@@ -754,6 +776,10 @@ class ChatScreenViewModel : ViewModel() {
         val messages = uiState.value?.messages?.toMutableList()
         messages?.add(message)
         _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
+//        _messages.update { state ->
+//            state.add(message)
+//            state
+//        }
     }
 
     private fun clearInput() {

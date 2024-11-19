@@ -25,7 +25,7 @@ fun MediaViewer(navController: NavController, msgClientId: String) {
     println("NavTo, args: $msgClientId")
     val msgEntity = IMLocalRepository.findMsgByClientMsgId(msgClientId)
     msgEntity?.let {
-        val msgSet = IMLocalRepository.findAllMediaMessages(msgEntity?.sessionId ?: "")
+        val msgSet = IMLocalRepository.findAllMediaMessages(msgEntity.sessionId ?: "")
         Log.d(
             ChatScreenViewModel.REALM,
             "图片视频集 --->>> ${msgSet.map { msg -> "(${msg.msgSeq}, ${msg.msgBody}\n" }}"
@@ -36,17 +36,19 @@ fun MediaViewer(navController: NavController, msgClientId: String) {
         })
         HorizontalPager(state = pagerState) { page ->
             println("HorizontalPager ---> $page")
-            MediaView(msgSet[page])
+            MediaView(navController, msgSet[page])
         }
     }
 }
 
 @Composable
-fun MediaView(msgEntity: MessageEntity) {
+fun MediaView(navController: NavController, msgEntity: MessageEntity) {
     if (msgEntity.msgType == 2) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Surface(color = Color.Black, modifier = Modifier.fillMaxSize()) { }
-            DecryptedOrNotImageView(msgEntity, loadSource = true, fullScreen = true, onClick = {})
+            DecryptedOrNotImageView(
+                navController = navController, msgEntity, loadSource = true, fullScreen = true,
+            )
         }
     } else {
         var url = ""

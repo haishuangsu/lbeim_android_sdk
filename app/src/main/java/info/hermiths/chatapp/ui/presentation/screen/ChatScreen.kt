@@ -42,6 +42,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -125,6 +126,9 @@ fun ChatScreen(
     val context = LocalContext.current
 
     val uiState by viewModel.uiState.observeAsState(ChatScreenUiState())
+
+//    val messages by viewModel.messageList.collectAsState()
+
     val input by viewModel.inputMsg.observeAsState("init")
 
     val currentFocus = LocalFocusManager.current
@@ -182,9 +186,12 @@ fun ChatScreen(
                     contentPadding = PaddingValues(top = 20.dp),
                     state = lazyListState
                 ) {
-                    itemsIndexed(uiState.messages, key = { _, msg ->
-                        msg.clientMsgID
-                    }) { index, message ->
+                    itemsIndexed(
+                        uiState.messages,
+                        key = { _, msg ->
+                            msg.clientMsgID
+                        },
+                    ) { index, message ->
                         MessageItem(
                             message = message,
                             if (message.senderUid == ChatScreenViewModel.uid) MessagePosition.RIGHT
