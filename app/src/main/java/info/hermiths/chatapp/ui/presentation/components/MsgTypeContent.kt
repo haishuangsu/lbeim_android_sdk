@@ -99,7 +99,8 @@ fun MsgTypeContent(
             ) {
                 DecryptedOrNotImageView(
                     navController = navController,
-                    message,
+                    viewModel = viewModel,
+                    message = message,
                     fullScreen = false,
                 )
             }
@@ -113,7 +114,8 @@ fun MsgTypeContent(
             ) {
                 DecryptedOrNotImageView(
                     navController = navController,
-                    message,
+                    viewModel = viewModel,
+                    message = message,
                     fullScreen = false,
                 )
             }

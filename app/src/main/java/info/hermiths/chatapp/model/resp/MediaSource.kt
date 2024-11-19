@@ -1,6 +1,7 @@
 package info.hermiths.chatapp.model.resp
 
 data class MediaSource(
+    val isBigFile: Boolean = false,
     val width: Int,
     val height: Int,
     val thumbnail: Thumbnail,

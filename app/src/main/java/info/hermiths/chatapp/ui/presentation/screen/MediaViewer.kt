@@ -47,7 +47,12 @@ fun MediaView(navController: NavController, msgEntity: MessageEntity) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Surface(color = Color.Black, modifier = Modifier.fillMaxSize()) { }
             DecryptedOrNotImageView(
-                navController = navController, msgEntity, loadSource = true, fullScreen = true,
+                navController = navController,
+                msgEntity,
+                loadSource = true,
+                fullScreen = true,
+                fromMediaViewer = true,
+                viewModel = null,
             )
         }
     } else {

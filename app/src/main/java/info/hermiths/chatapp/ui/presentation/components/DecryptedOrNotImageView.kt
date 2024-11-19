@@ -39,17 +39,20 @@ fun DecryptedOrNotImageView(
     loadSource: Boolean = false,
     fullScreen: Boolean = true,
     fromMediaViewer: Boolean = false,
+    viewModel: ChatScreenViewModel?,
 ) {
     var thumbUrl = ""
     var thumbKey = ""
     var fullUrl = ""
     var fullKey = ""
+    var isBigFile = false
     try {
         val media = Gson().fromJson(message.msgBody, MediaSource::class.java)
         fullUrl = media.resource.url
         fullKey = media.resource.key
         thumbUrl = media.thumbnail.url
         thumbKey = media.thumbnail.key
+        isBigFile = media.isBigFile
     } catch (e: Exception) {
         println("DecryptedOrNotImageView Json parse error -->> ${message.msgBody}")
     }
@@ -77,9 +80,7 @@ fun DecryptedOrNotImageView(
                 .fillMaxWidth()
                 .height(500.dp)
                 .clickable {
-                    if (!fromMediaViewer) {
-                        navController.navigate("${NavRoute.MEDIA_VIEWER}/${message.clientMsgID}")
-                    }
+                    // TODO
                 } else Modifier
                 .size(
                     width = 160.dp, height = 90.dp
@@ -87,7 +88,20 @@ fun DecryptedOrNotImageView(
                 .clip(RoundedCornerShape(16.dp))
                 .clickable {
                     if (!fromMediaViewer) {
-                        navController.navigate("${NavRoute.MEDIA_VIEWER}/${message.clientMsgID}")
+                        if (fullUrl.isNotEmpty()) {
+                            navController.navigate("${NavRoute.MEDIA_VIEWER}/${message.clientMsgID}")
+                        } else {
+                            if (isBigFile) {
+                                // TODO stop the trunks upload
+                                Log.d(
+                                    ChatScreenViewModel.UPLOAD,
+                                    "Tab, 缓存的进度： ${message.progress}"
+                                )
+                                viewModel?.cancelJob(
+                                    message.clientMsgID, progress = progress
+                                )
+                            }
+                        }
                     }
                 },
         )
@@ -112,16 +126,27 @@ fun DecryptedOrNotImageView(
                             trackColor = Color.White.copy(alpha = 0.3f),
                             strokeWidth = 2.dp,
                         )
-                        val percent = "${progress.value * 100}"
-                        Text(
-                            "${
-                                percent.substring(
-                                    0, if (percent.length > 5) 5 else percent.length
-                                )
-                            }%", style = TextStyle(
-                                fontSize = 8.sp, fontWeight = FontWeight.W600, color = Color.White
+
+                        if (message.pendingUpload) {
+                            Image(
+                                painterResource(R.drawable.pending),
+                                "",
+                                modifier = Modifier.size(width = 8.dp, height = 13.dp)
                             )
-                        )
+                        } else {
+                            val percent = "${progress.value * 100}"
+                            Text(
+                                "${
+                                    percent.substring(
+                                        0, if (percent.length > 5) 5 else percent.length
+                                    )
+                                }%", style = TextStyle(
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.W600,
+                                    color = Color.White
+                                )
+                            )
+                        }
                     }
                 }
                 if (progress.value == 1.0f) {

@@ -1,5 +1,6 @@
 package info.hermiths.chatapp.model
 
+import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.RealmInstant
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
@@ -29,7 +30,9 @@ class MessageEntity : RealmObject {
 
     var progress: Float = 0.0f
 
-//    var mediaSrc: MediaSrc? = null
+    var pendingUpload: Boolean = false
+
+    var uploadTask: UploadTask? = null
 
     var timestamp: RealmInstant = RealmInstant.now()
 
@@ -38,19 +41,9 @@ class MessageEntity : RealmObject {
     }
 }
 
-//class MediaSrc : EmbeddedRealmObject {
-//    var width: Int = 0
-//    var height: Int = 0
-//    var thumbnail: Thumb? = null
-//    var resource: Rsc? = null
-//}
-//
-//class Thumb : EmbeddedRealmObject {
-//    var url: String = ""
-//    var key: String = ""
-//}
-//
-//class Rsc : EmbeddedRealmObject {
-//    var url: String = ""
-//    var key: String = ""
-//}
+class UploadTask : EmbeddedRealmObject {
+    var progress: Float = 0.0f
+    var uri: String = ""
+    var currentBlockIndex: Int = 0
+    var partJson: String = ""
+}
