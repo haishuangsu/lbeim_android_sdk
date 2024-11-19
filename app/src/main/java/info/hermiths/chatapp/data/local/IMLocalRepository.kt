@@ -28,6 +28,13 @@ object IMLocalRepository {
         ).sort("sendStamp", Sort.ASCENDING).find()
     }
 
+    fun findAllPendingUploadMediaMessages(sessionId: String): List<MessageEntity> {
+        return realm.query<MessageEntity>(
+            query = "sessionId == $0 AND (msgType == 2 || msgType == 3) AND pendingUpload == true",
+            sessionId
+        ).sort("sendStamp", Sort.ASCENDING).find()
+    }
+
     suspend fun findMediaMsgAndUpdateBody(clientMsgID: String, msgBody: String) {
         Log.d(ChatScreenViewModel.REALM, "发送 Media 消息 --- $clientMsgID 更新 Body： $msgBody")
         realm.write {
@@ -45,6 +52,7 @@ object IMLocalRepository {
                 query = "clientMsgID == $0", clientMsgID
             ).first().find()
             msg?.progress = progress
+            msg?.pendingUpload = true
         }
     }
 

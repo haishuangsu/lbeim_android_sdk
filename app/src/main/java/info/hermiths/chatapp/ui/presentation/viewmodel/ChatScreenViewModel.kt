@@ -8,6 +8,7 @@ import android.util.Log
 import android.util.Size
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.runtime.State
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -61,6 +62,7 @@ import info.hermiths.chatapp.utils.TimeUtils.timeStampGen
 import info.hermiths.chatapp.utils.UUIDUtils.uuidGen
 import info.hermiths.chatapp.utils.UploadBigFileUtils
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -106,6 +108,8 @@ class ChatScreenViewModel : ViewModel() {
         var progressList: MutableMap<String, MutableStateFlow<Float>> = mutableMapOf()
         var uploadImages: MutableMap<String, MutableStateFlow<Bitmap>> = mutableMapOf()
     }
+
+    val jobs: MutableMap<String, Job> = mutableMapOf()
 
     private val _uiState = MutableLiveData(ChatScreenUiState())
     val uiState: LiveData<ChatScreenUiState> = _uiState
@@ -202,8 +206,21 @@ class ChatScreenViewModel : ViewModel() {
             syncPageInfo()
             filterLocalMessages(needScrollEnd = true)
             // TODO 查缓存同步未上传完列表, progressList
+            syncPendingJobs()
         } catch (e: Exception) {
             println("Fetch session list error: $e")
+        }
+    }
+
+    private fun syncPendingJobs() {
+        val pendingCache =
+            IMLocalRepository.findAllPendingUploadMediaMessages(currentSession?.sessionId ?: "")
+        Log.d(
+            REALM,
+            "PendingJobs --->>> ${pendingCache.map { cache -> "${cache.clientMsgID} || ${cache.progress} " }}"
+        )
+        for (pending in pendingCache) {
+            progressList[pending.clientMsgID] = MutableStateFlow(pending.progress)
         }
     }
 
@@ -527,21 +544,25 @@ class ChatScreenViewModel : ViewModel() {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun singleUpload(mediaMessage: MediaMessage) {
+        val sendBody = genMsgBody(
+            type = if (mediaMessage.isImage) 2 else 3,
+        )
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val thumbnailResp = uploadThumbnail(mediaMessage)
                 val thumbnailSource = MediaSource(
-                    width = mediaMessage.width, height = mediaMessage.height, thumbnail = Thumbnail(
+                    isBigFile = false,
+                    width = mediaMessage.width,
+                    height = mediaMessage.height,
+                    thumbnail = Thumbnail(
                         url = thumbnailResp.data.paths[0].url, key = thumbnailResp.data.paths[0].key
-                    ), resource = Resource(
+                    ),
+                    resource = Resource(
                         url = "", key = ""
                     )
                 )
-                val sendBody = genMsgBody(
-                    type = if (mediaMessage.isImage) 2 else 3,
-                    msgBody = Gson().toJson(thumbnailSource)
-                )
 
+                sendBody.msgBody = Gson().toJson(thumbnailSource)
                 // TODO pre deal
                 val entity = insertCacheMaybeUpdateUI(sendBody)
                 progressList[entity.clientMsgID] = MutableStateFlow(0.0f)
@@ -611,20 +632,24 @@ class ChatScreenViewModel : ViewModel() {
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun bigFileUpload(mediaMessage: MediaMessage) {
         try {
-            viewModelScope.launch(Dispatchers.IO) {
+            val sendBody = genMsgBody(
+                type = if (mediaMessage.isImage) 2 else 3,
+            )
+
+            val job = viewModelScope.launch(Dispatchers.IO) {
                 val thumbnailResp = uploadThumbnail(mediaMessage)
                 val thumbnailSource = MediaSource(
-                    width = mediaMessage.width, height = mediaMessage.height, thumbnail = Thumbnail(
+                    isBigFile = true,
+                    width = mediaMessage.width,
+                    height = mediaMessage.height,
+                    thumbnail = Thumbnail(
                         url = thumbnailResp.data.paths[0].url, key = thumbnailResp.data.paths[0].key
-                    ), resource = Resource(
+                    ),
+                    resource = Resource(
                         url = "", key = ""
                     )
                 )
-                val sendBody = genMsgBody(
-                    type = if (mediaMessage.isImage) 2 else 3,
-                    msgBody = Gson().toJson(thumbnailSource)
-                )
-
+                sendBody.msgBody = Gson().toJson(thumbnailSource)
                 val entity = insertCacheMaybeUpdateUI(sendBody)
                 progressList[entity.clientMsgID] = MutableStateFlow(0.0f)
 
@@ -654,7 +679,6 @@ class ChatScreenViewModel : ViewModel() {
                 val end = System.currentTimeMillis()
                 Log.d(UPLOAD, "split end: $end, diff: ${end - start}")
 
-
                 val completeMultiPartUploadReq = CompleteMultiPartUploadReq(
                     uploadId = initRep.data.uploadId,
                     name = mediaMessage.file.name,
@@ -662,6 +686,7 @@ class ChatScreenViewModel : ViewModel() {
                 )
                 val buffers = UploadBigFileUtils.blocks[mediaMessage.file.hashCode()]
 
+                // TODO 1.拿到文件路径重切块 2.断点续传需要跳过已传的块 3.剩余块上传，拼接 merge requestBody
                 if (buffers != null) {
                     var index = 1
                     var deltaSize = 0L
@@ -739,8 +764,20 @@ class ChatScreenViewModel : ViewModel() {
                     }
                 })
             }
+            jobs[sendBody.clientMsgId] = job
         } catch (e: Exception) {
             Log.d(UPLOAD, "Big file upload error --->>> $e")
+        }
+    }
+
+    fun cancelJob(clientMsgId: String, progress: State<Float>?) {
+        val job = jobs[clientMsgId]
+        job?.cancel()
+        progress?.let {
+            viewModelScope.launch(Dispatchers.IO) {
+                Log.d(UPLOAD, "暂停上传进度: ${it.value}")
+                findMediaMsgAndUpdateProgress(clientMsgId, it.value)
+            }
         }
     }
 
