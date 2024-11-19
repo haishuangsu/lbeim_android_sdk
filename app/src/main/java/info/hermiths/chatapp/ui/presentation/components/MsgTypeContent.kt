@@ -92,16 +92,30 @@ fun MsgTypeContent(
         }
 
         2 -> {
-            DecryptedOrNotImageView(message, fullScreen = false, onClick = {
-                navController.navigate("${NavRoute.MEDIA_VIEWER}/${message.clientMsgID}")
-            })
+            Box(
+                modifier = Modifier.size(
+                    width = 160.dp, height = 90.dp
+                )
+            ) {
+                DecryptedOrNotImageView(
+                    navController = navController,
+                    message,
+                    fullScreen = false,
+                )
+            }
         }
 
         3 -> {
-            Box(contentAlignment = Alignment.Center) {
-                DecryptedOrNotImageView(message, fullScreen = false, onClick = {
-                    navController.navigate("${NavRoute.MEDIA_VIEWER}/${message.clientMsgID}")
-                })
+            Box(
+                contentAlignment = Alignment.Center, modifier = Modifier.size(
+                    width = 160.dp, height = 90.dp
+                )
+            ) {
+                DecryptedOrNotImageView(
+                    navController = navController,
+                    message,
+                    fullScreen = false,
+                )
             }
         }
 

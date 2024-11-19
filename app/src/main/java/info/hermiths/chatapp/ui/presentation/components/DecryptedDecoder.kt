@@ -30,22 +30,31 @@ class DecryptedDecoder(
         override fun create(
             result: SourceFetchResult, options: Options, imageLoader: ImageLoader
         ): Decoder {
-            Log.d(ChatScreenViewModel.IMAGEENCRYPTION, "Decrypted image ---->>> url: $url ,key: $key, options: $options")
-            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-            val secretKey = SecretKeySpec(key.toByteArray(charset("UTF-8")), "AES")
-            val iv = IvParameterSpec(ByteArray(16))
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, iv)
+            var newResult = result
+            if (key.isNotEmpty()) {
+                Log.d(
+                    ChatScreenViewModel.IMAGEENCRYPTION,
+                    "Decrypted image ---->>> url: $url ,key: $key, options: $options"
+                )
+                val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+                val secretKey = SecretKeySpec(key.toByteArray(charset("UTF-8")), "AES")
+                val iv = IvParameterSpec(ByteArray(16))
+                cipher.init(Cipher.DECRYPT_MODE, secretKey, iv)
 
-            val source = result.source
-            val respData = source.source().readByteArray()
-            Log.d(ChatScreenViewModel.IMAGEENCRYPTION, "repData --->>> ${respData.size}")
-            val decryptedData = cipher.doFinal(Base64.getDecoder().decode(respData))
-            Log.d(ChatScreenViewModel.IMAGEENCRYPTION, "decryptedData size: ${decryptedData.size},  decryptedData: $decryptedData")
-            val buffer = Buffer().apply {
-                write(decryptedData)
+                val source = result.source
+                val respData = source.source().readByteArray()
+                Log.d(ChatScreenViewModel.IMAGEENCRYPTION, "repData --->>> ${respData.size}")
+                val decryptedData = cipher.doFinal(Base64.getDecoder().decode(respData))
+                Log.d(
+                    ChatScreenViewModel.IMAGEENCRYPTION,
+                    "decryptedData size: ${decryptedData.size},  decryptedData: $decryptedData"
+                )
+                val buffer = Buffer().apply {
+                    write(decryptedData)
+                }
+                val newSource = ImageSource(buffer, source.fileSystem, source.metadata)
+                newResult = SourceFetchResult(newSource, result.mimeType, result.dataSource)
             }
-            val newSource = ImageSource(buffer, source.fileSystem, source.metadata)
-            val newResult = SourceFetchResult(newSource, result.mimeType, result.dataSource)
             return DecryptedDecoder(newResult, options, imageLoader)
         }
     }
