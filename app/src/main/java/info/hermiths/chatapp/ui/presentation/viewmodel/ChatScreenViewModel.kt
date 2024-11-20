@@ -841,7 +841,7 @@ class ChatScreenViewModel : ViewModel() {
             mergeMultiUploadReqQueue[message.clientMsgID] =
                 Gson().fromJson(newTask.reqBodyJson, CompleteMultiPartUploadReq::class.java)
 
-            var executeIndex = newTask.executeIndex
+            var executeIndex = newTask.executeIndex + 1
 
             if (message.uploadTask?.taskLength!! > 1) {
                 UploadBigFileUtils.splitFile(file, UploadBigFileUtils.defaultChunkSize)
@@ -861,7 +861,7 @@ class ChatScreenViewModel : ViewModel() {
                 var deltaSize = 0L
                 var tempIndex = 1
                 for (buffer in buffers) {
-                    if (tempIndex != -1 && tempIndex <= executeIndex) {
+                    if (tempIndex != -1 && tempIndex < executeIndex) {
                         Log.d(CONTINUE_UPLOAD, "tempIndex: $tempIndex, executeIndex: $executeIndex")
                         deltaSize += buffer.array().size
                         tempIndex++
