@@ -57,4 +57,15 @@ object Converts {
             source = 100
         )
     }
+
+    fun entityToMediaSendBody(entity: MessageEntity): MsgBody {
+        return MsgBody(
+            msgBody = entity.msgBody,
+            msgSeq = entity.msgSeq,
+            msgType = entity.msgType,
+            clientMsgId = entity.clientMsgID,
+            sendTime = entity.clientMsgID.split("-").last(),
+            source = 100
+        )
+    }
 }

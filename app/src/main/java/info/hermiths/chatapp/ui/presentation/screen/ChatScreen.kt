@@ -1,6 +1,7 @@
 package info.hermiths.chatapp.ui.presentation.screen
 
 import android.Manifest
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -159,7 +160,8 @@ fun ChatScreen(
 
     val hasMediaPermission = mediaPermissionState.allPermissionsGranted
 
-    Scaffold(modifier = Modifier.fillMaxSize(),
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
         topBar = { Appbar(navController) }) { innerPadding ->
         Surface(
             modifier = Modifier.fillMaxSize(), color = Color(0xFFF3F4F6)
@@ -252,6 +254,7 @@ fun ChatScreen(
                                 Log.d(ChatScreenViewModel.FILESELECT, "${pickFilesResult.value}")
                                 for (uri in uris) {
                                     val cr = context.contentResolver
+                                    cr.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                     val projection = arrayOf(
                                         MediaStore.MediaColumns.DATA,
                                         MediaStore.MediaColumns.MIME_TYPE,
@@ -274,6 +277,8 @@ fun ChatScreen(
                                                 width = width,
                                                 height = height,
                                                 file = file,
+                                                path = uri.toString(),
+                                                mime = mime,
                                                 isImage = FileUtils.isImage(mime),
                                             )
                                             viewModel.upload(mediaMessage)
