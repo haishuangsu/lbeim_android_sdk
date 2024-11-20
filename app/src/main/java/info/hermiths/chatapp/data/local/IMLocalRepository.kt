@@ -2,6 +2,7 @@ package info.hermiths.chatapp.data.local
 
 import android.util.Log
 import info.hermiths.chatapp.model.MessageEntity
+import info.hermiths.chatapp.model.UploadTask
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.query.Sort
@@ -45,13 +46,16 @@ object IMLocalRepository {
         }
     }
 
-    suspend fun findMediaMsgAndUpdateProgress(clientMsgID: String, progress: Float) {
-        Log.d(ChatScreenViewModel.REALM, "发送 Media 消息 --- $clientMsgID 更新上传进度： $progress")
+    suspend fun findMediaMsgAndUpdateProgress(clientMsgID: String, uploadTask: UploadTask?) {
+        Log.d(
+            ChatScreenViewModel.REALM,
+            "发送 Media 消息 --- $clientMsgID 更新上传进度： ${uploadTask?.progress}, executeIndex: ${uploadTask?.executeIndex}"
+        )
         realm.write {
             val msg = query<MessageEntity>(
                 query = "clientMsgID == $0", clientMsgID
             ).first().find()
-            msg?.progress = progress
+            msg?.uploadTask = uploadTask
             msg?.pendingUpload = true
         }
     }

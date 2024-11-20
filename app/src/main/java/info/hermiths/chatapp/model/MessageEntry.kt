@@ -28,9 +28,9 @@ class MessageEntity : RealmObject {
     // true: read; false: no read yet
     var readed: Boolean = false
 
-    var progress: Float = 0.0f
-
     var pendingUpload: Boolean = false
+
+    var localFile: LocalMediaFile? = null
 
     var uploadTask: UploadTask? = null
 
@@ -41,9 +41,24 @@ class MessageEntity : RealmObject {
     }
 }
 
+class LocalMediaFile : EmbeddedRealmObject {
+    var fileName: String = ""
+    var path: String = ""
+    var size: Long = 0
+    var isBigFile: Boolean = false
+    var mimeType: String = ""
+    var width: Int = 0
+    var height: Int = 0
+}
+
 class UploadTask : EmbeddedRealmObject {
     var progress: Float = 0.0f
-    var uri: String = ""
-    var currentBlockIndex: Int = 0
-    var partJson: String = ""
+    var taskLength: Int = 0
+    var executeIndex: Int = 0
+    var initTrunksRepJson: String = ""
+    var reqBodyJson: String = ""
+
+    override fun toString(): String {
+        return "UploadTask(progress:$progress, taskLength: $taskLength, executeIndex: $executeIndex, \n initTrunksRepJson --->>> $initTrunksRepJson,\n reqBodyJson --->>> $reqBodyJson)"
+    }
 }
