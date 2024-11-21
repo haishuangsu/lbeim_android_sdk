@@ -62,8 +62,7 @@ object IMLocalRepository {
 
     suspend fun findMediaMsgSetUploadContinue(clientMsgID: String) {
         Log.d(
-            ChatScreenViewModel.REALM,
-            "发送 Media 消息 --- $clientMsgID ---->>> 大文件上传续传"
+            ChatScreenViewModel.REALM, "发送 Media 消息 --- $clientMsgID ---->>> 大文件上传续传"
         )
         realm.write {
             val msg = query<MessageEntity>(
@@ -114,6 +113,16 @@ object IMLocalRepository {
                 Log.d("RealmTAG", "未查找到缓存，即将插入的 Msg：${msg.msgBody}")
                 copyToRealm(msg)
             }
+        }
+    }
+
+    suspend fun findMsgAndMarkRead(clientMsgID: String) {
+        Log.d(ChatScreenViewModel.REALM, "消息标记已读 --- $clientMsgID ")
+        realm.write {
+            val msg = query<MessageEntity>(
+                query = "clientMsgID == $0", clientMsgID
+            ).first().find()
+            msg?.readed = true
         }
     }
 

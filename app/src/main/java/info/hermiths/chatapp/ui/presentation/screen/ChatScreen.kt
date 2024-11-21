@@ -202,7 +202,15 @@ fun ChatScreen(
                             navController
                         )
                         LaunchedEffect(uiState.messages) {
-                            Log.d("列表滑动", "index: $index")
+                            val visitAbleMsg = uiState.messages[index]
+                            Log.d(
+                                "列表滑动",
+                                "VisitAble Entry --->>  index: $index, clientMsgID || ${visitAbleMsg.clientMsgID} || msg: ${visitAbleMsg.msgBody} || readed: ${visitAbleMsg.readed} "
+                            )
+                            if (!visitAbleMsg.readed && visitAbleMsg.senderUid != ChatScreenViewModel.uid) {
+                                viewModel.markRead(message)
+                            }
+
                             if (lazyListState.isScrollInProgress) {
                                 // TODO 待优化
                                 if (uiState.messages.size - index > ChatScreenViewModel.showPageSize - 3) {
@@ -254,7 +262,9 @@ fun ChatScreen(
                                 Log.d(ChatScreenViewModel.FILESELECT, "${pickFilesResult.value}")
                                 for (uri in uris) {
                                     val cr = context.contentResolver
-                                    cr.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    cr.takePersistableUriPermission(
+                                        uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                    )
                                     val projection = arrayOf(
                                         MediaStore.MediaColumns.DATA,
                                         MediaStore.MediaColumns.MIME_TYPE,
@@ -354,12 +364,12 @@ fun ChatScreen(
 @Composable
 fun NickIdPrompt(onStart: (nid: String, nName: String, lbeIdentity: String) -> Unit) {
     // HermitK15
-    var nickId by remember { mutableStateOf("HermitK19") }
-    var nickName by remember { mutableStateOf("HermitK19") }
+    var nickId by remember { mutableStateOf("HermitK1") }
+    var nickName by remember { mutableStateOf("HermitK1") }
     // dev
 //     var lbeIdentity by remember { mutableStateOf("42nz10y3hhah") }
     // sit
-    var lbeIdentity by remember { mutableStateOf("43p28i7bt9l6") }
+    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
 
     Dialog(onDismissRequest = { }) {
         Card {
