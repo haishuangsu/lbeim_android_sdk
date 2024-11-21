@@ -57,8 +57,9 @@ class UploadTask : EmbeddedRealmObject {
     var executeIndex: Int = 0
     var initTrunksRepJson: String = ""
     var reqBodyJson: String = ""
+    var lastTrunkUploadLength: Long = 0
 
     override fun toString(): String {
-        return "UploadTask(progress:$progress, taskLength: $taskLength, executeIndex: $executeIndex, \n initTrunksRepJson --->>> $initTrunksRepJson,\n reqBodyJson --->>> $reqBodyJson)"
+        return "UploadTask(progress:$progress, taskLength: $taskLength, executeIndex: $executeIndex,  lastTrunkUploadLength: $lastTrunkUploadLength,\n initTrunksRepJson --->>> $initTrunksRepJson,\n reqBodyJson --->>> $reqBodyJson)"
     }
 }
