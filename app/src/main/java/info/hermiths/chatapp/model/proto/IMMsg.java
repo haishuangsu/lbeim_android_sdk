@@ -4,7 +4,6 @@ package info.hermiths.chatapp.model.proto;
 // source: msggateway.proto
 // Protobuf Java Version: 4.29.0-rc1
 
-
 public final class IMMsg {
   private IMMsg() {}
   static {
@@ -66,6 +65,38 @@ public final class IMMsg {
      * <code>HasReadReceiptMsgType = 6;</code>
      */
     HasReadReceiptMsgType(6),
+    /**
+     * <pre>
+     * 用户已经被服务器踢出
+     * </pre>
+     *
+     * <code>KickOffLineMsgType = 7;</code>
+     */
+    KickOffLineMsgType(7),
+    /**
+     * <pre>
+     * faq(contentType)
+     * </pre>
+     *
+     * <code>FaqMsgType = 8;</code>
+     */
+    FaqMsgType(8),
+    /**
+     * <pre>
+     * 知识点(contentType)
+     * </pre>
+     *
+     * <code>KnowledgePointMsgType = 9;</code>
+     */
+    KnowledgePointMsgType(9),
+    /**
+     * <pre>
+     * 答案(contentType)
+     * </pre>
+     *
+     * <code>KnowledgeAnswerMsgType = 10;</code>
+     */
+    KnowledgeAnswerMsgType(10),
     UNRECOGNIZED(-1),
     ;
 
@@ -114,6 +145,38 @@ public final class IMMsg {
      * <code>HasReadReceiptMsgType = 6;</code>
      */
     public static final int HasReadReceiptMsgType_VALUE = 6;
+    /**
+     * <pre>
+     * 用户已经被服务器踢出
+     * </pre>
+     *
+     * <code>KickOffLineMsgType = 7;</code>
+     */
+    public static final int KickOffLineMsgType_VALUE = 7;
+    /**
+     * <pre>
+     * faq(contentType)
+     * </pre>
+     *
+     * <code>FaqMsgType = 8;</code>
+     */
+    public static final int FaqMsgType_VALUE = 8;
+    /**
+     * <pre>
+     * 知识点(contentType)
+     * </pre>
+     *
+     * <code>KnowledgePointMsgType = 9;</code>
+     */
+    public static final int KnowledgePointMsgType_VALUE = 9;
+    /**
+     * <pre>
+     * 答案(contentType)
+     * </pre>
+     *
+     * <code>KnowledgeAnswerMsgType = 10;</code>
+     */
+    public static final int KnowledgeAnswerMsgType_VALUE = 10;
 
 
     public final int getNumber() {
@@ -147,6 +210,10 @@ public final class IMMsg {
         case 4: return CreateSessionMsgType;
         case 5: return AgentUserJoinSessionMsgType;
         case 6: return HasReadReceiptMsgType;
+        case 7: return KickOffLineMsgType;
+        case 8: return FaqMsgType;
+        case 9: return KnowledgePointMsgType;
+        case 10: return KnowledgeAnswerMsgType;
         default: return null;
       }
     }
@@ -10753,6 +10820,664 @@ public final class IMMsg {
 
   }
 
+  public interface KickOffLineMsgOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:KickOffLineMsg)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>string userID = 1;</code>
+     * @return The userID.
+     */
+    java.lang.String getUserID();
+    /**
+     * <code>string userID = 1;</code>
+     * @return The bytes for userID.
+     */
+    com.google.protobuf.ByteString
+        getUserIDBytes();
+
+    /**
+     * <code>string identityID = 2;</code>
+     * @return The identityID.
+     */
+    java.lang.String getIdentityID();
+    /**
+     * <code>string identityID = 2;</code>
+     * @return The bytes for identityID.
+     */
+    com.google.protobuf.ByteString
+        getIdentityIDBytes();
+  }
+  /**
+   * Protobuf type {@code KickOffLineMsg}
+   */
+  public static final class KickOffLineMsg extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:KickOffLineMsg)
+      KickOffLineMsgOrBuilder {
+  private static final long serialVersionUID = 0L;
+    static {
+      com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
+        com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,
+        /* major= */ 4,
+        /* minor= */ 29,
+        /* patch= */ 0,
+        /* suffix= */ "-rc1",
+        KickOffLineMsg.class.getName());
+    }
+    // Use KickOffLineMsg.newBuilder() to construct.
+    private KickOffLineMsg(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+    }
+    private KickOffLineMsg() {
+      userID_ = "";
+      identityID_ = "";
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return IMMsg.internal_static_KickOffLineMsg_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return IMMsg.internal_static_KickOffLineMsg_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              IMMsg.KickOffLineMsg.class, IMMsg.KickOffLineMsg.Builder.class);
+    }
+
+    public static final int USERID_FIELD_NUMBER = 1;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object userID_ = "";
+    /**
+     * <code>string userID = 1;</code>
+     * @return The userID.
+     */
+    @java.lang.Override
+    public java.lang.String getUserID() {
+      java.lang.Object ref = userID_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        userID_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string userID = 1;</code>
+     * @return The bytes for userID.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getUserIDBytes() {
+      java.lang.Object ref = userID_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        userID_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int IDENTITYID_FIELD_NUMBER = 2;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object identityID_ = "";
+    /**
+     * <code>string identityID = 2;</code>
+     * @return The identityID.
+     */
+    @java.lang.Override
+    public java.lang.String getIdentityID() {
+      java.lang.Object ref = identityID_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        identityID_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string identityID = 2;</code>
+     * @return The bytes for identityID.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getIdentityIDBytes() {
+      java.lang.Object ref = identityID_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        identityID_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(userID_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 1, userID_);
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(identityID_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 2, identityID_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(userID_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(1, userID_);
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(identityID_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(2, identityID_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof IMMsg.KickOffLineMsg)) {
+        return super.equals(obj);
+      }
+      IMMsg.KickOffLineMsg other = (IMMsg.KickOffLineMsg) obj;
+
+      if (!getUserID()
+          .equals(other.getUserID())) return false;
+      if (!getIdentityID()
+          .equals(other.getIdentityID())) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + USERID_FIELD_NUMBER;
+      hash = (53 * hash) + getUserID().hashCode();
+      hash = (37 * hash) + IDENTITYID_FIELD_NUMBER;
+      hash = (53 * hash) + getIdentityID().hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static IMMsg.KickOffLineMsg parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.KickOffLineMsg parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.KickOffLineMsg parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.KickOffLineMsg parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.KickOffLineMsg parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.KickOffLineMsg parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.KickOffLineMsg parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.KickOffLineMsg parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static IMMsg.KickOffLineMsg parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static IMMsg.KickOffLineMsg parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static IMMsg.KickOffLineMsg parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.KickOffLineMsg parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(IMMsg.KickOffLineMsg prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code KickOffLineMsg}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:KickOffLineMsg)
+        IMMsg.KickOffLineMsgOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return IMMsg.internal_static_KickOffLineMsg_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return IMMsg.internal_static_KickOffLineMsg_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                IMMsg.KickOffLineMsg.class, IMMsg.KickOffLineMsg.Builder.class);
+      }
+
+      // Construct using IMMsg.KickOffLineMsg.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        userID_ = "";
+        identityID_ = "";
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return IMMsg.internal_static_KickOffLineMsg_descriptor;
+      }
+
+      @java.lang.Override
+      public IMMsg.KickOffLineMsg getDefaultInstanceForType() {
+        return IMMsg.KickOffLineMsg.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public IMMsg.KickOffLineMsg build() {
+        IMMsg.KickOffLineMsg result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public IMMsg.KickOffLineMsg buildPartial() {
+        IMMsg.KickOffLineMsg result = new IMMsg.KickOffLineMsg(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(IMMsg.KickOffLineMsg result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.userID_ = userID_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.identityID_ = identityID_;
+        }
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof IMMsg.KickOffLineMsg) {
+          return mergeFrom((IMMsg.KickOffLineMsg)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(IMMsg.KickOffLineMsg other) {
+        if (other == IMMsg.KickOffLineMsg.getDefaultInstance()) return this;
+        if (!other.getUserID().isEmpty()) {
+          userID_ = other.userID_;
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        if (!other.getIdentityID().isEmpty()) {
+          identityID_ = other.identityID_;
+          bitField0_ |= 0x00000002;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                userID_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                identityID_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object userID_ = "";
+      /**
+       * <code>string userID = 1;</code>
+       * @return The userID.
+       */
+      public java.lang.String getUserID() {
+        java.lang.Object ref = userID_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          userID_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string userID = 1;</code>
+       * @return The bytes for userID.
+       */
+      public com.google.protobuf.ByteString
+          getUserIDBytes() {
+        java.lang.Object ref = userID_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          userID_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string userID = 1;</code>
+       * @param value The userID to set.
+       * @return This builder for chaining.
+       */
+      public Builder setUserID(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        userID_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string userID = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearUserID() {
+        userID_ = getDefaultInstance().getUserID();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string userID = 1;</code>
+       * @param value The bytes for userID to set.
+       * @return This builder for chaining.
+       */
+      public Builder setUserIDBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        userID_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object identityID_ = "";
+      /**
+       * <code>string identityID = 2;</code>
+       * @return The identityID.
+       */
+      public java.lang.String getIdentityID() {
+        java.lang.Object ref = identityID_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          identityID_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string identityID = 2;</code>
+       * @return The bytes for identityID.
+       */
+      public com.google.protobuf.ByteString
+          getIdentityIDBytes() {
+        java.lang.Object ref = identityID_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          identityID_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string identityID = 2;</code>
+       * @param value The identityID to set.
+       * @return This builder for chaining.
+       */
+      public Builder setIdentityID(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        identityID_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string identityID = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearIdentityID() {
+        identityID_ = getDefaultInstance().getIdentityID();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string identityID = 2;</code>
+       * @param value The bytes for identityID to set.
+       * @return This builder for chaining.
+       */
+      public Builder setIdentityIDBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        identityID_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:KickOffLineMsg)
+    }
+
+    // @@protoc_insertion_point(class_scope:KickOffLineMsg)
+    private static final IMMsg.KickOffLineMsg DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new IMMsg.KickOffLineMsg();
+    }
+
+    public static IMMsg.KickOffLineMsg getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<KickOffLineMsg>
+        PARSER = new com.google.protobuf.AbstractParser<KickOffLineMsg>() {
+      @java.lang.Override
+      public KickOffLineMsg parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<KickOffLineMsg> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<KickOffLineMsg> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public IMMsg.KickOffLineMsg getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_State_descriptor;
   private static final 
@@ -10803,6 +11528,11 @@ public final class IMMsg {
   private static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_HasReadReceiptMsg_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_KickOffLineMsg_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_KickOffLineMsg_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -10839,12 +11569,15 @@ public final class IMMsg {
       "Msg\022#\n\014sessionBasic\030\001 \001(\0132\r.SessionBasic" +
       "\"+\n\027AgentUserJoinSessionMsg\022\020\n\010username\030" +
       "\001 \001(\t\";\n\021HasReadReceiptMsg\022\021\n\tsessionID\030" +
-      "\001 \001(\t\022\023\n\013hasReadSeqs\030\002 \003(\003*\242\001\n\007MsgType\022\016" +
-      "\n\nJoinServer\020\000\022\017\n\013TextMsgType\020\001\022\016\n\nImgMs" +
-      "gType\020\002\022\020\n\014VideoMsgType\020\003\022\030\n\024CreateSessi" +
-      "onMsgType\020\004\022\037\n\033AgentUserJoinSessionMsgTy" +
-      "pe\020\005\022\031\n\025HasReadReceiptMsgType\020\006B\tB\005IMMsg" +
-      "P\000b\006proto3"
+      "\001 \001(\t\022\023\n\013hasReadSeqs\030\002 \003(\003\"4\n\016KickOffLin" +
+      "eMsg\022\016\n\006userID\030\001 \001(\t\022\022\n\nidentityID\030\002 \001(\t" +
+      "*\201\002\n\007MsgType\022\016\n\nJoinServer\020\000\022\017\n\013TextMsgT" +
+      "ype\020\001\022\016\n\nImgMsgType\020\002\022\020\n\014VideoMsgType\020\003\022" +
+      "\030\n\024CreateSessionMsgType\020\004\022\037\n\033AgentUserJo" +
+      "inSessionMsgType\020\005\022\031\n\025HasReadReceiptMsgT" +
+      "ype\020\006\022\026\n\022KickOffLineMsgType\020\007\022\016\n\nFaqMsgT" +
+      "ype\020\010\022\031\n\025KnowledgePointMsgType\020\t\022\032\n\026Know" +
+      "ledgeAnswerMsgType\020\nB\tB\005IMMsgP\000b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -10910,6 +11643,12 @@ public final class IMMsg {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_HasReadReceiptMsg_descriptor,
         new java.lang.String[] { "SessionID", "HasReadSeqs", });
+    internal_static_KickOffLineMsg_descriptor =
+      getDescriptor().getMessageTypes().get(10);
+    internal_static_KickOffLineMsg_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_KickOffLineMsg_descriptor,
+        new java.lang.String[] { "UserID", "IdentityID", });
     descriptor.resolveAllFeaturesImmutable();
   }
 
