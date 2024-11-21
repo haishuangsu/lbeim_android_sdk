@@ -734,7 +734,6 @@ class ChatScreenViewModel : ViewModel() {
                 )
                 val buffers = UploadBigFileUtils.blocks[mediaMessage.file.hashCode()]
 
-                // TODO 1.拿到文件路径重切块 2.断点续传需要跳过已传的块 3.剩余块上传，拼接 merge requestBody
                 if (buffers != null) {
                     var deltaSize = 0L
                     for (buffer in buffers) {
@@ -827,6 +826,9 @@ class ChatScreenViewModel : ViewModel() {
 
     fun continueSplitTrunksUpload(message: MessageEntity, file: File) {
         val job = viewModelScope.launch(Dispatchers.IO) {
+            IMLocalRepository.findMediaMsgSetUploadContinue(message.clientMsgID)
+            filterLocalMessages()
+
             val uploadTask = message.uploadTask
             val newTask = UploadTask()
             if (uploadTask != null) {
@@ -835,6 +837,7 @@ class ChatScreenViewModel : ViewModel() {
                 newTask.progress = uploadTask.progress
                 newTask.reqBodyJson = uploadTask.reqBodyJson
                 newTask.initTrunksRepJson = uploadTask.initTrunksRepJson
+                newTask.lastTrunkUploadLength = uploadTask.lastTrunkUploadLength
             }
 
             uploadTasks[message.clientMsgID] = newTask
@@ -843,19 +846,19 @@ class ChatScreenViewModel : ViewModel() {
 
             var executeIndex = newTask.executeIndex + 1
 
-            if (message.uploadTask?.taskLength!! > 1) {
-                UploadBigFileUtils.splitFile(file, UploadBigFileUtils.defaultChunkSize)
-            }
-//                else {
-//                    UploadBigFileUtils.splitFile(
-//                        file, initRep.data.node[0].size
-//                    )
-//                }
-
-            val buffers = UploadBigFileUtils.blocks[file.hashCode()]
             val initRep = Gson().fromJson(
                 newTask.initTrunksRepJson, InitMultiPartUploadRep::class.java
             )
+
+            if (newTask.taskLength > 1) {
+                UploadBigFileUtils.splitFile(file, UploadBigFileUtils.defaultChunkSize)
+            } else {
+                UploadBigFileUtils.splitFile(
+                    file, initRep.data.node[0].size
+                )
+            }
+
+            val buffers = UploadBigFileUtils.blocks[file.hashCode()]
 
             if (buffers != null) {
                 var deltaSize = 0L
@@ -883,15 +886,8 @@ class ChatScreenViewModel : ViewModel() {
                             byteCount = buffer.array().size
                         ), listener = { bytesWritten, contentLength ->
                             val totalProgress = (1.0 * (deltaSize + bytesWritten)) / file.length()
-                            val progress = (1.0 * bytesWritten) / contentLength
+                            val currentTrunkProgress = (1.0 * bytesWritten) / contentLength
 
-//                                Log.d(
-//                                    UPLOAD, "Split Upload progress ${
-//                                        initRep.data.node[buffers.indexOf(
-//                                            buffer
-//                                        )].url
-//                                    } ---->>>  split trunk bytesWritten: $bytesWritten, $contentLength, split trunk progress: $progress || Total progress: $totalProgress"
-//                                )
                             val emitProgress = progressList[message.clientMsgID]
                             if (emitProgress != null) {
                                 viewModelScope.launch(Dispatchers.Main) {
@@ -971,14 +967,16 @@ class ChatScreenViewModel : ViewModel() {
         job?.cancel()
         progress?.let {
             viewModelScope.launch(Dispatchers.IO) {
-                Log.d(UPLOAD, "暂停上传进度: ${it.value}")
+                Log.d(CONTINUE_UPLOAD, "暂停上传进度: ${it.value}")
                 val mergeReq = mergeMultiUploadReqQueue[clientMsgId]
                 val uploadTask = uploadTasks[clientMsgId]
-                Log.d(UPLOAD, "暂停截取 mergeReq ---->>> $mergeReq")
-                Log.d(UPLOAD, "暂停截取 uploadTask ---->>> $uploadTask")
+                Log.d(CONTINUE_UPLOAD, "暂停截取 mergeReq ---->>> $mergeReq")
+                Log.d(CONTINUE_UPLOAD, "暂停截取 uploadTask ---->>> $uploadTask")
                 uploadTask?.progress = progress.value
                 uploadTask?.reqBodyJson = Gson().toJson(mergeReq)
                 findMediaMsgAndUpdateProgress(clientMsgId, uploadTask = uploadTask)
+                // TODO 应只做 list 单 entry 更新
+                filterLocalMessages()
             }
         }
     }

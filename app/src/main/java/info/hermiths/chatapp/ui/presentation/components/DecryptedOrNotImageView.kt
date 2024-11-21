@@ -87,17 +87,16 @@ fun DecryptedOrNotImageView(
                     if (!message.pendingUpload && message.localFile?.isBigFile == true) {
                         // stop the split trunks upload
                         Log.d(
-                            ChatScreenViewModel.UPLOAD,
-                            "Tab, 缓存的进度： ${message.uploadTask?.progress}"
+                            CONTINUE_UPLOAD, "断点暂停, 缓存的进度： ${message.uploadTask?.progress}"
                         )
                         viewModel?.cancelJob(message.clientMsgID, progress = progress)
                     } else {
-                        Log.d(ChatScreenViewModel.UPLOAD, "续传 ---->>>> ${message.uploadTask}")
+                        Log.d(CONTINUE_UPLOAD, "续传 ---->>>> ${message.uploadTask}")
+                        Log.d(CONTINUE_UPLOAD, "续传 uri ---->>>> ${message.localFile?.path}")
                         Log.d(
-                            ChatScreenViewModel.UPLOAD,
-                            "续传 uri ---->>>> ${message.localFile?.path}"
+                            CONTINUE_UPLOAD,
+                            "续传 executeIndex: ${message.uploadTask?.executeIndex}"
                         )
-                        Log.d(CONTINUE_UPLOAD, "executeIndex: ${message.uploadTask?.executeIndex}")
                         val uri = Uri.parse(message.localFile?.path)
                         val cr = ctx.contentResolver
                         val projection = arrayOf(MediaStore.MediaColumns.DATA)
@@ -171,16 +170,18 @@ fun DecryptedOrNotImageView(
 //                                modifier = Modifier.size(width = 8.dp, height = 13.dp)
 //                            )
 //                        } else {
-                        val percent = "${progress.value * 100}"
-                        Text(
-                            "${
-                                percent.substring(
-                                    0, if (percent.length > 5) 5 else percent.length
+                            val percent = "${progress.value * 100}"
+                            Text(
+                                "${
+                                    percent.substring(
+                                        0, if (percent.length > 5) 5 else percent.length
+                                    )
+                                }%", style = TextStyle(
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.W600,
+                                    color = Color.White
                                 )
-                            }%", style = TextStyle(
-                                fontSize = 8.sp, fontWeight = FontWeight.W600, color = Color.White
                             )
-                        )
 //                        }
                     }
                 }
