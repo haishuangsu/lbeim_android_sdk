@@ -162,6 +162,7 @@ class ChatScreenViewModel : ViewModel() {
                 viewModelScope.launch(Dispatchers.IO) {
                     fetchSessionList()
                     observerConnection()
+                    fetchTimeoutConfig()
                 }
             } catch (e: Exception) {
                 println("Prepare error: $e")
@@ -330,6 +331,19 @@ class ChatScreenViewModel : ViewModel() {
         lazyListState?.requestScrollToItem(index)
     }
 
+    private suspend fun fetchTimeoutConfig() {
+        try {
+            val timeoutConfig = LbeImRepository.fetchTimeoutConfig(
+                lbeSign = BuildConfig.lbeSign,
+                lbeToken = lbeToken,
+                lbeIdentity = lbeIdentity,
+            )
+            Log.d(REALM, "FetchTimeoutConfig ---->>> $timeoutConfig")
+        } catch (e: Exception) {
+            println("FetchTimeoutConfig error --->>>  $e")
+        }
+    }
+
 
     private suspend fun fetchHistoryAndSync() {
         try {
@@ -422,9 +436,11 @@ class ChatScreenViewModel : ViewModel() {
                         IMMsg.MsgType.ImgMsgType -> 2
                         IMMsg.MsgType.VideoMsgType -> 3
                         IMMsg.MsgType.CreateSessionMsgType -> 4
-                        else -> 9
+                        IMMsg.MsgType.HasReadReceiptMsgType -> 6
+                        else -> 15
                     }
                 }
+                // TODO 为 6 已读消息要标记
                 Log.d(REALM, "收到消息 --->> seq: $seq, remoteLastMsgType: $remoteLastMsgType")
                 viewModelScope.launch {
                     val entity = protoToEntity(msgEntity.msgBody)

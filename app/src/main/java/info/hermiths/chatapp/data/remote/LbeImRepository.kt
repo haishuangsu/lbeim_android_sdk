@@ -1,14 +1,18 @@
 package info.hermiths.chatapp.data.remote
 
 import info.hermiths.chatapp.model.req.HistoryBody
+import info.hermiths.chatapp.model.req.MarkReadReqBody
 import info.hermiths.chatapp.model.req.MsgBody
 import info.hermiths.chatapp.model.req.SessionBody
 import info.hermiths.chatapp.model.req.SessionListReq
+import info.hermiths.chatapp.model.req.TimeoutReqBody
 import info.hermiths.chatapp.model.resp.History
 import info.hermiths.chatapp.model.resp.SendMsg
 import info.hermiths.chatapp.model.resp.Session
 import info.hermiths.chatapp.model.resp.SessionListRep
+import info.hermiths.chatapp.model.resp.TimeoutRespBody
 import info.hermiths.chatapp.service.RetrofitInstance
+import okhttp3.Response
 
 object LbeImRepository {
     private val lbeIMRepository = RetrofitInstance.imApiService
@@ -38,6 +42,25 @@ object LbeImRepository {
     ): SendMsg {
         return lbeIMRepository.sendMsg(
             lbeToken = lbeToken, lbeSession = lbeSession, lbeIdentity = lbeIdentity, body = body
+        )
+    }
+
+    suspend fun fetchTimeoutConfig(
+        lbeSign: String, lbeToken: String, lbeIdentity: String
+    ): TimeoutRespBody {
+        return lbeIMRepository.fetchTimeoutConfig(
+            lbeSign = lbeSign,
+            lbeToken = lbeToken,
+            lbeIdentity = lbeIdentity,
+            body = TimeoutReqBody(userType = 2)
+        )
+    }
+
+    suspend fun markRead(
+        lbeSign: String, lbeToken: String, lbeIdentity: String, body: MarkReadReqBody
+    ): Response {
+        return lbeIMRepository.markRead(
+            lbeSign = lbeSign, lbeToken = lbeToken, lbeIdentity = lbeIdentity, body = body
         )
     }
 }
