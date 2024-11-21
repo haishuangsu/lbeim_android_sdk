@@ -73,5 +73,5 @@ interface LbeIMAPiService {
         @Header(LBE_TOKEN) lbeToken: String,
         @Header(LBE_IDENTITY) lbeIdentity: String,
         @Body body: MarkReadReqBody
-    ): Response
+    )
 }

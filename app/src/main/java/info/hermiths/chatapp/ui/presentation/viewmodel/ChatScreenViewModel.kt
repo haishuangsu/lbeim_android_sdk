@@ -40,6 +40,7 @@ import info.hermiths.chatapp.model.req.CompleteMultiPartUploadReq
 import info.hermiths.chatapp.model.req.ConfigBody
 import info.hermiths.chatapp.model.req.HistoryBody
 import info.hermiths.chatapp.model.req.InitMultiPartUploadBody
+import info.hermiths.chatapp.model.req.MarkReadReqBody
 import info.hermiths.chatapp.model.req.MsgBody
 import info.hermiths.chatapp.model.req.Pagination
 import info.hermiths.chatapp.model.req.Part
@@ -283,6 +284,7 @@ class ChatScreenViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.Main) {
             val messages = uiState.value?.messages?.toMutableList()
             if (!send) {
+                Log.d(REALM, "------>>>>>> Act")
                 messages?.addAll(0, subList)
 
 //                _messages.update { currentState ->
@@ -344,6 +346,24 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
+    fun markRead(message: MessageEntity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val markRead = LbeImRepository.markRead(
+                    lbeSign = BuildConfig.lbeSign,
+                    lbeToken = lbeToken,
+                    lbeIdentity = lbeIdentity,
+                    body = MarkReadReqBody(sessionId = message.sessionId, seq = message.msgSeq)
+                )
+                Log.d(REALM, "MarkRead ---->>> $markRead")
+                IMLocalRepository.findMsgAndMarkRead(message.clientMsgID)
+                filterLocalMessages(send = true)
+            } catch (e: Exception) {
+                println("Mark Msg Read error --->>>  $e")
+            }
+        }
+    }
+
 
     private suspend fun fetchHistoryAndSync() {
         try {
@@ -369,6 +389,7 @@ class ChatScreenViewModel : ViewModel() {
                             msgType = content.msgType
                             sendStamp = content.clientMsgID.split("-").last().toLong()
                             msgSeq = content.msgSeq
+                            readed = (content.status == 1)
                         }
                         IMLocalRepository.insertMessage(entity)
                     }
@@ -439,14 +460,15 @@ class ChatScreenViewModel : ViewModel() {
                         IMMsg.MsgType.HasReadReceiptMsgType -> 6
                         else -> 15
                     }
-                }
-                // TODO 为 6 已读消息要标记
-                Log.d(REALM, "收到消息 --->> seq: $seq, remoteLastMsgType: $remoteLastMsgType")
-                viewModelScope.launch {
-                    val entity = protoToEntity(msgEntity.msgBody)
-                    IMLocalRepository.insertMessage(entity)
-                    if (entity.senderUid != uid) {
-                        attachMsgToUI(entity)
+
+                    // TODO 为 6 已读消息要标记
+                    Log.d(TAG, "收到消息 --->> seq: $seq, remoteLastMsgType: $remoteLastMsgType")
+                    viewModelScope.launch {
+                        val entity = protoToEntity(msgEntity.msgBody)
+                        IMLocalRepository.insertMessage(entity)
+                        if (entity.senderUid != uid) {
+                            attachMsgToUI(entity)
+                        }
                     }
                 }
             }
@@ -843,7 +865,7 @@ class ChatScreenViewModel : ViewModel() {
     fun continueSplitTrunksUpload(message: MessageEntity, file: File) {
         val job = viewModelScope.launch(Dispatchers.IO) {
             IMLocalRepository.findMediaMsgSetUploadContinue(message.clientMsgID)
-            filterLocalMessages()
+            filterLocalMessages(send = true)
 
             val uploadTask = message.uploadTask
             val newTask = UploadTask()
@@ -992,7 +1014,7 @@ class ChatScreenViewModel : ViewModel() {
                 uploadTask?.reqBodyJson = Gson().toJson(mergeReq)
                 findMediaMsgAndUpdateProgress(clientMsgId, uploadTask = uploadTask)
                 // TODO 应只做 list 单 entry 更新
-                filterLocalMessages()
+                filterLocalMessages(send = true)
             }
         }
     }

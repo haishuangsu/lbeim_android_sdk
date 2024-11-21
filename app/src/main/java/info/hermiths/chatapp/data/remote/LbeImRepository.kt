@@ -58,8 +58,8 @@ object LbeImRepository {
 
     suspend fun markRead(
         lbeSign: String, lbeToken: String, lbeIdentity: String, body: MarkReadReqBody
-    ): Response {
-        return lbeIMRepository.markRead(
+    ) {
+        lbeIMRepository.markRead(
             lbeSign = lbeSign, lbeToken = lbeToken, lbeIdentity = lbeIdentity, body = body
         )
     }
