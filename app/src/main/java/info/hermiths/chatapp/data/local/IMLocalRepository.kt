@@ -9,7 +9,7 @@ import io.realm.kotlin.query.Sort
 import org.mongodb.kbson.ObjectId
 
 object IMLocalRepository {
-    private val realm = RealmInstance.realm
+    val realm = RealmInstance.realm
 
     fun filterMessages(sessionId: String): List<MessageEntity> {
         return realm.query<MessageEntity>(
@@ -116,11 +116,21 @@ object IMLocalRepository {
         }
     }
 
-    suspend fun findMsgAndMarkRead(clientMsgID: String) {
-        Log.d(ChatScreenViewModel.REALM, "消息标记已读 --- $clientMsgID ")
+    suspend fun findMsgAndMarkMeRead(clientMsgID: String) {
+        Log.d(ChatScreenViewModel.REALM, "我标记消息已读 --- $clientMsgID ")
         realm.write {
             val msg = query<MessageEntity>(
                 query = "clientMsgID == $0", clientMsgID
+            ).first().find()
+            msg?.readed = true
+        }
+    }
+
+    suspend fun findMsgAndMarkCsRead(sessionId: String, seq: Int) {
+        Log.d(ChatScreenViewModel.REALM, "客服标记消息已读 --- $sessionId, $seq")
+        realm.write {
+            val msg = query<MessageEntity>(
+                query = "sessionId == $0 AND msgSeq == $1", sessionId, seq
             ).first().find()
             msg?.readed = true
         }

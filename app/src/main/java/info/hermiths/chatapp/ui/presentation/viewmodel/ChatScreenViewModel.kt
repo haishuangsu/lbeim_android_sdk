@@ -70,6 +70,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -79,6 +80,8 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.security.MessageDigest
+import java.util.Timer
+import java.util.TimerTask
 
 enum class ConnectionStatus {
     NOT_STARTED, OPENED, CLOSED, CONNECTING, CLOSING, FAILED, RECEIVED
@@ -114,11 +117,18 @@ class ChatScreenViewModel : ViewModel() {
     }
 
     private val jobs: MutableMap<String, Job> = mutableMapOf()
-    val mergeMultiUploadReqQueue: MutableMap<String, CompleteMultiPartUploadReq> = mutableMapOf()
-    val uploadTasks: MutableMap<String, UploadTask> = mutableMapOf()
+    private val mergeMultiUploadReqQueue: MutableMap<String, CompleteMultiPartUploadReq> =
+        mutableMapOf()
+    private val uploadTasks: MutableMap<String, UploadTask> = mutableMapOf()
 
     private val _uiState = MutableLiveData(ChatScreenUiState())
     val uiState: LiveData<ChatScreenUiState> = _uiState
+
+    var isTimeOut = MutableStateFlow(false)
+
+    var lastCsMessage: MessageEntity? = null
+    var timer: Timer? = null
+    var timeOut: Long = 1
 
 //    private val _messages = MutableStateFlow<List<MessageEntity>>(mutableListOf())
 //    val messageList = _messages
@@ -264,6 +274,8 @@ class ChatScreenViewModel : ViewModel() {
         val yu = cacheMessages.size % showPageSize
         Log.d(REALM, "分页总页数: $currentSessionTotalPages, 取余: $yu")
 
+        // TODO send 概念有点模糊，现在为了滑动到最下面，直接重置到最后一页；
+        // TODO 分页的时候直接改变 currentPage
         if (send) currentPage = currentSessionTotalPages
 
         val subList = if (currentPage == 1 && yu != 0) {
@@ -340,7 +352,8 @@ class ChatScreenViewModel : ViewModel() {
                 lbeToken = lbeToken,
                 lbeIdentity = lbeIdentity,
             )
-            Log.d(REALM, "FetchTimeoutConfig ---->>> $timeoutConfig")
+            timeOut = timeoutConfig.data.timeout
+            Log.d(REALM, "FetchTimeoutConfig ---->>> $timeoutConfig, timeOut: $timeOut")
         } catch (e: Exception) {
             println("FetchTimeoutConfig error --->>>  $e")
         }
@@ -356,7 +369,7 @@ class ChatScreenViewModel : ViewModel() {
                     body = MarkReadReqBody(sessionId = message.sessionId, seq = message.msgSeq)
                 )
                 Log.d(REALM, "MarkRead ---->>> $markRead")
-                IMLocalRepository.findMsgAndMarkRead(message.clientMsgID)
+                IMLocalRepository.findMsgAndMarkMeRead(message.clientMsgID)
                 filterLocalMessages(send = true)
             } catch (e: Exception) {
                 println("Mark Msg Read error --->>>  $e")
@@ -437,43 +450,103 @@ class ChatScreenViewModel : ViewModel() {
     }
 
     private fun handleOnMessageReceived(message: Message) {
-        Log.d(TAG, "handleOnMessageReceived: $message")
+//        Log.d(TAG, "handleOnMessageReceived: $message")
         try {
             val value = (message as Message.Bytes).value
             viewModelScope.launch {
                 val msgEntity = IMMsg.MsgEntityToFrontEnd.parseFrom(value)
-                Log.d(TAG, "handleOnMessageReceived protobuf bytes: $msgEntity")
-                if (msgEntity.msgBody.sessionId.isEmpty() || msgEntity.msgBody.clientMsgID.isEmpty()) {
+//                if (msgEntity.msgBody.sessionId.isEmpty() || msgEntity.msgBody.clientMsgID.isEmpty()) {
+                if (msgEntity.msgBody.senderUid == "111") {
                     return@launch
                 }
-                val receivedReq = msgEntity.msgBody.msgSeq
-                if (receivedReq - seq > 2) {
-                    fetchHistoryAndSync()
-                } else {
-                    seq = receivedReq
+
+                Log.d(TAG, "handleOnMessageReceived protobuf bytes --->>>  $msgEntity")
+
+
+                if (msgEntity.msgType == IMMsg.MsgType.TextMsgType || msgEntity.msgType == IMMsg.MsgType.ImgMsgType || msgEntity.msgType == IMMsg.MsgType.VideoMsgType) {
+                    val receivedReq = msgEntity.msgBody.msgSeq
                     remoteLastMsgType = when (msgEntity.msgBody.msgType) {
-                        IMMsg.MsgType.JoinServer -> 0
                         IMMsg.MsgType.TextMsgType -> 1
                         IMMsg.MsgType.ImgMsgType -> 2
                         IMMsg.MsgType.VideoMsgType -> 3
-                        IMMsg.MsgType.CreateSessionMsgType -> 4
-                        IMMsg.MsgType.HasReadReceiptMsgType -> 6
                         else -> 15
                     }
 
-                    // TODO 为 6 已读消息要标记
-                    Log.d(TAG, "收到消息 --->> seq: $seq, remoteLastMsgType: $remoteLastMsgType")
-                    viewModelScope.launch {
+                    if (receivedReq - seq > 2) {
+                        fetchHistoryAndSync()
+                    } else {
+                        seq = receivedReq
+
+                        Log.d(
+                            TAG, "收到消息 --->> seq: $seq, remoteLastMsgType: $remoteLastMsgType"
+                        )
                         val entity = protoToEntity(msgEntity.msgBody)
-                        IMLocalRepository.insertMessage(entity)
-                        if (entity.senderUid != uid) {
-                            attachMsgToUI(entity)
+
+                        lastCsMessage = entity
+                        scheduleTimeoutJob()
+
+                        viewModelScope.launch {
+                            IMLocalRepository.insertMessage(entity)
+                            if (entity.senderUid != uid) {
+                                addSingleMsgToUI(entity)
+                            }
                         }
                     }
+                }
+
+                if (msgEntity.msgType == IMMsg.MsgType.HasReadReceiptMsgType) {
+                    val hasReadMsg = msgEntity.hasReadReceiptMsg
+                    val sessionId = hasReadMsg.sessionID
+                    val markReadList = hasReadMsg.hasReadSeqsList
+
+                    Log.d(
+                        TAG,
+                        "收到客服标记已读消息 --->> sessionId: $sessionId, markReadList: $markReadList}"
+                    )
+                    for (seq in markReadList) {
+                        IMLocalRepository.findMsgAndMarkCsRead(sessionId, seq.toInt())
+                    }
+                    filterLocalMessages(send = true)
+//                    viewModelScope.launch {
+//                        markMsgReadFromUI(sessionId, markReadList)
+//                    }
                 }
             }
         } catch (e: Exception) {
             Log.e(TAG, "handleOnMessageReceived: ", e)
+        }
+    }
+
+    private fun scheduleTimeoutJob(){
+        val period = 1000 * 6 * timeOut
+        if (timer == null) {
+            Log.d("TimeOut", "超时提醒，period: $period")
+            timer = Timer()
+            timer?.schedule(object : TimerTask() {
+                override fun run() {
+                    Log.d("TimeOut", "超时提醒， seq: $seq, last: ${lastCsMessage?.msgSeq}")
+                    if (lastCsMessage?.msgSeq!! <= seq) {
+                        Log.d("TimeOut", "超时提醒，用户没回复")
+                        isTimeOut.update { _ -> true }
+                        timer?.cancel()
+                        timer = null
+                    }
+                }
+            }, period)
+        } else {
+            timer?.cancel()
+            timer = null
+            timer = Timer()
+            timer?.schedule(object : TimerTask() {
+                override fun run() {
+                    if (lastCsMessage?.msgSeq!! <= seq) {
+                        Log.d("TimeOut", "客服回复重启，用户没回复， seq: $seq, last: ${lastCsMessage?.msgSeq}")
+                        isTimeOut.update { _ -> true }
+                        timer?.cancel()
+                        timer = null
+                    }
+                }
+            }, period)
         }
     }
 
@@ -514,6 +587,14 @@ class ChatScreenViewModel : ViewModel() {
                     body = msgBody
                 )
                 seq = senMsg.data.msgReq
+                if (lastCsMessage != null) {
+                    Log.d("TimeOut", "seq: $seq, lastCsSeq: ${lastCsMessage!!.msgSeq}")
+                    if (seq > (lastCsMessage?.msgSeq ?: 0)) {
+                        isTimeOut.update { false }
+                        timer?.cancel()
+                        timer = null
+                    }
+                }
                 remoteLastMsgType = msgBody.msgType
                 IMLocalRepository.findMsgAndSetSeq(msgBody.clientMsgId, seq)
             } catch (e: Exception) {
@@ -1048,8 +1129,8 @@ class ChatScreenViewModel : ViewModel() {
         return thumbnailResp
     }
 
-    private fun attachMsgToUI(message: MessageEntity) {
-        Log.d(TAG, "attachMsgToUI: $message")
+    private fun addSingleMsgToUI(message: MessageEntity) {
+        Log.d(TAG, "addSingleMsgToUI: $message")
         val messages = uiState.value?.messages?.toMutableList()
         messages?.add(message)
         _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
@@ -1059,6 +1140,36 @@ class ChatScreenViewModel : ViewModel() {
 //            news.add(message)
 //            news
 //        }
+    }
+
+    private fun updateSingleMsgFromUI(message: MessageEntity) {
+        Log.d(TAG, "updateSingleMsgFromUI: $message")
+        val messages = uiState.value?.messages?.toMutableList()
+        val cacheMsg = messages?.find { it.clientMsgID == message.clientMsgID }
+
+        Log.d(TAG, "查找到 msg --->>> $message")
+        cacheMsg?.readed = true
+        Log.d(
+            TAG,
+            "msg after mark read--->>> ${messages?.find { it.clientMsgID == message.clientMsgID }?.readed}"
+        )
+        _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
+    }
+
+    private suspend fun markMsgReadFromUI(sessionId: String, seqs: MutableList<Long>) {
+        val messages = uiState.value?.messages?.toMutableList()
+        for (seq in seqs) {
+            val cacheMsg = messages?.find { it.sessionId == sessionId && it.msgSeq == seq.toInt() }
+            Log.d(TAG, "查找到 msg --->>> $cacheMsg")
+            IMLocalRepository.realm.write {
+                cacheMsg?.readed = true
+            }
+            Log.d(
+                TAG,
+                "msg after mark read--->>> ${messages?.find { it.sessionId == sessionId && it.msgSeq == seq.toInt() }?.readed}"
+            )
+        }
+        _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
     }
 
     private fun clearInput() {
