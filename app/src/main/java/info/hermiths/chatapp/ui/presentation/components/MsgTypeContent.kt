@@ -48,6 +48,26 @@ fun MsgTypeContent(
                                     viewModel.reSendMessage(message.clientMsgID)
                                 })
                         Spacer(Modifier.width(9.dp))
+                    } else {
+                        if (message.readed) {
+                            Image(painter = painterResource(R.drawable.readed),
+                                contentDescription = "send fail",
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .clickable {
+                                        viewModel.reSendMessage(message.clientMsgID)
+                                    })
+                            Spacer(Modifier.width(9.dp))
+                        } else {
+                            Image(painter = painterResource(R.drawable.no_read),
+                                contentDescription = "send fail",
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .clickable {
+                                        viewModel.reSendMessage(message.clientMsgID)
+                                    })
+                            Spacer(Modifier.width(9.dp))
+                        }
                     }
 
                     Surface(
