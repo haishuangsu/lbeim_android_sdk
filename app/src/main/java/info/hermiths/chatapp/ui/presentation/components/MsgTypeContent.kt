@@ -40,33 +40,31 @@ fun MsgTypeContent(
             if (fromUser) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (!message.sendSuccess) {
-                        Image(painter = painterResource(R.drawable.send_fail),
+                        Image(
+                            painter = painterResource(R.drawable.send_fail),
                             contentDescription = "send fail",
                             modifier = Modifier
                                 .size(16.dp)
                                 .clickable {
                                     viewModel.reSendMessage(message.clientMsgID)
-                                })
-                        Spacer(Modifier.width(9.dp))
+                                },
+                        )
+                        Spacer(Modifier.width(8.dp))
                     } else {
                         if (message.readed) {
-                            Image(painter = painterResource(R.drawable.readed),
-                                contentDescription = "send fail",
-                                modifier = Modifier
-                                    .size(16.dp)
-                                    .clickable {
-                                        viewModel.reSendMessage(message.clientMsgID)
-                                    })
-                            Spacer(Modifier.width(9.dp))
+                            Image(
+                                painter = painterResource(R.drawable.readed),
+                                contentDescription = "read msg",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
                         } else {
-                            Image(painter = painterResource(R.drawable.no_read),
-                                contentDescription = "send fail",
-                                modifier = Modifier
-                                    .size(16.dp)
-                                    .clickable {
-                                        viewModel.reSendMessage(message.clientMsgID)
-                                    })
-                            Spacer(Modifier.width(9.dp))
+                            Image(
+                                painter = painterResource(R.drawable.no_read),
+                                contentDescription = "unread",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
                         }
                     }
 
@@ -117,12 +115,43 @@ fun MsgTypeContent(
                     width = 160.dp, height = 90.dp
                 )
             ) {
-                DecryptedOrNotImageView(
-                    navController = navController,
-                    viewModel = viewModel,
-                    message = message,
-                    fullScreen = false,
-                )
+                if (fromUser) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (!message.sendSuccess) {
+                            // TODO
+                        } else {
+                            if (message.readed) {
+                                Image(
+                                    painter = painterResource(R.drawable.readed),
+                                    contentDescription = "read msg",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                            } else {
+                                Image(
+                                    painter = painterResource(R.drawable.no_read),
+                                    contentDescription = "unread",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                            }
+                        }
+
+                        DecryptedOrNotImageView(
+                            navController = navController,
+                            viewModel = viewModel,
+                            message = message,
+                            fullScreen = false,
+                        )
+                    }
+                } else {
+                    DecryptedOrNotImageView(
+                        navController = navController,
+                        viewModel = viewModel,
+                        message = message,
+                        fullScreen = false,
+                    )
+                }
             }
         }
 
@@ -132,12 +161,43 @@ fun MsgTypeContent(
                     width = 160.dp, height = 90.dp
                 )
             ) {
-                DecryptedOrNotImageView(
-                    navController = navController,
-                    viewModel = viewModel,
-                    message = message,
-                    fullScreen = false,
-                )
+                if (fromUser) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (!message.sendSuccess) {
+                            // TODO
+                        } else {
+                            if (message.readed) {
+                                Image(
+                                    painter = painterResource(R.drawable.readed),
+                                    contentDescription = "read msg",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                            } else {
+                                Image(
+                                    painter = painterResource(R.drawable.no_read),
+                                    contentDescription = "unread",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                            }
+                        }
+
+                        DecryptedOrNotImageView(
+                            navController = navController,
+                            viewModel = viewModel,
+                            message = message,
+                            fullScreen = false,
+                        )
+                    }
+                } else {
+                    DecryptedOrNotImageView(
+                        navController = navController,
+                        viewModel = viewModel,
+                        message = message,
+                        fullScreen = false,
+                    )
+                }
             }
         }
 
