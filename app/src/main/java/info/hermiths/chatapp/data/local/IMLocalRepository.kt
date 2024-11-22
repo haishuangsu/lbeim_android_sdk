@@ -14,7 +14,7 @@ object IMLocalRepository {
     fun filterMessages(sessionId: String): List<MessageEntity> {
         return realm.query<MessageEntity>(
             query = "sessionId == $0", sessionId
-        ).sort("sendStamp", Sort.ASCENDING).find()
+        ).sort("sendTime", Sort.ASCENDING).find()
     }
 
     fun findMsgByClientMsgId(clientMsgID: String): MessageEntity? {
@@ -99,7 +99,7 @@ object IMLocalRepository {
             msg?.clientMsgID = newClientMsgId
             msg?.msgSeq = msgSeq
             msg?.sendSuccess = true
-            msg?.sendStamp = newClientMsgId.split("-").last().toLong()
+            msg?.sendTime = newClientMsgId.split("-").last().toLong()
         }
     }
 

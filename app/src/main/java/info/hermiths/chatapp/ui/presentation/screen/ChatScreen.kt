@@ -78,6 +78,7 @@ import info.hermiths.chatapp.ui.presentation.components.NavRoute
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 import info.hermiths.chatapp.ui.presentation.viewmodel.ConnectionStatus
 import info.hermiths.chatapp.utils.FileUtils
+import info.hermiths.chatapp.utils.TimeUtils
 import java.io.File
 
 data class ChatScreenUiState(
@@ -198,6 +199,7 @@ fun ChatScreen(
                         },
                     ) { index, message ->
                         MessageItem(
+                            uiState.messages,
                             message = message,
                             if (message.senderUid == ChatScreenViewModel.uid) MessagePosition.RIGHT
                             else MessagePosition.LEFT,
@@ -239,8 +241,7 @@ fun ChatScreen(
                     AnimatedVisibility(visible = timeoutVisibility) {
                         Column {
                             Surface(
-                                color = Color(0xffEBEBEB),
-                                modifier = Modifier.fillMaxWidth()
+                                color = Color(0xffEBEBEB), modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text(
                                     "您已超过${viewModel.timeOut}分钟未回复",
@@ -290,8 +291,7 @@ fun ChatScreen(
                                 if (pickFilesResult.value.isNotEmpty()) {
                                     val uris = pickFilesResult.value
                                     Log.d(
-                                        ChatScreenViewModel.FILESELECT,
-                                        "${pickFilesResult.value}"
+                                        ChatScreenViewModel.FILESELECT, "${pickFilesResult.value}"
                                     )
                                     for (uri in uris) {
                                         val cr = context.contentResolver
@@ -434,6 +434,7 @@ fun NickIdPrompt(onStart: (nid: String, nName: String, lbeIdentity: String) -> U
 
 @Composable
 fun MessageItem(
+    messages: List<MessageEntity>,
     message: MessageEntity,
     messagePosition: MessagePosition,
     viewModel: ChatScreenViewModel,
@@ -444,80 +445,134 @@ fun MessageItem(
             .fillMaxWidth()
             .padding(
                 start = if (messagePosition == MessagePosition.LEFT) 0.dp else 24.dp,
-                end = if (messagePosition == MessagePosition.RIGHT) 0.dp else 24.dp
+                end = if (messagePosition == MessagePosition.RIGHT) 0.dp else 24.dp,
+                bottom = 20.dp
             ),
         contentAlignment = if (messagePosition == MessagePosition.LEFT) Alignment.TopStart else Alignment.BottomEnd
     ) {
         if (messagePosition == MessagePosition.LEFT) {
-            RecievFromCs(message, messagePosition, viewModel = viewModel, navController)
+            RecievFromCs(messages, message, messagePosition, viewModel = viewModel, navController)
         } else {
-            UserInput(message, messagePosition, viewModel = viewModel, navController)
+            UserInput(messages, message, messagePosition, viewModel = viewModel, navController)
         }
     }
 }
 
 @Composable
 fun RecievFromCs(
+    messages: List<MessageEntity>,
     message: MessageEntity,
     messagePosition: MessagePosition,
     viewModel: ChatScreenViewModel,
     navController: NavController
 ) {
-    Row {
-        // avatar
-        Image(
-            painter = painterResource(id = R.drawable.cs_avatar),
-            contentDescription = "",
-            modifier = Modifier.size(32.dp)
+    val currentIndex = messages.indexOf(message)
+    var needShowTime = false
+    if (currentIndex != 0) {
+        val prev = messages[currentIndex - 1]
+        Log.d(
+            "History time",
+            "currentIndex: $currentIndex, sendTime: ${message.sendTime}, ${message.clientMsgID};  prev sendTime: ${prev.sendTime}"
         )
+        val diff = (message.sendTime.toLong() - prev.sendTime.toLong()) / 1000
+        Log.d("History time", "index: $currentIndex, 距离上条消息时间: $diff s")
+        if (diff > 60 * 3) {
+            needShowTime = true
+            Log.d("History time", "currentIndex: $currentIndex, 超过3分钟显示")
+        }
+    }
 
-        Column(
-            modifier = Modifier.padding(8.dp)
-        ) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        AnimatedVisibility(visible = needShowTime) {
             Text(
-                text = message.senderUid,
-                modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
-                style = TextStyle(
-                    fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)
-                )
+                TimeUtils.formatTime(message.sendTime), style = TextStyle(
+                    color = Color(0xff979797), fontSize = 10.sp, fontWeight = FontWeight.W400
+                ), textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 9.dp)
             )
-            Spacer(Modifier.height(8.dp))
-            MsgTypeContent(message, viewModel, navController, false)
+        }
+
+        Row {
+            // avatar
+            Image(
+                painter = painterResource(id = R.drawable.cs_avatar),
+                contentDescription = "",
+                modifier = Modifier.size(32.dp)
+            )
+
+            Column(
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Text(
+                    text = message.senderUid,
+                    modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
+                    style = TextStyle(
+                        fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)
+                    )
+                )
+                Spacer(Modifier.height(8.dp))
+                MsgTypeContent(message, viewModel, navController, false)
+            }
         }
     }
 }
 
 @Composable
 fun UserInput(
+    messages: List<MessageEntity>,
     message: MessageEntity,
     messagePosition: MessagePosition,
     viewModel: ChatScreenViewModel,
     navController: NavController
 ) {
-    Row(horizontalArrangement = Arrangement.End) {
-        Column(
-            horizontalAlignment = Alignment.End, modifier = Modifier.padding(8.dp)
-        ) {
+    val currentIndex = messages.indexOf(message)
+    var needShowTime = false
+    if (currentIndex != 0) {
+        val prev = messages[currentIndex - 1]
+        Log.d(
+            "History time",
+            "currentIndex: $currentIndex, sendTime: ${message.sendTime}, ${message.clientMsgID};  prev sendTime: ${prev.sendTime}"
+        )
+        val diff = (message.sendTime.toLong() - prev.sendTime.toLong()) / 1000
+        Log.d("History time", "currentIndex: $currentIndex, 距离上条消息时间: $diff s")
+        if (diff > 60 * 3) {
+            Log.d("History time", "currentIndex: $currentIndex, 超过3分钟显示")
+            needShowTime = true
+        }
+    }
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        AnimatedVisibility(visible = needShowTime) {
             Text(
-                text = message.senderUid,
-                modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
-                style = TextStyle(
-                    fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)
-                )
+                TimeUtils.formatTime(message.sendTime), style = TextStyle(
+                    color = Color(0xff979797), fontSize = 10.sp, fontWeight = FontWeight.W400
+                ), textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 9.dp)
             )
-            Spacer(Modifier.height(8.dp))
-            MsgTypeContent(message, viewModel, navController, true)
         }
 
-        // avatar
-        AsyncImage(
-            model = "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg",
-            contentDescription = "Yo",
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape),
-        )
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            Column(
+                horizontalAlignment = Alignment.End, modifier = Modifier.padding(8.dp)
+            ) {
+                Text(
+                    text = message.senderUid,
+                    modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
+                    style = TextStyle(
+                        fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)
+                    )
+                )
+                Spacer(Modifier.height(8.dp))
+                MsgTypeContent(message, viewModel, navController, true)
+            }
+
+            // avatar
+            AsyncImage(
+                model = "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg",
+                contentDescription = "Yo",
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape),
+            )
 
 //        SubcomposeAsyncImage(
 //            model = "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg",
@@ -533,6 +588,7 @@ fun UserInput(
 //
 //            },
 //        )
+        }
     }
 }
 

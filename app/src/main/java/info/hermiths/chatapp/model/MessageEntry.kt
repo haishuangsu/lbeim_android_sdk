@@ -18,9 +18,9 @@ class MessageEntity : RealmObject {
 
     var clientMsgID: String = ""
 
-    var sendStamp: Long = 0L
+//    var sendStamp: Long = 0L
 
-    var sendTime: String = ""
+    var sendTime: Long = 0L
 
     // true: send success; false: send fail
     var sendSuccess: Boolean = true
@@ -37,7 +37,7 @@ class MessageEntity : RealmObject {
     var timestamp: RealmInstant = RealmInstant.now()
 
     override fun toString(): String {
-        return "MessageEntity(sessionId: $sessionId, senderUid: $senderUid, msgBody: $msgBody, msgType: $msgType, msgSeq: $msgSeq, clientMsgID: $clientMsgID, sendStamp: $sendStamp, sendSuccess: $sendSuccess, readed: $readed)"
+        return "MessageEntity(sessionId: $sessionId, senderUid: $senderUid, msgBody: $msgBody, msgType: $msgType, msgSeq: $msgSeq, clientMsgID: $clientMsgID, sendTime: $sendTime, sendSuccess: $sendSuccess, readed: $readed)"
     }
 }
 
