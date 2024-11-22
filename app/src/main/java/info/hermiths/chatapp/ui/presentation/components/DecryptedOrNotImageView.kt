@@ -32,12 +32,10 @@ import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import com.google.gson.Gson
 import info.hermiths.chatapp.R
-import info.hermiths.chatapp.model.MediaMessage
 import info.hermiths.chatapp.model.MessageEntity
 import info.hermiths.chatapp.model.resp.MediaSource
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel.Companion.CONTINUE_UPLOAD
-import info.hermiths.chatapp.utils.FileUtils
 import java.io.File
 
 
@@ -63,6 +61,8 @@ fun DecryptedOrNotImageView(
     } catch (e: Exception) {
         println("DecryptedOrNotImageView Json parse error -->> ${message.msgBody}")
     }
+
+    println("DecryptedOrNotImageView -->> fullScreen: $fullScreen, loadSource: $loadSource")
     val progress = ChatScreenViewModel.progressList[message.clientMsgID]?.collectAsState()
     val thumbBmp = ChatScreenViewModel.uploadThumbs[message.clientMsgID]?.collectAsState()
     Log.d(ChatScreenViewModel.UPLOAD, "thumbBmp isExist: ${thumbBmp == null}, thumbUrl: $thumbUrl")
@@ -114,7 +114,8 @@ fun DecryptedOrNotImageView(
                     }
                 }
             }
-        if (thumbBmp != null) {
+
+        if (thumbBmp != null && !fullScreen) {
             Image(
                 bitmap = thumbBmp.value.asImageBitmap(),
                 contentDescription = "Yo",
@@ -170,18 +171,18 @@ fun DecryptedOrNotImageView(
 //                                modifier = Modifier.size(width = 8.dp, height = 13.dp)
 //                            )
 //                        } else {
-                            val percent = "${progress.value * 100}"
-                            Text(
-                                "${
-                                    percent.substring(
-                                        0, if (percent.length > 5) 5 else percent.length
-                                    )
-                                }%", style = TextStyle(
-                                    fontSize = 8.sp,
-                                    fontWeight = FontWeight.W600,
-                                    color = Color.White
+                        val percent = "${progress.value * 100}"
+                        Text(
+                            "${
+                                percent.substring(
+                                    0, if (percent.length > 5) 5 else percent.length
                                 )
+                            }%", style = TextStyle(
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.W600,
+                                color = Color.White
                             )
+                        )
 //                        }
                     }
                 }

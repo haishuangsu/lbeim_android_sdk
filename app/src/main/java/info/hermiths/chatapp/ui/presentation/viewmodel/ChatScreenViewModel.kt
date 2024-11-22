@@ -725,7 +725,6 @@ class ChatScreenViewModel : ViewModel() {
                 )
                 Log.d(UPLOAD, "Single upload ---->>> ${rep.data.paths[0]}")
                 val mediaSource = MediaSource(
-                    isBigFile = false,
                     width = mediaMessage.width,
                     height = mediaMessage.height,
                     thumbnail = Thumbnail(
@@ -804,7 +803,6 @@ class ChatScreenViewModel : ViewModel() {
             val job = viewModelScope.launch(Dispatchers.IO) {
                 val thumbnailResp = uploadThumbnail(mediaMessage, sendBody.clientMsgId)
                 val thumbnailSource = MediaSource(
-                    isBigFile = true,
                     width = mediaMessage.width,
                     height = mediaMessage.height,
                     thumbnail = Thumbnail(
