@@ -1,5 +1,6 @@
 package info.hermiths.chatapp.utils
 
+import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneOffset
 import java.util.Calendar
@@ -19,7 +20,9 @@ object TimeUtils {
     }
 
     fun formatTime(timeStamp: Long): String {
-        return ""
+        val formatter = SimpleDateFormat("HH:mm");
+        val dateString = formatter.format(Date(timeStamp));
+        return dateString
     }
 
     private const val PER_MIN = 60 * 1000L

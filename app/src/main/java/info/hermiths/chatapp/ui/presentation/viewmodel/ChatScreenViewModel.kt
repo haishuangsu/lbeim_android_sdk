@@ -400,7 +400,7 @@ class ChatScreenViewModel : ViewModel() {
                             msgBody = content.msgBody
                             clientMsgID = content.clientMsgID
                             msgType = content.msgType
-                            sendStamp = content.clientMsgID.split("-").last().toLong()
+                            sendTime = content.sendTime.toLong()
                             msgSeq = content.msgSeq
                             readed = (content.status == 1)
                         }
