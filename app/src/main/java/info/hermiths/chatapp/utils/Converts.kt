@@ -39,7 +39,7 @@ object Converts {
             }
             msgSeq = proto.msgSeq
             clientMsgID = proto.clientMsgID.ifEmpty { "${uuidGen()}_${timeStampGen()}" }
-            sendTime = proto.sendTime.toLong()
+            sendTime = proto.clientMsgID.split("-").last().toLong()
         }
         Log.d("Convert protoToEntity", entity.toString())
         return entity

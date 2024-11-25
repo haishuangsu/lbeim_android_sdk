@@ -80,6 +80,7 @@ import info.hermiths.chatapp.ui.presentation.viewmodel.ConnectionStatus
 import info.hermiths.chatapp.utils.FileUtils
 import info.hermiths.chatapp.utils.TimeUtils
 import java.io.File
+import java.util.Date
 
 data class ChatScreenUiState(
     var messages: List<MessageEntity> = emptyList(),
@@ -443,11 +444,7 @@ fun MessageItem(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(
-                start = if (messagePosition == MessagePosition.LEFT) 0.dp else 24.dp,
-                end = if (messagePosition == MessagePosition.RIGHT) 0.dp else 24.dp,
-                bottom = 20.dp
-            ),
+            .padding(bottom = 20.dp),
         contentAlignment = if (messagePosition == MessagePosition.LEFT) Alignment.TopStart else Alignment.BottomEnd
     ) {
         if (messagePosition == MessagePosition.LEFT) {
@@ -468,31 +465,38 @@ fun RecievFromCs(
 ) {
     val currentIndex = messages.indexOf(message)
     var needShowTime = false
+    var sameCurrentDay = false
     if (currentIndex != 0) {
         val prev = messages[currentIndex - 1]
-        Log.d(
-            "History time",
-            "currentIndex: $currentIndex, sendTime: ${message.sendTime}, ${message.clientMsgID};  prev sendTime: ${prev.sendTime}"
-        )
-        val diff = (message.sendTime.toLong() - prev.sendTime.toLong()) / 1000
-        Log.d("History time", "index: $currentIndex, 距离上条消息时间: $diff s")
+//        Log.d("History time", "currentIndex: $currentIndex, sendTime: ${message.sendTime}, ${message.clientMsgID};  prev sendTime: ${prev.sendTime}")
+        val diff = (message.sendTime - prev.sendTime) / 1000
+        sameCurrentDay = TimeUtils.isSameDay(Date(), Date(message.sendTime))
+//        Log.d("History time", "index: $currentIndex, 距离上条消息时间: $diff s")
         if (diff > 60 * 3) {
             needShowTime = true
-            Log.d("History time", "currentIndex: $currentIndex, 超过3分钟显示")
+//            Log.d("History time", "currentIndex: $currentIndex, 超过3分钟显示")
         }
     }
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         AnimatedVisibility(visible = needShowTime) {
-            Text(
-                TimeUtils.formatTime(message.sendTime), style = TextStyle(
-                    color = Color(0xff979797), fontSize = 10.sp, fontWeight = FontWeight.W400
-                ), textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 9.dp)
-            )
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    if (sameCurrentDay) TimeUtils.formatHHMMTime(message.sendTime) else TimeUtils.formatYYMMHHMMTime(
+                        message.sendTime
+                    ),
+                    style = TextStyle(
+                        color = Color(0xff979797), fontSize = 10.sp, fontWeight = FontWeight.W400
+                    ),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 9.dp)
+                )
+            }
         }
 
-        Row {
-            // avatar
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
             Image(
                 painter = painterResource(id = R.drawable.cs_avatar),
                 contentDescription = "",
@@ -526,27 +530,34 @@ fun UserInput(
 ) {
     val currentIndex = messages.indexOf(message)
     var needShowTime = false
+    var sameCurrentDay = false
     if (currentIndex != 0) {
         val prev = messages[currentIndex - 1]
-        Log.d(
-            "History time",
-            "currentIndex: $currentIndex, sendTime: ${message.sendTime}, ${message.clientMsgID};  prev sendTime: ${prev.sendTime}"
-        )
-        val diff = (message.sendTime.toLong() - prev.sendTime.toLong()) / 1000
-        Log.d("History time", "currentIndex: $currentIndex, 距离上条消息时间: $diff s")
+        val diff = (message.sendTime - prev.sendTime) / 1000
+        sameCurrentDay = TimeUtils.isSameDay(Date(), Date(message.sendTime))
         if (diff > 60 * 3) {
-            Log.d("History time", "currentIndex: $currentIndex, 超过3分钟显示")
             needShowTime = true
         }
     }
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         AnimatedVisibility(visible = needShowTime) {
-            Text(
-                TimeUtils.formatTime(message.sendTime), style = TextStyle(
-                    color = Color(0xff979797), fontSize = 10.sp, fontWeight = FontWeight.W400
-                ), textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 9.dp)
-            )
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    if (sameCurrentDay) TimeUtils.formatHHMMTime(message.sendTime) else TimeUtils.formatYYMMHHMMTime(
+                        message.sendTime
+                    ),
+                    style = TextStyle(
+                        color = Color(0xff979797),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.W400
+                    ),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 9.dp)
+                )
+            }
         }
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
@@ -573,21 +584,6 @@ fun UserInput(
                     .size(32.dp)
                     .clip(CircleShape),
             )
-
-//        SubcomposeAsyncImage(
-//            model = "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg",
-//            contentDescription = "",
-//            contentScale = ContentScale.FillBounds,
-//            modifier = Modifier
-//                .size(32.dp)
-//                .clip(CircleShape),
-//            loading = {
-//                CircularProgressIndicator()
-//            },
-//            onLoading = { loading ->
-//
-//            },
-//        )
         }
     }
 }

@@ -26,14 +26,14 @@ object IMLocalRepository {
     fun findAllMediaMessages(sessionId: String): List<MessageEntity> {
         return realm.query<MessageEntity>(
             query = "sessionId == $0 AND (msgType == 2 || msgType == 3)", sessionId
-        ).sort("sendStamp", Sort.ASCENDING).find()
+        ).sort("sendTime", Sort.ASCENDING).find()
     }
 
     fun findAllPendingUploadMediaMessages(sessionId: String): List<MessageEntity> {
         return realm.query<MessageEntity>(
             query = "sessionId == $0 AND (msgType == 2 || msgType == 3) AND pendingUpload == true",
             sessionId
-        ).sort("sendStamp", Sort.ASCENDING).find()
+        ).sort("sendTime", Sort.ASCENDING).find()
     }
 
     suspend fun findMediaMsgAndUpdateBody(clientMsgID: String, msgBody: String) {
