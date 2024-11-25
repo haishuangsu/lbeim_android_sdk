@@ -517,8 +517,8 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
-    private fun scheduleTimeoutJob(){
-        val period = 1000 * 6 * timeOut
+    private fun scheduleTimeoutJob() {
+        val period = 1000 * 60 * timeOut
         if (timer == null) {
             Log.d("TimeOut", "超时提醒，period: $period")
             timer = Timer()
@@ -540,7 +540,10 @@ class ChatScreenViewModel : ViewModel() {
             timer?.schedule(object : TimerTask() {
                 override fun run() {
                     if (lastCsMessage?.msgSeq!! <= seq) {
-                        Log.d("TimeOut", "客服回复重启，用户没回复， seq: $seq, last: ${lastCsMessage?.msgSeq}")
+                        Log.d(
+                            "TimeOut",
+                            "客服回复重启，用户没回复， seq: $seq, last: ${lastCsMessage?.msgSeq}"
+                        )
                         isTimeOut.update { _ -> true }
                         timer?.cancel()
                         timer = null

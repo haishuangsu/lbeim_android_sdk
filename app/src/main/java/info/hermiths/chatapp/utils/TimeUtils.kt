@@ -3,7 +3,6 @@ package info.hermiths.chatapp.utils
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneOffset
-import java.util.Calendar
 import java.util.Date
 
 object TimeUtils {
@@ -19,56 +18,20 @@ object TimeUtils {
         return timeStamp
     }
 
-    fun formatTime(timeStamp: Long): String {
+    fun isSameDay(current: Date, date: Date): Boolean {
+        val fmt = SimpleDateFormat("yyyyMMdd")
+        return fmt.format(current) == fmt.format(date)
+    }
+
+    fun formatHHMMTime(timeStamp: Long): String {
         val formatter = SimpleDateFormat("HH:mm");
         val dateString = formatter.format(Date(timeStamp));
         return dateString
     }
 
-    private const val PER_MIN = 60 * 1000L
-    private const val PER_HOUR = 60 * PER_MIN
-    private const val PER_DAY = 24 * PER_HOUR
-    private const val PER_WEEK = 7 * PER_DAY
-    var sCurrent: Date? = null
-    fun getRelativeDesc(timestamp: Long): String {
-        val inputDate = Date(timestamp)
-        val cur: Date = sCurrent ?: Date()
-        val delta: Long = cur.time - inputDate.time
-        if (delta <= 5 * PER_MIN) {
-            return "刚刚"
-        }
-        if (delta < PER_HOUR) {
-            return (delta / PER_MIN).toString() + "分钟前"
-        }
-        if (delta < PER_DAY) {
-            return (delta / PER_HOUR).toString() + "小时前"
-        }
-        if (delta < 2 * PER_DAY) {
-            return "昨天"
-        }
-        if (delta < 7 * PER_DAY) {
-            return (delta / PER_DAY).toString() + "天前"
-        }
-        if (delta < 4 * PER_WEEK) {
-            return (delta / PER_WEEK).toString() + "周前"
-        }
-        val calendar = Calendar.getInstance()
-        calendar.time = cur
-        calendar.add(Calendar.MONTH, -1)
-        var compareDelta: Long = cur.time - calendar.time.time
-        if (delta < compareDelta) {
-            return "4周前"
-        }
-        for (i in 1..11) {
-            calendar.add(Calendar.MONTH, -1)
-            compareDelta = cur.time - calendar.time.time
-            if (delta < compareDelta) {
-                return i.toString() + "月前"
-            }
-        }
-        calendar.time = inputDate
-        return calendar[Calendar.YEAR].toString() + '-' + String.format(
-            "%02d", calendar[Calendar.MONTH] + 1
-        ) + '-' + String.format("%02d", calendar[Calendar.DATE])
+    fun formatYYMMHHMMTime(timeStamp: Long): String {
+        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm");
+        val dateString = formatter.format(Date(timeStamp));
+        return dateString
     }
 }

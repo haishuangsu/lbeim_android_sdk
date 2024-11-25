@@ -18,8 +18,6 @@ class MessageEntity : RealmObject {
 
     var clientMsgID: String = ""
 
-//    var sendStamp: Long = 0L
-
     var sendTime: Long = 0L
 
     // true: send success; false: send fail
