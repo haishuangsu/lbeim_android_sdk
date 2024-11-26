@@ -1,5 +1,6 @@
 package info.hermiths.chatapp.data.remote
 
+import info.hermiths.chatapp.model.req.FaqReqBody
 import info.hermiths.chatapp.model.req.HistoryBody
 import info.hermiths.chatapp.model.req.MarkReadReqBody
 import info.hermiths.chatapp.model.req.MsgBody
@@ -61,6 +62,14 @@ object LbeImRepository {
     ) {
         lbeIMRepository.markRead(
             lbeSign = lbeSign, lbeToken = lbeToken, lbeIdentity = lbeIdentity, body = body
+        )
+    }
+
+    suspend fun faq(
+        lbeSession: String, lbeToken: String, lbeIdentity: String, body: FaqReqBody
+    ) {
+        lbeIMRepository.faq(
+            lbeToken = lbeToken, lbeIdentity = lbeIdentity, lbeSession = lbeSession, body = body
         )
     }
 }
