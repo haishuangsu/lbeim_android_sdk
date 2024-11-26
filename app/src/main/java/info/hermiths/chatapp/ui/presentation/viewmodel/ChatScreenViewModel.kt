@@ -13,6 +13,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.gson.Gson
 import com.tinder.scarlet.Message
 import com.tinder.scarlet.Scarlet
@@ -123,6 +124,7 @@ class ChatScreenViewModel : ViewModel() {
 
     private val _uiState = MutableLiveData(ChatScreenUiState())
     val uiState: LiveData<ChatScreenUiState> = _uiState
+    var allMessageSize = 0
 
     var isTimeOut = MutableStateFlow(false)
 
@@ -132,6 +134,8 @@ class ChatScreenViewModel : ViewModel() {
 
 //    private val _messages = MutableStateFlow<List<MessageEntity>>(mutableListOf())
 //    val messageList = _messages
+
+    val paginationSet: MutableSet<String> = mutableSetOf()
 
     private val _inputMsg = MutableLiveData("")
     val inputMsg: LiveData<String> = _inputMsg
@@ -148,9 +152,10 @@ class ChatScreenViewModel : ViewModel() {
     private fun testOfflineTakeByCache() {
         currentSession = SessionEntry(sessionId = "cn-43ro83fqqzm2", latestMsg = null)
         lbeSession = "cn-43ro83fqqzm2"
-        syncPageInfo()
+        syncPageInfo(currentSession)
         viewModelScope.launch(Dispatchers.IO) {
-            filterLocalMessages(needScrollEnd = true)
+            filterLocalMessages()
+            scrollToBottom()
         }
     }
 
@@ -220,123 +225,131 @@ class ChatScreenViewModel : ViewModel() {
             currentSession = sessionList[currentSessionIndex]
             seq = currentSession?.latestMsg?.msgSeq ?: 0
             remoteLastMsgType = currentSession?.latestMsg?.msgType ?: 0
-            syncPageInfo()
-            filterLocalMessages(needScrollEnd = true)
-            // TODO 查缓存同步未上传完列表, progressList
+            checkNeedSyncRemote(currentSession)
+            syncPageInfo(currentSession)
+            filterLocalMessages()
+            scrollToBottom()
             syncPendingJobs()
         } catch (e: Exception) {
             println("Fetch session list error: $e")
         }
     }
 
-    private fun syncPendingJobs() {
-        val pendingCache =
-            IMLocalRepository.findAllPendingUploadMediaMessages(currentSession?.sessionId ?: "")
-        Log.d(
-            REALM,
-            "PendingJobs --->>> ${pendingCache.map { cache -> "${cache.clientMsgID} || ${cache.uploadTask?.progress} " }}"
-        )
-        for (pending in pendingCache) {
-            progressList[pending.clientMsgID] =
-                MutableStateFlow(pending.uploadTask?.progress ?: 0.0f)
+    fun loadHistory() {
+        if (currentSessionIndex >= sessionList.size - 1) {
+            return
+        }
+        currentSessionIndex += 1
+        currentSession = sessionList[currentSessionIndex]
+        viewModelScope.launch(Dispatchers.IO) {
+            checkNeedSyncRemote(currentSession)
+            syncPageInfo(currentSession)
+            filterLocalMessages()
         }
     }
 
-    // TODO 分页只改变 currentPage;
-    // TODO 跨会话改变 currentSession: currentPage > currentSessionTotalPages
-    suspend fun filterLocalMessages(
-        sid: String = currentSession?.sessionId ?: "",
-        send: Boolean = false,
-        needScrollEnd: Boolean = false, // send needScrollEnd
-    ) {
+    private fun syncPageInfo(currentSession: SessionEntry?) {
+        val cacheMessages = IMLocalRepository.filterMessages(currentSession?.sessionId ?: "")
         Log.d(
             REALM,
-            "filterLocalMessages ---->>> currentSessionTotalPages: $currentSessionTotalPages, currentPage: $currentPage, seq: $seq"
+            "syncPageInfo cacheMessages size---->>> ${cacheMessages.size}, currentSession: ${currentSession?.sessionId}"
         )
-
-        if ((currentSessionTotalPages != 0 && currentPage > currentSessionTotalPages) || currentPage < 1) return
-
-        var cacheMessages = IMLocalRepository.filterMessages(sid)
-
-        Log.d(
-            REALM,
-            "cache size: ${cacheMessages.size} |  remote lastSeq: $seq , remoteLastMsgType: $remoteLastMsgType"
-        )
-
-        // sync
-        if (cacheMessages.size < seq) { //&& remoteLastMsgType != 0) { // || cacheMessages.last().msgSeq < seq && remoteLastMsgType != 0) {
-            fetchHistoryAndSync()
-        }
-
-        // query newest cache
-        cacheMessages = IMLocalRepository.filterMessages(sid)
-        currentSessionTotalPages = cacheMessages.size / showPageSize
-        val yu = cacheMessages.size % showPageSize
-        Log.d(REALM, "分页总页数: $currentSessionTotalPages, 取余: $yu")
-
-        // TODO send 概念有点模糊，现在为了滑动到最下面，直接重置到最后一页；
-        // TODO 分页的时候直接改变 currentPage
-        if (send) currentPage = currentSessionTotalPages
-
-        val subList = if (currentPage == 1 && yu != 0) {
-            val start = Math.max((currentPage - 1) * showPageSize, 0)
-            val end = Math.min(currentPage * showPageSize + yu, cacheMessages.size)
-            Log.d(REALM, "最后一页 --->>> currentPage: $currentPage, start: $start, end: $end")
-            cacheMessages.subList(start, end)
-        } else {
-            val start = Math.max(
-                cacheMessages.size - showPageSize * (currentSessionTotalPages - (currentPage - 1)),
-                0
-            )
-            val end = Math.min(start + showPageSize, cacheMessages.size)
-            Log.d(REALM, "非最后一页 --->>> currentPage: $currentPage, start: $start, end: $end")
-            cacheMessages.subList(start, end)
-        }
-
-        viewModelScope.launch(Dispatchers.Main) {
-            val messages = uiState.value?.messages?.toMutableList()
-            if (!send) {
-                Log.d(REALM, "------>>>>>> Act")
-                messages?.addAll(0, subList)
-
-//                _messages.update { currentState ->
-//                    val news = currentState.toMutableList()
-//                    news.addAll(0, subList)
-//                    news
-//                }
-            } else {
-                // messages?.add(subList.last()) 失败消息重发时，旧消息没 clear
-                messages?.clear()
-                messages?.addAll(subList)
-
-//                _messages.update { currentState ->
-//                    val news = currentState.toMutableList()
-//                    news.clear()
-//                    news.addAll(subList)
-//                    news
-//                }
-            }
-            _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
-            Log.d(REALM, "分页后 messageList size --->> ${messages?.size}")
-            if (needScrollEnd) {
-                scrollTo(messages?.size ?: 0)
-            }
-        }
-    }
-
-    private fun syncPageInfo() {
-        val cacheMessages = IMLocalRepository.filterMessages(lbeSession)
-        Log.d(REALM, "update total pages cacheMessages size---->>> ${cacheMessages.size}")
         if (cacheMessages.isNotEmpty()) {
             currentSessionTotalPages = Math.max(cacheMessages.size / showPageSize, 1)
             currentPage = currentSessionTotalPages
             Log.d(
                 REALM,
-                "update total pages ---->>> currentSessionTotalPages: $currentSessionTotalPages, currentPage: $currentPage"
+                "syncPageInfo ---->>> currentSessionTotalPages: $currentSessionTotalPages, currentPage: $currentPage"
             )
         } else {
             currentPage = 1
             currentSessionTotalPages = 1
+        }
+    }
+
+    private suspend fun checkNeedSyncRemote(currentSession: SessionEntry?) {
+        val cacheMessages = IMLocalRepository.filterMessages(currentSession?.sessionId ?: "")
+        Log.d(
+            REALM,
+            "checkNeedSyncRemote --->>> cache size: ${cacheMessages.size} |  remote lastSeq: $seq , remoteLastMsgType: $remoteLastMsgType"
+        )
+        if (cacheMessages.size < seq) {
+            fetchHistoryAndSync(currentSession)
+        }
+    }
+
+    private fun afterSendUpdateList() {
+        currentSessionIndex = 0
+        val currentSession = sessionList[currentSessionIndex]
+        val cacheMessages = IMLocalRepository.filterMessages(currentSession.sessionId)
+        currentSessionTotalPages = cacheMessages.size / showPageSize
+        currentPage = currentSessionTotalPages
+        val subList = pagination(cacheMessages)
+        viewModelScope.launch(Dispatchers.Main) {
+            val messages = uiState.value?.messages?.toMutableList()
+            messages?.clear()
+            messages?.addAll(subList)
+            allMessageSize = messages?.size ?: 0
+            _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
+            Log.d(
+                REALM,
+                "发送完更新列表 ---->>> messages: ${messages?.size}, allMessageSize: $allMessageSize"
+            )
+        }
+    }
+
+
+    fun filterLocalMessages(
+        sid: String = currentSession?.sessionId ?: "",
+    ) {
+        Log.d(
+            REALM,
+            "分页 ---->>> currentSessionIndex: $currentSessionIndex ,sessionId: $sid, currentSessionTotalPages: $currentSessionTotalPages, currentPage: $currentPage, seq: $seq"
+        )
+        if ((currentSessionTotalPages != 0 && currentPage > currentSessionTotalPages) || currentPage < 1) return
+
+        val cacheMessages = IMLocalRepository.filterMessages(sid)
+        val subList = pagination(cacheMessages)
+
+        viewModelScope.launch(Dispatchers.Main) {
+            val messages = uiState.value?.messages?.toMutableList()
+            messages?.addAll(0, subList)
+            allMessageSize = messages?.size ?: 0
+            _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
+            Log.d(
+                REALM,
+                "分页后 messageList size --->> ${messages?.size}, allMessageSize: $allMessageSize"
+            )
+        }
+    }
+
+    private fun pagination(source: List<MessageEntity>): List<MessageEntity> {
+        currentSessionTotalPages = source.size / showPageSize
+        val yu = source.size % showPageSize
+        Log.d(REALM, "分页总页数: $currentSessionTotalPages, 取余: $yu")
+
+        val subList = if (currentPage == 1 && yu != 0) {
+            val start = Math.max((currentPage - 1) * showPageSize, 0)
+            val end = Math.min(currentPage * showPageSize + yu, source.size)
+            Log.d(REALM, "最后一页 --->>> currentPage: $currentPage, start: $start, end: $end")
+            source.subList(start, end)
+        } else {
+            val start = Math.max(
+                source.size - showPageSize * (currentSessionTotalPages - (currentPage - 1)),
+                0
+            )
+            val end = Math.min(start + showPageSize, source.size)
+            Log.d(
+                REALM, "非最后一页 --->>> currentPage: $currentPage, start: $start, end: $end"
+            )
+            source.subList(start, end)
+        }
+        return subList
+    }
+
+    fun scrollToBottom() {
+        viewModelScope.launch(Dispatchers.Main) {
+            scrollTo(allMessageSize)
         }
     }
 
@@ -370,7 +383,7 @@ class ChatScreenViewModel : ViewModel() {
                 )
                 Log.d(REALM, "MarkRead ---->>> $markRead")
                 IMLocalRepository.findMsgAndMarkMeRead(message.clientMsgID)
-                filterLocalMessages(send = true)
+                afterSendUpdateList()
             } catch (e: Exception) {
                 println("Mark Msg Read error --->>>  $e")
             }
@@ -378,15 +391,16 @@ class ChatScreenViewModel : ViewModel() {
     }
 
 
-    private suspend fun fetchHistoryAndSync() {
+    private suspend fun fetchHistoryAndSync(currentSession: SessionEntry?) {
         try {
             val history = LbeImRepository.fetchHistory(
                 lbeSign = BuildConfig.lbeSign,
                 lbeToken = lbeToken,
                 lbeIdentity = lbeIdentity,
                 body = HistoryBody(
-                    sessionId = currentSession?.sessionId ?: "",
-                    seqCondition = SeqCondition(startSeq = 0, endSeq = 230)
+                    sessionId = currentSession?.sessionId ?: "", seqCondition = SeqCondition(
+                        startSeq = 0, endSeq = currentSession?.latestMsg?.msgSeq ?: 0
+                    )
                 )
             )
             Log.d(REALM, "History sync")
@@ -408,9 +422,22 @@ class ChatScreenViewModel : ViewModel() {
                     }
                 }
             }
-            syncPageInfo()
+            syncPageInfo(currentSession)
         } catch (e: Exception) {
             println("Fetch history error: $e")
+        }
+    }
+
+    private fun syncPendingJobs() {
+        val pendingCache =
+            IMLocalRepository.findAllPendingUploadMediaMessages(currentSession?.sessionId ?: "")
+        Log.d(
+            REALM,
+            "PendingJobs --->>> ${pendingCache.map { cache -> "${cache.clientMsgID} || ${cache.uploadTask?.progress} " }}"
+        )
+        for (pending in pendingCache) {
+            progressList[pending.clientMsgID] =
+                MutableStateFlow(pending.uploadTask?.progress ?: 0.0f)
         }
     }
 
@@ -473,7 +500,7 @@ class ChatScreenViewModel : ViewModel() {
                     }
 
                     if (receivedReq - seq > 2) {
-                        fetchHistoryAndSync()
+                        fetchHistoryAndSync(sessionList[0])
                     } else {
                         seq = receivedReq
 
@@ -506,7 +533,7 @@ class ChatScreenViewModel : ViewModel() {
                     for (seq in markReadList) {
                         IMLocalRepository.findMsgAndMarkCsRead(sessionId, seq.toInt())
                     }
-                    filterLocalMessages(send = true)
+                    afterSendUpdateList()
 //                    viewModelScope.launch {
 //                        markMsgReadFromUI(sessionId, markReadList)
 //                    }
@@ -604,8 +631,10 @@ class ChatScreenViewModel : ViewModel() {
                 println("send error -->> $e")
                 IMLocalRepository.findMsgAndSetStatus(msgBody.clientMsgId, false)
             } finally {
-                filterLocalMessages(send = true, needScrollEnd = true)
-                syncPageInfo()
+                paginationSet.clear()
+                afterSendUpdateList()
+                scrollToBottom()
+                syncPageInfo(sessionList[0])
                 viewModelScope.launch(Dispatchers.Main) {
                     messageSent()
                     clearInput()
@@ -652,7 +681,8 @@ class ChatScreenViewModel : ViewModel() {
                 } catch (e: Exception) {
                     println("send error -->> $e")
                 } finally {
-                    filterLocalMessages(send = true, needScrollEnd = true)
+                    afterSendUpdateList()
+                    scrollToBottom()
                 }
             }
         }
@@ -728,12 +758,9 @@ class ChatScreenViewModel : ViewModel() {
                 )
                 Log.d(UPLOAD, "Single upload ---->>> ${rep.data.paths[0]}")
                 val mediaSource = MediaSource(
-                    width = mediaMessage.width,
-                    height = mediaMessage.height,
-                    thumbnail = Thumbnail(
+                    width = mediaMessage.width, height = mediaMessage.height, thumbnail = Thumbnail(
                         url = thumbnailResp.data.paths[0].url, key = thumbnailResp.data.paths[0].key
-                    ),
-                    resource = Resource(
+                    ), resource = Resource(
                         url = rep.data.paths[0].url, key = rep.data.paths[0].key
                     )
                 )
@@ -760,9 +787,10 @@ class ChatScreenViewModel : ViewModel() {
         }
         viewModelScope.launch(Dispatchers.IO) {
             IMLocalRepository.insertMessage(entity)
-            syncPageInfo()
+            syncPageInfo(sessionList[0])
             if (updateUI) {
-                filterLocalMessages(send = true, needScrollEnd = true)
+                afterSendUpdateList()
+                scrollToBottom()
                 progressList[entity.clientMsgID] = MutableStateFlow(0.0f)
             }
         }
@@ -806,12 +834,9 @@ class ChatScreenViewModel : ViewModel() {
             val job = viewModelScope.launch(Dispatchers.IO) {
                 val thumbnailResp = uploadThumbnail(mediaMessage, sendBody.clientMsgId)
                 val thumbnailSource = MediaSource(
-                    width = mediaMessage.width,
-                    height = mediaMessage.height,
-                    thumbnail = Thumbnail(
+                    width = mediaMessage.width, height = mediaMessage.height, thumbnail = Thumbnail(
                         url = thumbnailResp.data.paths[0].url, key = thumbnailResp.data.paths[0].key
-                    ),
-                    resource = Resource(
+                    ), resource = Resource(
                         url = "", key = ""
                     )
                 )
@@ -947,7 +972,7 @@ class ChatScreenViewModel : ViewModel() {
     fun continueSplitTrunksUpload(message: MessageEntity, file: File) {
         val job = viewModelScope.launch(Dispatchers.IO) {
             IMLocalRepository.findMediaMsgSetUploadContinue(message.clientMsgID)
-            filterLocalMessages(send = true)
+            afterSendUpdateList()
 
             val uploadTask = message.uploadTask
             val newTask = UploadTask()
@@ -1096,7 +1121,7 @@ class ChatScreenViewModel : ViewModel() {
                 uploadTask?.reqBodyJson = Gson().toJson(mergeReq)
                 findMediaMsgAndUpdateProgress(clientMsgId, uploadTask = uploadTask)
                 // TODO 应只做 list 单 entry 更新
-                filterLocalMessages(send = true)
+                afterSendUpdateList()
             }
         }
     }

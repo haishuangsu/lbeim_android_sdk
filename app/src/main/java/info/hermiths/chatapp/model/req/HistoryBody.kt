@@ -11,6 +11,6 @@ data class HistoryBody(
 )
 
 data class SeqCondition(
-    val endSeq: Long,
-    val startSeq: Long,
+    val endSeq: Int,
+    val startSeq: Int,
 )
