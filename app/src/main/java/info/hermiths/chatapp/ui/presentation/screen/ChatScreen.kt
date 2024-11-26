@@ -209,27 +209,32 @@ fun ChatScreen(
                         )
                         LaunchedEffect(uiState.messages) {
                             val visitAbleMsg = uiState.messages[index]
-                            Log.d(
-                                "列表滑动",
-                                "VisitAble Entry --->>  index: $index, clientMsgID || ${visitAbleMsg.clientMsgID} || msg: ${visitAbleMsg.msgBody} || readed: ${visitAbleMsg.readed} "
-                            )
+//                                Log.d(
+//                                    "列表滑动",
+//                                    "VisitAble Entry --->>  index: $index, clientMsgID || ${visitAbleMsg.clientMsgID} || msg: ${visitAbleMsg.msgBody} || readed: ${visitAbleMsg.readed} "
+//                                )
                             if (!visitAbleMsg.readed && visitAbleMsg.senderUid != ChatScreenViewModel.uid) {
                                 viewModel.markRead(message)
                             }
 
                             if (lazyListState.isScrollInProgress) {
-                                // TODO 待优化
                                 if (uiState.messages.size - index > ChatScreenViewModel.showPageSize - 3) {
+                                    val nowEntry = uiState.messages[index]
                                     if (ChatScreenViewModel.currentPage > 1) {
+                                        if (viewModel.paginationSet.contains(nowEntry.clientMsgID)) {
+                                            return@LaunchedEffect
+                                        } else {
+                                            viewModel.paginationSet.add(nowEntry.clientMsgID)
+                                        }
+
                                         ChatScreenViewModel.currentPage -= 1
                                         Log.d(
                                             "列表滑动",
-                                            "分页时的 old index: $index, msgs size: ${uiState.messages.size}, msg: ${uiState.messages[index].msgBody}, currentPage: ${ChatScreenViewModel.currentPage}"
+                                            "分页时的 old index: $index, msgs size: ${uiState.messages.size}, msg: ${uiState.messages[index].msgBody}, session: ${ChatScreenViewModel.currentSession?.sessionId} ,currentPage: ${ChatScreenViewModel.currentPage}"
                                         )
-                                        viewModel.filterLocalMessages(
-                                            send = false,
-                                            needScrollEnd = false,
-                                        )
+                                        viewModel.filterLocalMessages()
+                                    } else {
+                                        viewModel.loadHistory()
                                     }
                                 }
                             }
