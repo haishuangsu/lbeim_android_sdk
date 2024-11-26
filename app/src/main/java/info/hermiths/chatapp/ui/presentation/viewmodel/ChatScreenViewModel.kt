@@ -38,6 +38,7 @@ import info.hermiths.chatapp.model.UploadTask
 import info.hermiths.chatapp.model.proto.IMMsg
 import info.hermiths.chatapp.model.req.CompleteMultiPartUploadReq
 import info.hermiths.chatapp.model.req.ConfigBody
+import info.hermiths.chatapp.model.req.FaqReqBody
 import info.hermiths.chatapp.model.req.HistoryBody
 import info.hermiths.chatapp.model.req.InitMultiPartUploadBody
 import info.hermiths.chatapp.model.req.MarkReadReqBody
@@ -178,6 +179,7 @@ class ChatScreenViewModel : ViewModel() {
                     fetchSessionList()
                     observerConnection()
                     fetchTimeoutConfig()
+                    faq(faqReqBody = FaqReqBody(faqType = 0, id = ""))
                 }
             } catch (e: Exception) {
                 println("Prepare error: $e")
@@ -386,6 +388,22 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
+    fun faq(faqReqBody: FaqReqBody) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val faqResp = LbeImRepository.faq(
+                    lbeSession = lbeSession,
+                    lbeToken = lbeToken,
+                    lbeIdentity = lbeIdentity,
+                    body = faqReqBody
+                )
+                Log.d(REALM, "faq ---->>> $faqResp")
+            } catch (e: Exception) {
+                println("Mark Msg Read error --->>>  $e")
+            }
+        }
+    }
+
     private suspend fun fetchHistoryAndSync(currentSession: SessionEntry?) {
         try {
             val history = LbeImRepository.fetchHistory(
@@ -491,6 +509,9 @@ class ChatScreenViewModel : ViewModel() {
                         IMMsg.MsgType.TextMsgType -> 1
                         IMMsg.MsgType.ImgMsgType -> 2
                         IMMsg.MsgType.VideoMsgType -> 3
+                        IMMsg.MsgType.FaqMsgType -> 8
+                        IMMsg.MsgType.KnowledgePointMsgType -> 9
+                        IMMsg.MsgType.KnowledgeAnswerMsgType -> 10
                         else -> 15
                     }
 
@@ -528,11 +549,7 @@ class ChatScreenViewModel : ViewModel() {
                     for (seq in markReadList) {
                         IMLocalRepository.findMsgAndMarkCsRead(sessionId, seq.toInt())
                     }
-//                    afterSendUpdateList()
-                    viewModelScope.launch(Dispatchers.IO) {
-                        delay(500)
-                        markMsgReadFromUI(sessionId, markReadList)
-                    }
+                    markMsgReadFromUI(sessionId, markReadList)
                 }
             }
         } catch (e: Exception) {
@@ -826,8 +843,7 @@ class ChatScreenViewModel : ViewModel() {
                 )
                 sendBody.msgBody = Gson().toJson(thumbnailSource)
                 IMLocalRepository.findMediaMsgAndUpdateBody(sendBody.clientMsgId, sendBody.msgBody)
-                updateSingleMessage(source = entity){
-                    m->
+                updateSingleMessage(source = entity) { m ->
                     m.msgBody = sendBody.msgBody
                 }
                 scrollToBottom()
@@ -1133,7 +1149,10 @@ class ChatScreenViewModel : ViewModel() {
             callback(newMsg)
             messages.removeAt(index)
             messages.add(index, newMsg)
-            Log.d(REALM, "updateSingleMessage 查找到 msg, 并更新 --->>> old: $cacheMsg, \n new: $newMsg")
+            Log.d(
+                REALM,
+                "updateSingleMessage 查找到 msg, 并更新 --->>> old: $cacheMsg, \n new: $newMsg"
+            )
         }
         viewModelScope.launch(Dispatchers.Main) {
             _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
