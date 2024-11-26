@@ -34,8 +34,28 @@ class MessageEntity : RealmObject {
 
     var timestamp: RealmInstant = RealmInstant.now()
 
+    companion object {
+        fun copy(source: MessageEntity): MessageEntity {
+            val message = MessageEntity()
+            message._id = source._id
+            message.sessionId = source.sessionId
+            message.msgType = source.msgType
+            message.msgBody = source.msgBody
+            message.senderUid = source.senderUid
+            message.msgSeq = source.msgSeq
+            message.clientMsgID = source.clientMsgID
+            message.sendTime = source.sendTime
+            message.sendSuccess = source.sendSuccess
+            message.readed = source.readed
+            message.pendingUpload = source.pendingUpload
+            message.localFile = source.localFile
+            message.uploadTask = source.uploadTask
+            return message
+        }
+    }
+
     override fun toString(): String {
-        return "MessageEntity(sessionId: $sessionId, senderUid: $senderUid, msgBody: $msgBody, msgType: $msgType, msgSeq: $msgSeq, clientMsgID: $clientMsgID, sendTime: $sendTime, sendSuccess: $sendSuccess, readed: $readed)"
+        return "MessageEntity(sessionId: $sessionId, senderUid: $senderUid, msgBody: $msgBody, msgType: $msgType, msgSeq: $msgSeq, clientMsgID: $clientMsgID, sendTime: $sendTime, sendSuccess: $sendSuccess, readed: $readed, pendingUpload: $pendingUpload, \n uploadTask: $uploadTask)"
     }
 }
 

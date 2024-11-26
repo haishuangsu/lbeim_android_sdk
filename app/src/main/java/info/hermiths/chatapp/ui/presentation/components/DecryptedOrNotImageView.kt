@@ -85,18 +85,12 @@ fun DecryptedOrNotImageView(
 
                 } else {
                     if (!message.pendingUpload && message.localFile?.isBigFile == true) {
-                        // stop the split trunks upload
-                        Log.d(
-                            CONTINUE_UPLOAD, "断点暂停, 缓存的进度： ${message.uploadTask?.progress}"
-                        )
+                        Log.d(CONTINUE_UPLOAD, "断点暂停, 缓存的进度： ${message.uploadTask?.progress}")
                         viewModel?.cancelJob(message.clientMsgID, progress = progress)
                     } else {
                         Log.d(CONTINUE_UPLOAD, "续传 ---->>>> ${message.uploadTask}")
                         Log.d(CONTINUE_UPLOAD, "续传 uri ---->>>> ${message.localFile?.path}")
-                        Log.d(
-                            CONTINUE_UPLOAD,
-                            "续传 executeIndex: ${message.uploadTask?.executeIndex}"
-                        )
+                        Log.d(CONTINUE_UPLOAD, "续传 executeIndex: ${message.uploadTask?.executeIndex}")
                         val uri = Uri.parse(message.localFile?.path)
                         val cr = ctx.contentResolver
                         val projection = arrayOf(MediaStore.MediaColumns.DATA)
