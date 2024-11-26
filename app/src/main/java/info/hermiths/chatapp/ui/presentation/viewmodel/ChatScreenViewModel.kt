@@ -13,7 +13,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.gson.Gson
 import com.tinder.scarlet.Message
 import com.tinder.scarlet.Scarlet
@@ -298,7 +297,6 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
-
     fun filterLocalMessages(
         sid: String = currentSession?.sessionId ?: "",
     ) {
@@ -335,8 +333,7 @@ class ChatScreenViewModel : ViewModel() {
             source.subList(start, end)
         } else {
             val start = Math.max(
-                source.size - showPageSize * (currentSessionTotalPages - (currentPage - 1)),
-                0
+                source.size - showPageSize * (currentSessionTotalPages - (currentPage - 1)), 0
             )
             val end = Math.min(start + showPageSize, source.size)
             Log.d(
@@ -383,13 +380,11 @@ class ChatScreenViewModel : ViewModel() {
                 )
                 Log.d(REALM, "MarkRead ---->>> $markRead")
                 IMLocalRepository.findMsgAndMarkMeRead(message.clientMsgID)
-                afterSendUpdateList()
             } catch (e: Exception) {
                 println("Mark Msg Read error --->>>  $e")
             }
         }
     }
-
 
     private suspend fun fetchHistoryAndSync(currentSession: SessionEntry?) {
         try {
@@ -533,10 +528,11 @@ class ChatScreenViewModel : ViewModel() {
                     for (seq in markReadList) {
                         IMLocalRepository.findMsgAndMarkCsRead(sessionId, seq.toInt())
                     }
-                    afterSendUpdateList()
-//                    viewModelScope.launch {
-//                        markMsgReadFromUI(sessionId, markReadList)
-//                    }
+//                    afterSendUpdateList()
+                    viewModelScope.launch(Dispatchers.IO) {
+                        delay(500)
+                        markMsgReadFromUI(sessionId, markReadList)
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -634,7 +630,7 @@ class ChatScreenViewModel : ViewModel() {
                 paginationSet.clear()
                 afterSendUpdateList()
                 scrollToBottom()
-                syncPageInfo(sessionList[0])
+//                syncPageInfo(sessionList[0])
                 viewModelScope.launch(Dispatchers.Main) {
                     messageSent()
                     clearInput()
@@ -713,18 +709,6 @@ class ChatScreenViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val thumbnailResp = uploadThumbnail(mediaMessage, sendBody.clientMsgId)
-//                val thumbnailSource = MediaSource(
-//                    isBigFile = false,
-//                    width = mediaMessage.width,
-//                    height = mediaMessage.height,
-//                    thumbnail = Thumbnail(
-//                        url = thumbnailResp.data.paths[0].url, key = thumbnailResp.data.paths[0].key
-//                    ),
-//                    resource = Resource(
-//                        url = "", key = ""
-//                    )
-//                )
-//                sendBody.msgBody = Gson().toJson(thumbnailSource)
 
                 val rep = UploadRepository.singleUpload(
                     file = MultipartBody.Part.createFormData(
@@ -842,6 +826,11 @@ class ChatScreenViewModel : ViewModel() {
                 )
                 sendBody.msgBody = Gson().toJson(thumbnailSource)
                 IMLocalRepository.findMediaMsgAndUpdateBody(sendBody.clientMsgId, sendBody.msgBody)
+                updateSingleMessage(source = entity){
+                    m->
+                    m.msgBody = sendBody.msgBody
+                }
+                scrollToBottom()
 
                 val initRep = UploadRepository.initMultiPartUpload(
                     body = InitMultiPartUploadBody(
@@ -972,7 +961,10 @@ class ChatScreenViewModel : ViewModel() {
     fun continueSplitTrunksUpload(message: MessageEntity, file: File) {
         val job = viewModelScope.launch(Dispatchers.IO) {
             IMLocalRepository.findMediaMsgSetUploadContinue(message.clientMsgID)
-            afterSendUpdateList()
+            updateSingleMessage(source = message) { m ->
+                m.pendingUpload = false
+                m.uploadTask = message.uploadTask
+            }
 
             val uploadTask = message.uploadTask
             val newTask = UploadTask()
@@ -1079,7 +1071,7 @@ class ChatScreenViewModel : ViewModel() {
 
                 UploadBigFileUtils.releaseMemory(file.hashCode())
                 Log.d(
-                    UPLOAD, "BigFileUpload 断点续传 success ---> ${mergeUpload.data.location}"
+                    UPLOAD, "BigFileUpload 断点续传 merge success ---> $mergeUpload"
                 )
                 val cacheMediaSource = Gson().fromJson(message.msgBody, MediaSource::class.java)
                 val mediaSource = MediaSource(
@@ -1120,9 +1112,31 @@ class ChatScreenViewModel : ViewModel() {
                 uploadTask?.progress = progress.value
                 uploadTask?.reqBodyJson = Gson().toJson(mergeReq)
                 findMediaMsgAndUpdateProgress(clientMsgId, uploadTask = uploadTask)
-                // TODO 应只做 list 单 entry 更新
-                afterSendUpdateList()
+                val msg = IMLocalRepository.findMsgByClientMsgId(clientMsgId)
+                updateSingleMessage(source = msg) { m ->
+                    m.uploadTask = uploadTask
+                    m.pendingUpload = true
+                }
             }
+        }
+    }
+
+    private fun updateSingleMessage(
+        source: MessageEntity?,
+        callback: (msg: MessageEntity) -> Unit
+    ) {
+        val messages = uiState.value?.messages?.toMutableList()
+        val cacheMsg = messages?.find { it.clientMsgID == source?.clientMsgID }
+        if (cacheMsg != null) {
+            val index = messages.indexOf(cacheMsg)
+            val newMsg = MessageEntity.copy(cacheMsg)
+            callback(newMsg)
+            messages.removeAt(index)
+            messages.add(index, newMsg)
+            Log.d(REALM, "updateSingleMessage 查找到 msg, 并更新 --->>> old: $cacheMsg, \n new: $newMsg")
+        }
+        viewModelScope.launch(Dispatchers.Main) {
+            _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
         }
     }
 
@@ -1159,43 +1173,30 @@ class ChatScreenViewModel : ViewModel() {
         Log.d(TAG, "addSingleMsgToUI: $message")
         val messages = uiState.value?.messages?.toMutableList()
         messages?.add(message)
-        _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
-
-//        _messages.update { state ->
-//            val news = state.toMutableList()
-//            news.add(message)
-//            news
-//        }
-    }
-
-    private fun updateSingleMsgFromUI(message: MessageEntity) {
-        Log.d(TAG, "updateSingleMsgFromUI: $message")
-        val messages = uiState.value?.messages?.toMutableList()
-        val cacheMsg = messages?.find { it.clientMsgID == message.clientMsgID }
-
-        Log.d(TAG, "查找到 msg --->>> $message")
-        cacheMsg?.readed = true
-        Log.d(
-            TAG,
-            "msg after mark read--->>> ${messages?.find { it.clientMsgID == message.clientMsgID }?.readed}"
-        )
+        allMessageSize = messages?.size ?: 0
         _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
     }
 
-    private suspend fun markMsgReadFromUI(sessionId: String, seqs: MutableList<Long>) {
+    private fun markMsgReadFromUI(sessionId: String, seqs: MutableList<Long>) {
         val messages = uiState.value?.messages?.toMutableList()
         for (seq in seqs) {
             val cacheMsg = messages?.find { it.sessionId == sessionId && it.msgSeq == seq.toInt() }
-            Log.d(TAG, "查找到 msg --->>> $cacheMsg")
-            IMLocalRepository.realm.write {
-                cacheMsg?.readed = true
+            if (cacheMsg != null) {
+                val index = messages.indexOf(cacheMsg)
+                val newMsg = MessageEntity.copy(cacheMsg)
+                newMsg.readed = true
+                messages.removeAt(index)
+                messages.add(index, newMsg)
+                Log.d(TAG, "查找到 msg --->>> $cacheMsg")
+                Log.d(
+                    TAG,
+                    "msg after mark read--->>> ${messages.find { it.sessionId == sessionId && it.msgSeq == seq.toInt() }?.readed}"
+                )
             }
-            Log.d(
-                TAG,
-                "msg after mark read--->>> ${messages?.find { it.sessionId == sessionId && it.msgSeq == seq.toInt() }?.readed}"
-            )
         }
-        _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
+        viewModelScope.launch(Dispatchers.Main) {
+            _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
+        }
     }
 
     private fun clearInput() {
