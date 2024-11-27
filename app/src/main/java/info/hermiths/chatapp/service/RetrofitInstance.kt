@@ -5,10 +5,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
     // sit环境： www.im-sit-dreaminglife.cn
-    private const val BASE_URL = "http://www.im-sit-dreaminglife.cn/"
+//    private const val BASE_URL = "http://www.im-sit-dreaminglife.cn/"
 
     // dev环境： www.im-dreaminglife.cn
-    // private const val BASE_URL = "http://www.im-dreaminglife.cn/"
+     private const val BASE_URL = "http://www.im-dreaminglife.cn/"
     var IM_URL = ""
     var UPLOAD_BASE_URL = ""
 

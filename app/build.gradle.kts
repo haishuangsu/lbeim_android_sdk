@@ -122,13 +122,12 @@ dependencies {
     // implementation("io.grpc:grpc-protobuf:1.57.0")
 
     //  Coil
-    implementation("io.coil-kt.coil3:coil-compose:3.0.0-rc01")
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.0-rc01")
-//    implementation("io.coil-kt.coil3:coil-gif:3.0.2")
-//    implementation("io.coil-kt.coil3:coil-svg:3.0.2")
+    implementation("io.coil-kt.coil3:coil-compose:3.0.4")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
+    implementation("io.coil-kt.coil3:coil-gif:3.0.4")
 
     // Glide
-    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
+//    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.11.0")

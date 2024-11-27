@@ -6,4 +6,5 @@ data class SessionBody(
     val nickId: String,
     val nickName: String,
     val uid: String,
+    val language: String,
 )

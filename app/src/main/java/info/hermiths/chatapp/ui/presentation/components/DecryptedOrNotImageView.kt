@@ -27,6 +27,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil3.ImageLoader
+import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
@@ -47,6 +49,7 @@ fun DecryptedOrNotImageView(
     fullScreen: Boolean = true,
     fromMediaViewer: Boolean = false,
     viewModel: ChatScreenViewModel?,
+    imageLoader: ImageLoader
 ) {
     var thumbUrl = ""
     var thumbKey = ""
@@ -85,12 +88,18 @@ fun DecryptedOrNotImageView(
 
                 } else {
                     if (!message.pendingUpload && message.localFile?.isBigFile == true) {
-                        Log.d(CONTINUE_UPLOAD, "断点暂停, 缓存的进度： ${message.uploadTask?.progress}")
+                        Log.d(
+                            CONTINUE_UPLOAD,
+                            "断点暂停, 缓存的进度： ${message.uploadTask?.progress}"
+                        )
                         viewModel?.cancelJob(message.clientMsgID, progress = progress)
                     } else {
                         Log.d(CONTINUE_UPLOAD, "续传 ---->>>> ${message.uploadTask}")
                         Log.d(CONTINUE_UPLOAD, "续传 uri ---->>>> ${message.localFile?.path}")
-                        Log.d(CONTINUE_UPLOAD, "续传 executeIndex: ${message.uploadTask?.executeIndex}")
+                        Log.d(
+                            CONTINUE_UPLOAD,
+                            "续传 executeIndex: ${message.uploadTask?.executeIndex}"
+                        )
                         val uri = Uri.parse(message.localFile?.path)
                         val cr = ctx.contentResolver
                         val projection = arrayOf(MediaStore.MediaColumns.DATA)
@@ -117,19 +126,33 @@ fun DecryptedOrNotImageView(
                 modifier = modifier,
             )
         } else {
-            Image(
-                painter = rememberAsyncImagePainter(
-                    model = ImageRequest.Builder(LocalPlatformContext.current)
-                        .data(if (loadSource) fullUrl else thumbUrl).decoderFactory(
-                            DecryptedDecoder.Factory(
-                                url = if (loadSource) fullUrl else thumbUrl,
-                                key = if (loadSource) fullKey else thumbKey
-                            )
-                        ).build(),
-                ),
+//            Image(
+//                painter = rememberAsyncImagePainter(
+//                    model = ImageRequest.Builder(LocalPlatformContext.current)
+//                        .data(if (loadSource) fullUrl else thumbUrl).decoderFactory(
+//                            DecryptedDecoder.Factory(
+//                                url = if (loadSource) fullUrl else thumbUrl,
+//                                key = if (loadSource) fullKey else thumbKey
+//                            )
+//                        ).build(),
+//                ),
+//                contentDescription = "Yo",
+//                contentScale = ContentScale.FillBounds,
+//                modifier = modifier,
+//            )
+
+            AsyncImage(
+                model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .data(if (loadSource) fullUrl else thumbUrl).decoderFactory(
+                        DecryptedDecoder.Factory(
+                            url = if (loadSource) fullUrl else thumbUrl,
+                            key = if (loadSource) fullKey else thumbKey
+                        )
+                    ).build(),
                 contentDescription = "Yo",
                 contentScale = ContentScale.FillBounds,
                 modifier = modifier,
+                imageLoader = imageLoader,
             )
         }
 

@@ -35,7 +35,10 @@ object Converts {
                 IMMsg.MsgType.TextMsgType -> 1
                 IMMsg.MsgType.ImgMsgType -> 2
                 IMMsg.MsgType.VideoMsgType -> 3
-                else -> 9
+                IMMsg.MsgType.FaqMsgType -> 8
+                IMMsg.MsgType.KnowledgePointMsgType -> 9
+                IMMsg.MsgType.KnowledgeAnswerMsgType -> 10
+                else -> 15
             }
             msgSeq = proto.msgSeq
             clientMsgID = proto.clientMsgID.ifEmpty { "${uuidGen()}_${timeStampGen()}" }

@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
+import coil3.ImageLoader
 import com.google.gson.Gson
 import info.hermiths.chatapp.data.local.IMLocalRepository
 import info.hermiths.chatapp.model.MessageEntity
@@ -21,7 +22,7 @@ import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 
 
 @Composable
-fun MediaViewer(navController: NavController, msgClientId: String) {
+fun MediaViewer(navController: NavController, msgClientId: String, imageLoader: ImageLoader) {
     println("NavTo, args: $msgClientId")
     val msgEntity = IMLocalRepository.findMsgByClientMsgId(msgClientId)
     msgEntity?.let {
@@ -36,13 +37,13 @@ fun MediaViewer(navController: NavController, msgClientId: String) {
         })
         HorizontalPager(state = pagerState) { page ->
             println("HorizontalPager ---> $page")
-            MediaView(navController, msgSet[page])
+            MediaView(navController, msgSet[page], imageLoader)
         }
     }
 }
 
 @Composable
-fun MediaView(navController: NavController, msgEntity: MessageEntity) {
+fun MediaView(navController: NavController, msgEntity: MessageEntity, imageLoader: ImageLoader) {
     if (msgEntity.msgType == 2) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Surface(color = Color.Black, modifier = Modifier.fillMaxSize()) { }
@@ -53,6 +54,7 @@ fun MediaView(navController: NavController, msgEntity: MessageEntity) {
                 fullScreen = true,
                 fromMediaViewer = true,
                 viewModel = null,
+                imageLoader = imageLoader
             )
         }
     } else {
