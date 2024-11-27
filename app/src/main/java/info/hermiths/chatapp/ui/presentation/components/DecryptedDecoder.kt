@@ -1,11 +1,16 @@
 package info.hermiths.chatapp.ui.presentation.components
 
+import android.os.Build.VERSION.SDK_INT
 import android.util.Log
 import coil3.ImageLoader
 import coil3.decode.DecodeResult
+import coil3.decode.DecodeUtils
 import coil3.decode.Decoder
 import coil3.decode.ImageSource
 import coil3.fetch.SourceFetchResult
+import coil3.gif.AnimatedImageDecoder
+import coil3.gif.GifDecoder
+import coil3.gif.isGif
 import coil3.request.Options
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 import okio.Buffer
@@ -20,6 +25,18 @@ class DecryptedDecoder(
     private val imageLoader: ImageLoader,
 ) : Decoder {
     override suspend fun decode(): DecodeResult? {
+//        val result = if (!DecodeUtils.isGif(result.source.source())) {
+//            if (SDK_INT >= 28) {
+//                AnimatedImageDecoder(result.source, options).decode()
+//            } else {
+//                GifDecoder(result.source, options).decode()
+//            }
+//        } else {
+//            val defaultImageLoader = ImageLoader.Builder(options.context).build()
+//            defaultImageLoader.components.newDecoder(
+//                result, options, imageLoader
+//            )?.first?.decode()
+//        }
         val defaultImageLoader = ImageLoader.Builder(options.context).build()
         return defaultImageLoader.components.newDecoder(
             result, options, imageLoader
@@ -31,10 +48,14 @@ class DecryptedDecoder(
             result: SourceFetchResult, options: Options, imageLoader: ImageLoader
         ): Decoder {
             var newResult = result
+            Log.d(
+                ChatScreenViewModel.IMAGEENCRYPTION,
+                "Decrypted image ---->>> url: $url ,key: $key, options: $options"
+            )
             if (key.isNotEmpty()) {
                 Log.d(
                     ChatScreenViewModel.IMAGEENCRYPTION,
-                    "Decrypted image ---->>> url: $url ,key: $key, options: $options"
+                    "Decrypted image ---->>> url: $url ,key: $key, 执行解密"
                 )
                 val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
                 val secretKey = SecretKeySpec(key.toByteArray(charset("UTF-8")), "AES")

@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.Build.VERSION.SDK_INT
 import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -27,6 +28,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -65,7 +67,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil3.ImageLoader
 import coil3.compose.AsyncImage
+import coil3.gif.AnimatedImageDecoder
+import coil3.gif.GifDecoder
 
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -108,7 +113,6 @@ fun Appbar(navController: NavController) {
         ),
         navigationIcon = {
             IconButton(onClick = {
-                // TODO
                 navController.navigate(NavRoute.MEDIA_VIEWER)
             }) {
                 Image(
@@ -125,7 +129,9 @@ fun Appbar(navController: NavController) {
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ChatScreen(
-    navController: NavController, viewModel: ChatScreenViewModel = viewModel()
+    navController: NavController,
+    viewModel: ChatScreenViewModel = viewModel(),
+    imageLoader: ImageLoader
 ) {
     val context = LocalContext.current
 
@@ -205,7 +211,8 @@ fun ChatScreen(
                             if (message.senderUid == ChatScreenViewModel.uid) MessagePosition.RIGHT
                             else MessagePosition.LEFT,
                             viewModel,
-                            navController
+                            navController,
+                            imageLoader,
                         )
                         LaunchedEffect(uiState.messages) {
                             val visitAbleMsg = uiState.messages[index]
@@ -241,6 +248,7 @@ fun ChatScreen(
                         }
                     }
                 }
+
                 Column {
                     val timeoutVisibility by viewModel.isTimeOut.collectAsState()
                     Log.d("TimeOut", "timeoutVisibility --->>> $timeoutVisibility")
@@ -406,12 +414,13 @@ fun ChatScreen(
 @Composable
 fun NickIdPrompt(onStart: (nid: String, nName: String, lbeIdentity: String) -> Unit) {
     // HermitK15
-    var nickId by remember { mutableStateOf("HermitK1") }
-    var nickName by remember { mutableStateOf("HermitK1") }
-    // dev
-//     var lbeIdentity by remember { mutableStateOf("42nz10y3hhah") }
-    // sit
-    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
+    var nickId by remember { mutableStateOf("HermitK50") }
+    var nickName by remember { mutableStateOf("HermitK50") }
+
+    // dev: 42nz10y3hhah; faq: 43hw3seddn2i
+    var lbeIdentity by remember { mutableStateOf("43hw3seddn2i") }
+    // sit: 441zy52mn2yy
+//    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
 
     Dialog(onDismissRequest = { }) {
         Card {
@@ -444,7 +453,8 @@ fun MessageItem(
     message: MessageEntity,
     messagePosition: MessagePosition,
     viewModel: ChatScreenViewModel,
-    navController: NavController
+    navController: NavController,
+    imageLoader: ImageLoader,
 ) {
     Box(
         modifier = Modifier
@@ -453,9 +463,23 @@ fun MessageItem(
         contentAlignment = if (messagePosition == MessagePosition.LEFT) Alignment.TopStart else Alignment.BottomEnd
     ) {
         if (messagePosition == MessagePosition.LEFT) {
-            RecievFromCs(messages, message, messagePosition, viewModel = viewModel, navController)
+            RecievFromCs(
+                messages,
+                message,
+                messagePosition,
+                viewModel = viewModel,
+                navController,
+                imageLoader
+            )
         } else {
-            UserInput(messages, message, messagePosition, viewModel = viewModel, navController)
+            UserInput(
+                messages,
+                message,
+                messagePosition,
+                viewModel = viewModel,
+                navController,
+                imageLoader
+            )
         }
     }
 }
@@ -466,7 +490,8 @@ fun RecievFromCs(
     message: MessageEntity,
     messagePosition: MessagePosition,
     viewModel: ChatScreenViewModel,
-    navController: NavController
+    navController: NavController,
+    imageLoader: ImageLoader,
 ) {
     val currentIndex = messages.indexOf(message)
     var needShowTime = false
@@ -512,14 +537,14 @@ fun RecievFromCs(
                 modifier = Modifier.padding(8.dp)
             ) {
                 Text(
-                    text = message.senderUid,
+                    text = message.senderUid.ifEmpty { "客服机器人" },
                     modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
                     style = TextStyle(
                         fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)
                     )
                 )
                 Spacer(Modifier.height(8.dp))
-                MsgTypeContent(message, viewModel, navController, false)
+                MsgTypeContent(message, viewModel, navController, false, imageLoader)
             }
         }
     }
@@ -531,7 +556,8 @@ fun UserInput(
     message: MessageEntity,
     messagePosition: MessagePosition,
     viewModel: ChatScreenViewModel,
-    navController: NavController
+    navController: NavController,
+    imageLoader: ImageLoader,
 ) {
     val currentIndex = messages.indexOf(message)
     var needShowTime = false
@@ -553,9 +579,7 @@ fun UserInput(
                         message.sendTime
                     ),
                     style = TextStyle(
-                        color = Color(0xff979797),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.W400
+                        color = Color(0xff979797), fontSize = 10.sp, fontWeight = FontWeight.W400
                     ),
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -577,7 +601,7 @@ fun UserInput(
                     )
                 )
                 Spacer(Modifier.height(8.dp))
-                MsgTypeContent(message, viewModel, navController, true)
+                MsgTypeContent(message, viewModel, navController, true, imageLoader)
             }
 
             // avatar

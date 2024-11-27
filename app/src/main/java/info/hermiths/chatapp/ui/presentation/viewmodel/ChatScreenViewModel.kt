@@ -130,7 +130,7 @@ class ChatScreenViewModel : ViewModel() {
 
     var lastCsMessage: MessageEntity? = null
     var timer: Timer? = null
-    var timeOut: Long = 1
+    var timeOut: Long = 3
 
 //    private val _messages = MutableStateFlow<List<MessageEntity>>(mutableListOf())
 //    val messageList = _messages
@@ -178,7 +178,7 @@ class ChatScreenViewModel : ViewModel() {
                 viewModelScope.launch(Dispatchers.IO) {
                     fetchSessionList()
                     observerConnection()
-                    fetchTimeoutConfig()
+//                    fetchTimeoutConfig()
                     faq(faqReqBody = FaqReqBody(faqType = 0, id = ""))
                 }
             } catch (e: Exception) {
@@ -202,7 +202,12 @@ class ChatScreenViewModel : ViewModel() {
         try {
             val session = LbeImRepository.createSession(
                 lbeSign, lbeIdentity = lbeIdentity, SessionBody(
-                    extraInfo = "", headIcon = "", nickId = nickId, nickName = nickName, uid = ""
+                    extraInfo = "",
+                    headIcon = "",
+                    nickId = nickId,
+                    nickName = nickName,
+                    uid = "",
+                    language = "zh"
                 )
             )
             lbeToken = session.data.token
@@ -390,6 +395,7 @@ class ChatScreenViewModel : ViewModel() {
 
     fun faq(faqReqBody: FaqReqBody) {
         viewModelScope.launch(Dispatchers.IO) {
+            delay(500)
             try {
                 val faqResp = LbeImRepository.faq(
                     lbeSession = lbeSession,
@@ -397,9 +403,8 @@ class ChatScreenViewModel : ViewModel() {
                     lbeIdentity = lbeIdentity,
                     body = faqReqBody
                 )
-                Log.d(REALM, "faq ---->>> $faqResp")
             } catch (e: Exception) {
-                println("Mark Msg Read error --->>>  $e")
+                println("Fetch faq  error --->>>  $e")
             }
         }
     }
@@ -420,7 +425,7 @@ class ChatScreenViewModel : ViewModel() {
             if (history.data.content.isNotEmpty()) {
                 seq = history.data.content.last().msgSeq
                 for (content in history.data.content) {
-                    if (content.msgType == 1 || content.msgType == 2 || content.msgType == 3) {
+                    if (content.msgType == 1 || content.msgType == 2 || content.msgType == 3 || content.msgType == 8 || content.msgType == 9 || content.msgType == 10) {
                         val entity = MessageEntity().apply {
                             sessionId = content.sessionId
                             senderUid = content.senderUid
@@ -490,7 +495,6 @@ class ChatScreenViewModel : ViewModel() {
     }
 
     private fun handleOnMessageReceived(message: Message) {
-//        Log.d(TAG, "handleOnMessageReceived: $message")
         try {
             val value = (message as Message.Bytes).value
             viewModelScope.launch {
@@ -502,16 +506,15 @@ class ChatScreenViewModel : ViewModel() {
 
                 Log.d(TAG, "handleOnMessageReceived protobuf bytes --->>>  $msgEntity")
 
-
                 if (msgEntity.msgType == IMMsg.MsgType.TextMsgType || msgEntity.msgType == IMMsg.MsgType.ImgMsgType || msgEntity.msgType == IMMsg.MsgType.VideoMsgType) {
                     val receivedReq = msgEntity.msgBody.msgSeq
                     remoteLastMsgType = when (msgEntity.msgBody.msgType) {
                         IMMsg.MsgType.TextMsgType -> 1
                         IMMsg.MsgType.ImgMsgType -> 2
                         IMMsg.MsgType.VideoMsgType -> 3
-                        IMMsg.MsgType.FaqMsgType -> 8
-                        IMMsg.MsgType.KnowledgePointMsgType -> 9
-                        IMMsg.MsgType.KnowledgeAnswerMsgType -> 10
+//                        IMMsg.MsgType.FaqMsgType -> 8
+//                        IMMsg.MsgType.KnowledgePointMsgType -> 9
+//                        IMMsg.MsgType.KnowledgeAnswerMsgType -> 10
                         else -> 15
                     }
 
@@ -1138,8 +1141,7 @@ class ChatScreenViewModel : ViewModel() {
     }
 
     private fun updateSingleMessage(
-        source: MessageEntity?,
-        callback: (msg: MessageEntity) -> Unit
+        source: MessageEntity?, callback: (msg: MessageEntity) -> Unit
     ) {
         val messages = uiState.value?.messages?.toMutableList()
         val cacheMsg = messages?.find { it.clientMsgID == source?.clientMsgID }

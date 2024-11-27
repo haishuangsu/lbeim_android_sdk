@@ -1,15 +1,22 @@
 package info.hermiths.chatapp.ui.presentation.components
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,8 +31,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil3.ImageLoader
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import info.hermiths.chatapp.R
 import info.hermiths.chatapp.model.MessageEntity
+import info.hermiths.chatapp.model.req.FaqReqBody
+import info.hermiths.chatapp.model.resp.FaqAnswer
+import info.hermiths.chatapp.model.resp.FaqDetail
+import info.hermiths.chatapp.model.resp.FaqTopic
+import info.hermiths.chatapp.model.resp.FaqEntryUrl
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 
 
@@ -34,7 +49,8 @@ fun MsgTypeContent(
     message: MessageEntity,
     viewModel: ChatScreenViewModel,
     navController: NavController,
-    fromUser: Boolean
+    fromUser: Boolean,
+    imageLoader: ImageLoader,
 ) {
     when (message.msgType) {
         1 -> {
@@ -143,6 +159,7 @@ fun MsgTypeContent(
                             viewModel = viewModel,
                             message = message,
                             fullScreen = false,
+                            imageLoader = imageLoader,
                         )
                     }
                 } else {
@@ -151,6 +168,7 @@ fun MsgTypeContent(
                         viewModel = viewModel,
                         message = message,
                         fullScreen = false,
+                        imageLoader = imageLoader,
                     )
                 }
             }
@@ -189,6 +207,7 @@ fun MsgTypeContent(
                             viewModel = viewModel,
                             message = message,
                             fullScreen = false,
+                            imageLoader = imageLoader,
                         )
                     }
                 } else {
@@ -197,6 +216,7 @@ fun MsgTypeContent(
                         viewModel = viewModel,
                         message = message,
                         fullScreen = false,
+                        imageLoader = imageLoader,
                     )
                 }
             }
@@ -204,19 +224,188 @@ fun MsgTypeContent(
 
         8 -> {
             if (!fromUser) {
+                Log.d("Faq", "Topic body --->>> ${message.msgBody}")
+                val faq = Gson().fromJson(message.msgBody, FaqTopic::class.java)
+                faq.knowledgeBaseList.removeAt(1)
+                faq.knowledgeBaseList.add(faq.knowledgeBaseList[0])
+                faq.knowledgeBaseList.add(faq.knowledgeBaseList[0])
+                faq.knowledgeBaseList.add(faq.knowledgeBaseList[0])
 
+                val gridHeight = 105 * (1 + faq.knowledgeBaseList.size / 3)
+                Log.d("Faq", "计算高度 --->>> $gridHeight")
+
+                Surface(
+                    color = Color.White, modifier = Modifier.clip(
+                        RoundedCornerShape(
+                            topEnd = 12.dp,
+                            bottomStart = 12.dp,
+                            bottomEnd = 12.dp,
+                        )
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        Text(
+                            faq.knowledgeBaseTitle.ifEmpty {
+                                "Hi~请简单的描述一下你的问题，我们会尽力协助哦。"
+                            }, style = TextStyle(
+                                color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.W400
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(3),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.height(gridHeight.dp)
+                        ) {
+                            items(faq.knowledgeBaseList) { item ->
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.clickable {
+                                        viewModel.faq(FaqReqBody(faqType = 1, id = item.id))
+                                    }) {
+                                    val topicEntryUrl =
+                                        Gson().fromJson(item.url, FaqEntryUrl::class.java)
+                                    Log.d("Faq", "topicEntryUrl --->>> $topicEntryUrl")
+                                    Surface(
+                                        color = Color(0xffF3F4F6),
+                                        modifier = Modifier
+                                            .height(76.dp)
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(8.dp))
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            NormalDecryptedOrNotImageView(
+                                                key = topicEntryUrl.key,
+                                                url = topicEntryUrl.url,
+                                                modifier = Modifier
+                                                    .size(width = 28.dp, 26.dp),
+                                                imageLoader
+//                                                    .clip(CircleShape)
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(8.dp))
+//                                    Text(item.knowledgeBaseName)
+                                    Text(
+                                        "售后问题", style = TextStyle(
+                                            color = Color(0xff0054FC),
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.W500
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
         9 -> {
             if (!fromUser) {
+                val faqDetailListType = object : TypeToken<MutableList<FaqDetail>>() {}.type
+                val faqDetailList = Gson().fromJson<MutableList<FaqDetail>>(
+                    message.msgBody,
+                    faqDetailListType
+                )
+                Log.d("Faq", "Topic detail list --->>> $faqDetailList")
+                Surface(
+                    color = Color.White, modifier = Modifier.clip(
+                        RoundedCornerShape(
+                            topEnd = 12.dp,
+                            bottomStart = 12.dp,
+                            bottomEnd = 12.dp,
+                        )
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            "点击选择以下常见问题获取便捷自助服务",
+                            style = TextStyle(
+                                color = Color.Black,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.W400,
+                            ),
+                        )
 
+                        for (detail in faqDetailList) {
+                            Text(
+                                detail.knowledgePointName,
+                                style = TextStyle(
+                                    color = Color(0xff0054FC),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.W500,
+                                ),
+                                modifier = Modifier
+                                    .padding(top = 8.dp)
+                                    .clickable {
+                                        viewModel.faq(FaqReqBody(faqType = 2, id = detail.id))
+                                    }
+                            )
+                        }
+                    }
+                }
             }
         }
 
         10 -> {
             if (!fromUser) {
+                val faqAnswerType = object : TypeToken<MutableList<FaqAnswer>>() {}.type
+                val faqAnswer = Gson().fromJson<MutableList<FaqAnswer>>(
+                    message.msgBody,
+                    faqAnswerType
+                )
+                Log.d("Faq", "Answer --->>>> $faqAnswer")
 
+                Surface(
+                    color = Color.White, modifier = Modifier.clip(
+                        RoundedCornerShape(
+                            topEnd = 12.dp,
+                            bottomStart = 12.dp,
+                            bottomEnd = 12.dp,
+                        )
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        for (answerUnit in faqAnswer) {
+                            when (answerUnit.type) {
+                                0 -> {
+                                    Text(
+                                        answerUnit.content,
+                                        style = TextStyle(
+                                            color = Color.Black,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.W400,
+                                        ),
+                                        modifier = Modifier
+                                            .padding(top = 8.dp)
+                                    )
+                                }
+
+                                1 -> {
+                                    val faqEntryUrl =
+                                        Gson().fromJson(answerUnit.content, FaqEntryUrl::class.java)
+                                    Log.d("Faq", "Answer faqEntryUrl --->>> $faqEntryUrl")
+                                    NormalDecryptedOrNotImageView(
+                                        key = faqEntryUrl.key,
+                                        url = faqEntryUrl.url,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(250.dp),
+                                        imageLoader
+                                    )
+                                }
+
+                                2 -> {
+                                    Text("Not Implement yet.")
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
