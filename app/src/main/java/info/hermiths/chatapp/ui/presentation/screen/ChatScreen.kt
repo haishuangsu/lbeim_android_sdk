@@ -37,7 +37,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,10 +56,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -71,7 +68,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil3.ImageLoader
@@ -86,7 +82,6 @@ import info.hermiths.chatapp.model.MessageEntity
 import info.hermiths.chatapp.ui.presentation.components.MsgTypeContent
 import info.hermiths.chatapp.ui.presentation.components.NavRoute
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
-import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel.Companion.lbeIdentity
 import info.hermiths.chatapp.ui.presentation.viewmodel.ConnectionStatus
 import info.hermiths.chatapp.utils.FileUtils
 import info.hermiths.chatapp.utils.TimeUtils
@@ -136,7 +131,7 @@ fun Appbar(navController: NavController) {
 @Composable
 fun ChatScreen(
     navController: NavController,
-    viewModel: ChatScreenViewModel = viewModel(),
+    viewModel: ChatScreenViewModel,
     imageLoader: ImageLoader
 ) {
     val context = LocalContext.current
@@ -523,8 +518,8 @@ fun ToBottom(viewModel: ChatScreenViewModel, goToTop: () -> Unit) {
 @Composable
 fun NickIdPrompt(onStart: (nid: String, nName: String, lbeIdentity: String) -> Unit) {
     // HermitK15
-    var nickId by remember { mutableStateOf("HermitK52") }
-    var nickName by remember { mutableStateOf("HermitK52") }
+    var nickId by remember { mutableStateOf("HermitK53") }
+    var nickName by remember { mutableStateOf("HermitK53") }
 
     // dev: 42nz10y3hhah; faq: 43hw3seddn2i
     var lbeIdentity by remember { mutableStateOf("43hw3seddn2i") }
