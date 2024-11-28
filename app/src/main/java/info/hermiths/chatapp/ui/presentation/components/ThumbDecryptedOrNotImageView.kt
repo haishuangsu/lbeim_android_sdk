@@ -112,21 +112,6 @@ fun ThumbDecryptedOrNotImageView(
                 modifier = modifier,
             )
         } else {
-//            Image(
-//                painter = rememberAsyncImagePainter(
-//                    model = ImageRequest.Builder(LocalPlatformContext.current)
-//                        .data(if (loadSource) fullUrl else thumbUrl).decoderFactory(
-//                            DecryptedDecoder.Factory(
-//                                url = if (loadSource) fullUrl else thumbUrl,
-//                                key = if (loadSource) fullKey else thumbKey
-//                            )
-//                        ).build(),
-//                ),
-//                contentDescription = "Yo",
-//                contentScale = ContentScale.FillBounds,
-//                modifier = modifier,
-//            )
-
             AsyncImage(
                 model = ImageRequest.Builder(LocalPlatformContext.current).data(thumbUrl)
                     .decoderFactory(
