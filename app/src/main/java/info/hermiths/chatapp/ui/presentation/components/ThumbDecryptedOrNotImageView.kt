@@ -7,8 +7,6 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,7 +28,6 @@ import androidx.navigation.NavController
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
-import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import com.google.gson.Gson
 import info.hermiths.chatapp.R
@@ -42,11 +39,9 @@ import java.io.File
 
 
 @Composable
-fun DecryptedOrNotImageView(
+fun ThumbDecryptedOrNotImageView(
     navController: NavController,
     message: MessageEntity,
-    loadSource: Boolean = false,
-    fullScreen: Boolean = true,
     fromMediaViewer: Boolean = false,
     viewModel: ChatScreenViewModel?,
     imageLoader: ImageLoader
@@ -54,30 +49,22 @@ fun DecryptedOrNotImageView(
     var thumbUrl = ""
     var thumbKey = ""
     var fullUrl = ""
-    var fullKey = ""
     try {
         val media = Gson().fromJson(message.msgBody, MediaSource::class.java)
         fullUrl = media.resource.url
-        fullKey = media.resource.key
         thumbUrl = media.thumbnail.url
         thumbKey = media.thumbnail.key
     } catch (e: Exception) {
         println("DecryptedOrNotImageView Json parse error -->> ${message.msgBody}")
     }
 
-    println("DecryptedOrNotImageView -->> fullScreen: $fullScreen, loadSource: $loadSource")
     val progress = ChatScreenViewModel.progressList[message.clientMsgID]?.collectAsState()
     val thumbBmp = ChatScreenViewModel.uploadThumbs[message.clientMsgID]?.collectAsState()
     Log.d(ChatScreenViewModel.UPLOAD, "thumbBmp isExist: ${thumbBmp == null}, thumbUrl: $thumbUrl")
 
     Box(contentAlignment = Alignment.Center) {
         val ctx = LocalPlatformContext.current
-        val modifier = if (fullScreen) Modifier
-            .fillMaxWidth()
-            .height(500.dp)
-            .clickable {
-                // TODO
-            } else Modifier
+        val modifier = Modifier
             .size(
                 width = 160.dp, height = 90.dp
             )
@@ -89,8 +76,7 @@ fun DecryptedOrNotImageView(
                 } else {
                     if (!message.pendingUpload && message.localFile?.isBigFile == true) {
                         Log.d(
-                            CONTINUE_UPLOAD,
-                            "断点暂停, 缓存的进度： ${message.uploadTask?.progress}"
+                            CONTINUE_UPLOAD, "断点暂停, 缓存的进度： ${message.uploadTask?.progress}"
                         )
                         viewModel?.cancelJob(message.clientMsgID, progress = progress)
                     } else {
@@ -118,7 +104,7 @@ fun DecryptedOrNotImageView(
                 }
             }
 
-        if (thumbBmp != null && !fullScreen) {
+        if (thumbBmp != null) {
             Image(
                 bitmap = thumbBmp.value.asImageBitmap(),
                 contentDescription = "Yo",
@@ -142,11 +128,10 @@ fun DecryptedOrNotImageView(
 //            )
 
             AsyncImage(
-                model = ImageRequest.Builder(LocalPlatformContext.current)
-                    .data(if (loadSource) fullUrl else thumbUrl).decoderFactory(
+                model = ImageRequest.Builder(LocalPlatformContext.current).data(thumbUrl)
+                    .decoderFactory(
                         DecryptedDecoder.Factory(
-                            url = if (loadSource) fullUrl else thumbUrl,
-                            key = if (loadSource) fullKey else thumbKey
+                            url = thumbUrl, key = thumbKey
                         )
                     ).build(),
                 contentDescription = "Yo",
@@ -181,26 +166,26 @@ fun DecryptedOrNotImageView(
                             strokeWidth = 2.dp,
                         )
 
-//                        if (message.pendingUpload) {
-//                            Image(
-//                                painterResource(R.drawable.pending),
-//                                "",
-//                                modifier = Modifier.size(width = 8.dp, height = 13.dp)
-//                            )
-//                        } else {
-                        val percent = "${progress.value * 100}"
-                        Text(
-                            "${
-                                percent.substring(
-                                    0, if (percent.length > 5) 5 else percent.length
-                                )
-                            }%", style = TextStyle(
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.W600,
-                                color = Color.White
+                        if (message.pendingUpload) {
+                            Image(
+                                painterResource(R.drawable.pending),
+                                "",
+                                modifier = Modifier.size(width = 8.dp, height = 13.dp)
                             )
-                        )
-//                        }
+                        } else {
+                            val percent = "${progress.value * 100}"
+                            Text(
+                                "${
+                                    percent.substring(
+                                        0, if (percent.length > 5) 5 else percent.length
+                                    )
+                                }%", style = TextStyle(
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.W600,
+                                    color = Color.White
+                                )
+                            )
+                        }
                     }
                 }
                 if (progress.value == 1.0f) {

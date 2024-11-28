@@ -154,20 +154,18 @@ fun MsgTypeContent(
                             }
                         }
 
-                        DecryptedOrNotImageView(
+                        ThumbDecryptedOrNotImageView(
                             navController = navController,
                             viewModel = viewModel,
                             message = message,
-                            fullScreen = false,
                             imageLoader = imageLoader,
                         )
                     }
                 } else {
-                    DecryptedOrNotImageView(
+                    ThumbDecryptedOrNotImageView(
                         navController = navController,
                         viewModel = viewModel,
                         message = message,
-                        fullScreen = false,
                         imageLoader = imageLoader,
                     )
                 }
@@ -202,20 +200,18 @@ fun MsgTypeContent(
                             }
                         }
 
-                        DecryptedOrNotImageView(
+                        ThumbDecryptedOrNotImageView(
                             navController = navController,
                             viewModel = viewModel,
                             message = message,
-                            fullScreen = false,
                             imageLoader = imageLoader,
                         )
                     }
                 } else {
-                    DecryptedOrNotImageView(
+                    ThumbDecryptedOrNotImageView(
                         navController = navController,
                         viewModel = viewModel,
                         message = message,
-                        fullScreen = false,
                         imageLoader = imageLoader,
                     )
                 }
