@@ -3,7 +3,8 @@ package info.hermiths.chatapp.model.resp
 data class FaqAnswer(
     val type: Int,
     val content: String,
-    val contents: MutableList<LinkText>,
+//    var contents: MutableList<LinkText>,
+    var contents: String,
 )
 
 data class LinkText(

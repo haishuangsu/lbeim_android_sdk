@@ -26,9 +26,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -42,6 +47,7 @@ import info.hermiths.chatapp.model.resp.FaqAnswer
 import info.hermiths.chatapp.model.resp.FaqDetail
 import info.hermiths.chatapp.model.resp.FaqTopic
 import info.hermiths.chatapp.model.resp.FaqEntryUrl
+import info.hermiths.chatapp.model.resp.LinkText
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 
 
@@ -258,8 +264,7 @@ fun MsgTypeContent(
                             modifier = Modifier.height(gridHeight.dp)
                         ) {
                             items(faq.knowledgeBaseList) { item ->
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                Column(horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier.clickable {
                                         viewModel.faq(FaqReqBody(faqType = 1, id = item.id))
                                     }) {
@@ -277,8 +282,7 @@ fun MsgTypeContent(
                                             NormalDecryptedOrNotImageView(
                                                 key = topicEntryUrl.key,
                                                 url = topicEntryUrl.url,
-                                                modifier = Modifier
-                                                    .size(width = 28.dp, 26.dp),
+                                                modifier = Modifier.size(width = 28.dp, 26.dp),
                                                 imageLoader
 //                                                    .clip(CircleShape)
                                             )
@@ -291,9 +295,7 @@ fun MsgTypeContent(
                                             color = Color(0xff0054FC),
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.W500
-                                        ),
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis
+                                        ), maxLines = 2, overflow = TextOverflow.Ellipsis
                                     )
                                 }
                             }
@@ -307,8 +309,7 @@ fun MsgTypeContent(
             if (!fromUser) {
                 val faqDetailListType = object : TypeToken<MutableList<FaqDetail>>() {}.type
                 val faqDetailList = Gson().fromJson<MutableList<FaqDetail>>(
-                    message.msgBody,
-                    faqDetailListType
+                    message.msgBody, faqDetailListType
                 )
                 Log.d("Faq", "Topic detail list --->>> $faqDetailList")
                 Surface(
@@ -331,19 +332,15 @@ fun MsgTypeContent(
                         )
 
                         for (detail in faqDetailList) {
-                            Text(
-                                detail.knowledgePointName,
-                                style = TextStyle(
-                                    color = Color(0xff0054FC),
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.W500,
-                                ),
-                                modifier = Modifier
-                                    .padding(top = 8.dp)
-                                    .clickable {
-                                        viewModel.faq(FaqReqBody(faqType = 2, id = detail.id))
-                                    }
-                            )
+                            Text(detail.knowledgePointName, style = TextStyle(
+                                color = Color(0xff0054FC),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.W500,
+                            ), modifier = Modifier
+                                .padding(top = 8.dp)
+                                .clickable {
+                                    viewModel.faq(FaqReqBody(faqType = 2, id = detail.id))
+                                })
                         }
                     }
                 }
@@ -354,8 +351,7 @@ fun MsgTypeContent(
             if (!fromUser) {
                 val faqAnswerType = object : TypeToken<MutableList<FaqAnswer>>() {}.type
                 val faqAnswer = Gson().fromJson<MutableList<FaqAnswer>>(
-                    message.msgBody,
-                    faqAnswerType
+                    message.msgBody, faqAnswerType
                 )
                 Log.d("Faq", "Answer --->>>> $faqAnswer")
 
@@ -368,7 +364,10 @@ fun MsgTypeContent(
                         )
                     )
                 ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.Center
+                    ) {
                         for (answerUnit in faqAnswer) {
                             when (answerUnit.type) {
                                 0 -> {
@@ -378,9 +377,7 @@ fun MsgTypeContent(
                                             color = Color.Black,
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.W400,
-                                        ),
-                                        modifier = Modifier
-                                            .padding(top = 8.dp)
+                                        ), //modifier = Modifier.padding(top = 8.dp)
                                     )
                                 }
 
@@ -399,7 +396,48 @@ fun MsgTypeContent(
                                 }
 
                                 2 -> {
-                                    Text("Not Implement yet.")
+                                    if (answerUnit.contents != null && answerUnit.contents.isNotEmpty()) {
+                                        val linkTextType =
+                                            object : TypeToken<MutableList<LinkText>>() {}.type
+                                        val linkTexts = Gson().fromJson<MutableList<LinkText>>(
+                                            answerUnit.contents, linkTextType
+                                        )
+
+                                        Text(buildAnnotatedString {
+                                            for (content in linkTexts) {
+                                                if (content.url.isEmpty()) {
+                                                    withStyle(
+                                                        style = SpanStyle(
+                                                            color = Color.Black,
+                                                            fontSize = 12.sp,
+                                                            fontWeight = FontWeight.W400
+                                                        )
+                                                    ) {
+                                                        append(content.content)
+                                                    }
+                                                } else {
+                                                    Log.d(
+                                                        "LinkText",
+                                                        "${content.content}, ${content.url}"
+                                                    )
+                                                    withLink(
+                                                        LinkAnnotation.Url(url = content.url)
+//                                                        LinkAnnotation.Url(url = "https://${content.url}")
+                                                    ) {
+                                                        withStyle(
+                                                            style = SpanStyle(
+                                                                color = Color(0xff0054FC),
+                                                                fontSize = 12.sp,
+                                                                fontWeight = FontWeight.W400
+                                                            )
+                                                        ) {
+                                                            append(content.content)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }, modifier = Modifier.padding(0.dp))
+                                    }
                                 }
                             }
                         }
