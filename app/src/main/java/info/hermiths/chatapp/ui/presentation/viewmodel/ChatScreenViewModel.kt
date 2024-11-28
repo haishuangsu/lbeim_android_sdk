@@ -128,6 +128,8 @@ class ChatScreenViewModel : ViewModel() {
 
     var isTimeOut = MutableStateFlow(false)
 
+    var recivCount = MutableStateFlow(0)
+
     var lastCsMessage: MessageEntity? = null
     var timer: Timer? = null
     var timeOut: Long = 3
@@ -357,6 +359,13 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
+    fun resetRecivCount() {
+        viewModelScope.launch(Dispatchers.IO) {
+            delay(300)
+            recivCount.update { 0 }
+        }
+    }
+
     private fun scrollTo(index: Int) {
         Log.d(REALM, "scrollToEnd： $index")
         lazyListState?.requestScrollToItem(index)
@@ -507,35 +516,35 @@ class ChatScreenViewModel : ViewModel() {
                 Log.d(TAG, "handleOnMessageReceived protobuf bytes --->>>  $msgEntity")
 
                 if (msgEntity.msgType == IMMsg.MsgType.TextMsgType || msgEntity.msgType == IMMsg.MsgType.ImgMsgType || msgEntity.msgType == IMMsg.MsgType.VideoMsgType) {
-                    val receivedReq = msgEntity.msgBody.msgSeq
+
                     remoteLastMsgType = when (msgEntity.msgBody.msgType) {
                         IMMsg.MsgType.TextMsgType -> 1
                         IMMsg.MsgType.ImgMsgType -> 2
                         IMMsg.MsgType.VideoMsgType -> 3
-//                        IMMsg.MsgType.FaqMsgType -> 8
-//                        IMMsg.MsgType.KnowledgePointMsgType -> 9
-//                        IMMsg.MsgType.KnowledgeAnswerMsgType -> 10
                         else -> 15
                     }
 
-                    if (receivedReq - seq > 2) {
-                        fetchHistoryAndSync(sessionList[0])
-                    } else {
+                    val receivedReq = msgEntity.msgBody.msgSeq
+                    if (remoteLastMsgType == 1 || remoteLastMsgType == 2 || remoteLastMsgType == 3) {
+                        if (receivedReq - seq > 2) {
+                            fetchHistoryAndSync(sessionList[0])
+                        }
                         seq = receivedReq
+                        recivCount.value += 1
+                    }
 
-                        Log.d(
-                            TAG, "收到消息 --->> seq: $seq, remoteLastMsgType: $remoteLastMsgType"
-                        )
-                        val entity = protoToEntity(msgEntity.msgBody)
+                    Log.d(
+                        TAG, "收到消息 --->> seq: $seq, remoteLastMsgType: $remoteLastMsgType"
+                    )
+                    val entity = protoToEntity(msgEntity.msgBody)
 
-                        lastCsMessage = entity
-                        scheduleTimeoutJob()
+                    lastCsMessage = entity
+                    scheduleTimeoutJob()
 
-                        viewModelScope.launch {
-                            IMLocalRepository.insertMessage(entity)
-                            if (entity.senderUid != uid) {
-                                addSingleMsgToUI(entity)
-                            }
+                    viewModelScope.launch {
+                        IMLocalRepository.insertMessage(entity)
+                        if (entity.senderUid != uid) {
+                            addSingleMsgToUI(entity)
                         }
                     }
                 }

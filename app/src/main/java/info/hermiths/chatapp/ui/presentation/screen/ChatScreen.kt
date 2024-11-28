@@ -11,6 +11,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,7 +30,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -36,7 +37,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -46,6 +49,7 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -53,8 +57,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -65,12 +71,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
-import coil3.gif.AnimatedImageDecoder
-import coil3.gif.GifDecoder
 
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -142,6 +147,9 @@ fun ChatScreen(
     val input by viewModel.inputMsg.observeAsState("init")
 
     val currentFocus = LocalFocusManager.current
+//    val keyboardController = LocalSoftwareKeyboardController.current
+//    val coroutineScope = rememberCoroutineScope()
+
     val lazyListState = rememberLazyListState()
     viewModel.lazyListState = lazyListState
 
@@ -155,7 +163,7 @@ fun ChatScreen(
         })
 
     val mediaPermissionState = rememberMultiplePermissionsState(
-        permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) listOf(
+        permissions = if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) listOf(
             Manifest.permission.READ_MEDIA_IMAGES
         ) else listOf(
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -169,11 +177,21 @@ fun ChatScreen(
 
     val hasMediaPermission = mediaPermissionState.allPermissionsGranted
 
+    val showToBottomButton by remember {
+        derivedStateOf {
+            lazyListState.firstVisibleItemIndex < uiState.messages.size - 10
+        }
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { Appbar(navController) }) { innerPadding ->
         Surface(
-            modifier = Modifier.fillMaxSize(), color = Color(0xFFF3F4F6)
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable {
+                    currentFocus.clearFocus()
+                }, color = Color(0xFFF3F4F6)
         ) {
             Column(
                 modifier = Modifier
@@ -214,6 +232,36 @@ fun ChatScreen(
                             navController,
                             imageLoader,
                         )
+
+//                        val shouldLoadHistory = remember {
+//                            derivedStateOf {
+//                                val totalSize = lazyListState.layoutInfo.totalItemsCount
+//                                val firVisibilityIndex =
+//                                    lazyListState.layoutInfo.visibleItemsInfo.firstOrNull()?.index
+//                                        ?: 0
+//                                totalSize - firVisibilityIndex > ChatScreenViewModel.showPageSize - 3
+//                            }
+//                        }
+//
+//                        LaunchedEffect(shouldLoadHistory) {
+//                            val nowEntry = uiState.messages[index]
+//                            if (ChatScreenViewModel.currentPage > 1) {
+//                                if (viewModel.paginationSet.contains(nowEntry.clientMsgID)) {
+//                                    return@LaunchedEffect
+//                                } else {
+//                                    viewModel.paginationSet.add(nowEntry.clientMsgID)
+//                                }
+//                                ChatScreenViewModel.currentPage -= 1
+//                                Log.d(
+//                                    "列表滑动",
+//                                    "分页时的 old index: $index, msgs size: ${uiState.messages.size}, msg: ${uiState.messages[index].msgBody}, session: ${ChatScreenViewModel.currentSession?.sessionId} ,currentPage: ${ChatScreenViewModel.currentPage}"
+//                                )
+//                                viewModel.filterLocalMessages()
+//                            } else {
+//                                viewModel.loadHistory()
+//                            }
+//                        }
+
                         LaunchedEffect(uiState.messages) {
                             val visitAbleMsg = uiState.messages[index]
 //                                Log.d(
@@ -224,7 +272,15 @@ fun ChatScreen(
                                 viewModel.markRead(message)
                             }
 
+//                            val buffer =
+//                                if (uiState.messages.size > ChatScreenViewModel.showPageSize) {
+//                                    ChatScreenViewModel.showPageSize - 3
+//                                } else {
+//                                    ChatScreenViewModel.showPageSize - 15
+//                                }
+
                             if (lazyListState.isScrollInProgress) {
+                                currentFocus.clearFocus()
                                 if (uiState.messages.size - index > ChatScreenViewModel.showPageSize - 3) {
                                     val nowEntry = uiState.messages[index]
                                     if (ChatScreenViewModel.currentPage > 1) {
@@ -408,19 +464,72 @@ fun ChatScreen(
                 viewModel.setNickId(nid, nName, lbeIdentity)
             }
         }
+
+        AnimatedVisibility(visible = showToBottomButton, enter = fadeIn(), exit = fadeOut()) {
+            ToBottom(viewModel = viewModel, goToTop = {
+                viewModel.scrollToBottom()
+                viewModel.resetRecivCount()
+//                coroutineScope.launch {
+//                    lazyListState.animateScrollToItem(uiState.messages.size)
+//                }
+            })
+
+        }
+    }
+}
+
+@Composable
+fun ToBottom(viewModel: ChatScreenViewModel, goToTop: () -> Unit) {
+    val recivCount by viewModel.recivCount.collectAsState()
+    Box(modifier = Modifier.fillMaxSize()) {
+        Surface(color = Color(0xff0054FC).copy(alpha = 0.15f),
+            modifier = Modifier
+                .padding(bottom = 89.dp, end = 16.dp)
+                .clip(
+                    RoundedCornerShape(
+                        topStart = 12.dp,
+                        topEnd = 12.dp,
+                        bottomStart = 12.dp,
+                    )
+                )
+                .clickable {
+                    goToTop()
+                }
+//                .blur(20.dp)
+                .align(Alignment.BottomEnd)) {
+            Row(
+                modifier = Modifier.padding(
+                    start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp
+                )
+            ) {
+                Text(
+                    if (recivCount == 0) "回到底部" else "有${recivCount}条新消息",
+                    style = TextStyle(
+                        color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.W400
+                    )
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    painter = painterResource(R.drawable.to_bottom),
+                    contentDescription = "",
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
     }
 }
 
 @Composable
 fun NickIdPrompt(onStart: (nid: String, nName: String, lbeIdentity: String) -> Unit) {
     // HermitK15
-    var nickId by remember { mutableStateOf("HermitK50") }
-    var nickName by remember { mutableStateOf("HermitK50") }
+    var nickId by remember { mutableStateOf("HermitK1") }
+    var nickName by remember { mutableStateOf("HermitK1") }
 
     // dev: 42nz10y3hhah; faq: 43hw3seddn2i
-    var lbeIdentity by remember { mutableStateOf("43hw3seddn2i") }
+//    var lbeIdentity by remember { mutableStateOf("43hw3seddn2i") }
+
     // sit: 441zy52mn2yy
-//    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
+    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
 
     Dialog(onDismissRequest = { }) {
         Card {
