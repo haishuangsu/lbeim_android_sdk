@@ -12,6 +12,7 @@ import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
 import coil3.gif.isGif
 import coil3.request.Options
+import coil3.size.Size
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
 import okio.Buffer
 import java.util.Base64
@@ -25,18 +26,20 @@ class DecryptedDecoder(
     private val imageLoader: ImageLoader,
 ) : Decoder {
     override suspend fun decode(): DecodeResult? {
+//        val newOptions = options.copy(size = Size(300, 500))
 //        val result = if (!DecodeUtils.isGif(result.source.source())) {
 //            if (SDK_INT >= 28) {
-//                AnimatedImageDecoder(result.source, options).decode()
+//                AnimatedImageDecoder(result.source, newOptions).decode()
 //            } else {
-//                GifDecoder(result.source, options).decode()
+//                GifDecoder(result.source, newOptions).decode()
 //            }
 //        } else {
-//            val defaultImageLoader = ImageLoader.Builder(options.context).build()
+//            val defaultImageLoader = ImageLoader.Builder(newOptions.context).build()
 //            defaultImageLoader.components.newDecoder(
-//                result, options, imageLoader
+//                result, newOptions, imageLoader
 //            )?.first?.decode()
 //        }
+//        return result
         val defaultImageLoader = ImageLoader.Builder(options.context).build()
         return defaultImageLoader.components.newDecoder(
             result, options, imageLoader
@@ -50,7 +53,7 @@ class DecryptedDecoder(
             var newResult = result
             Log.d(
                 ChatScreenViewModel.IMAGEENCRYPTION,
-                "Decrypted image ---->>> url: $url ,key: $key, options: $options"
+                "Decrypted image ---->>> url: $url ,key: $key, \noptions: $options"
             )
             if (key.isNotEmpty()) {
                 Log.d(

@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+
 
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -16,11 +18,9 @@ import androidx.navigation.NavController
 import coil3.ImageLoader
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import info.hermiths.chatapp.data.local.IMLocalRepository
 import info.hermiths.chatapp.model.MessageEntity
 import info.hermiths.chatapp.model.resp.FaqAnswer
 import info.hermiths.chatapp.model.resp.FaqEntryUrl
-import info.hermiths.chatapp.model.resp.LinkText
 import info.hermiths.chatapp.model.resp.MediaSource
 import info.hermiths.chatapp.model.resp.Resource
 import info.hermiths.chatapp.model.resp.Thumbnail
@@ -43,7 +43,7 @@ fun MediaViewer(
         messages.addAll(cache)
     }
     val msgFilterSet: MutableList<MessageEntity> = mutableListOf()
-    val msgEntity = IMLocalRepository.findMsgByClientMsgId(msgClientId)
+
     for (msg in messages) {
         when (msg.msgType) {
             2 -> {
@@ -59,6 +59,7 @@ fun MediaViewer(
                 val faqAnswer = Gson().fromJson<MutableList<FaqAnswer>>(
                     msg.msgBody, faqAnswerType
                 )
+                var index = 0
                 for (answerUnit in faqAnswer) {
                     if (answerUnit.type == 1) {
                         val faqEntryUrl =
@@ -73,27 +74,32 @@ fun MediaViewer(
                             Thumbnail(key = "", url = ""),
                             Resource(key = faqEntryUrl.key, url = faqEntryUrl.url)
                         )
+                        genMsg.clientMsgID = "${msg.clientMsgID}_$index"
                         genMsg.msgBody = Gson().toJson(md)
                         msgFilterSet.add(genMsg)
                     }
+                    index++
                 }
             }
         }
 
         Log.d(
             "NavTo",
-            "filter list ---->>> size: ${msgFilterSet.size}, ${msgFilterSet.map { m -> "${m.msgBody}\n" }}"
+            "filter list ---->>> size: ${msgFilterSet.size}, ${msgFilterSet.map { m -> "msgClientId: ${m.clientMsgID}, ${m.msgBody}\n" }}"
         )
     }
 
+    val targetEntity = msgFilterSet.find { it.clientMsgID == msgClientId }
 
-    val currentIndex = msgFilterSet.indexOf(msgEntity)
-    val pagerState = rememberPagerState(initialPage = currentIndex, pageCount = {
-        msgFilterSet.size
-    })
-    HorizontalPager(state = pagerState) { page ->
-        println("HorizontalPager ---> $page")
-        MediaView(msgFilterSet[page], imageLoader)
+    targetEntity?.let {
+        val currentIndex = msgFilterSet.indexOf(it)
+        val pagerState = rememberPagerState(initialPage = currentIndex, pageCount = {
+            msgFilterSet.size
+        })
+        HorizontalPager(state = pagerState) { page ->
+            println("HorizontalPager ---> $page")
+            MediaView(msgFilterSet[page], imageLoader)
+        }
     }
 }
 
@@ -115,8 +121,7 @@ fun MediaView(msgEntity: MessageEntity, imageLoader: ImageLoader) {
 
             NormalDecryptedOrNotImageView(
                 key = fullKey, url = fullUrl, modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(500.dp)
+                    .fillMaxWidth()
                     .clickable {}, imageLoader = imageLoader
             )
         }

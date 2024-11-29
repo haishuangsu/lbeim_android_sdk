@@ -24,8 +24,23 @@ fun NormalDecryptedOrNotImageView(
             )
             .build(),
         contentDescription = "Yo",
-        contentScale = ContentScale.FillBounds,
+        contentScale = ContentScale.FillWidth,
         modifier = modifier,
         imageLoader = imageLoader,
     )
+
+//    Image(
+//        painter = rememberAsyncImagePainter(
+//            model = ImageRequest.Builder(ctx)
+//                .data(url).decoderFactory(
+//                    DecryptedDecoder.Factory(
+//                        url = url,
+//                        key = key
+//                    )
+//                ).build(),
+//        ),
+//        contentDescription = "Yo",
+//        contentScale = ContentScale.Fit,
+//        modifier = modifier,
+//    )
 }

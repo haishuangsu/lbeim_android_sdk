@@ -68,7 +68,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
@@ -518,14 +517,14 @@ fun ToBottom(viewModel: ChatScreenViewModel, goToTop: () -> Unit) {
 @Composable
 fun NickIdPrompt(onStart: (nid: String, nName: String, lbeIdentity: String) -> Unit) {
     // HermitK15
-    var nickId by remember { mutableStateOf("HermitK53") }
-    var nickName by remember { mutableStateOf("HermitK53") }
+    var nickId by remember { mutableStateOf("HermitK1") }
+    var nickName by remember { mutableStateOf("HermitK1") }
 
     // dev: 42nz10y3hhah; faq: 43hw3seddn2i
-    var lbeIdentity by remember { mutableStateOf("43hw3seddn2i") }
+//    var lbeIdentity by remember { mutableStateOf("43hw3seddn2i") }
 
     // sit: 441zy52mn2yy
-//    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
+    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
 
     Dialog(onDismissRequest = { }) {
         Card {

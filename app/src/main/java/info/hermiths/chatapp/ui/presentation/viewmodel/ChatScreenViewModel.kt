@@ -816,8 +816,8 @@ class ChatScreenViewModel : ViewModel() {
         localFile.path = mediaMessage.path
         localFile.size = mediaMessage.file.length()
         localFile.mimeType = mediaMessage.mime
-        localFile.width = mediaMessage.width
-        localFile.height = mediaMessage.height
+        localFile.width = mediaMessage.height
+        localFile.height = mediaMessage.width
         return localFile
     }
 
