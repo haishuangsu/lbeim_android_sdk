@@ -135,12 +135,13 @@ fun MsgTypeContent(
 
         2 -> {
             Box(
-                modifier = Modifier.size(
-                    width = 160.dp, height = 90.dp
-                )
+                modifier = Modifier.fillMaxWidth()
             ) {
                 if (fromUser) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.align(Alignment.BottomEnd)
+                    ) {
                         if (!message.sendSuccess) {
                             // TODO
                         } else {
@@ -169,24 +170,27 @@ fun MsgTypeContent(
                         )
                     }
                 } else {
-                    ThumbDecryptedOrNotImageView(
-                        navController = navController,
-                        viewModel = viewModel,
-                        message = message,
-                        imageLoader = imageLoader,
-                    )
+                    Box(modifier = Modifier.align(Alignment.BottomStart)) {
+                        ThumbDecryptedOrNotImageView(
+                            navController = navController,
+                            viewModel = viewModel,
+                            message = message,
+                            imageLoader = imageLoader,
+                        )
+                    }
                 }
             }
         }
 
         3 -> {
             Box(
-                contentAlignment = Alignment.Center, modifier = Modifier.size(
-                    width = 160.dp, height = 90.dp
-                )
+                contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()
             ) {
                 if (fromUser) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.align(Alignment.BottomEnd)
+                    ) {
                         if (!message.sendSuccess) {
                             // TODO
                         } else {
@@ -215,12 +219,14 @@ fun MsgTypeContent(
                         )
                     }
                 } else {
-                    ThumbDecryptedOrNotImageView(
-                        navController = navController,
-                        viewModel = viewModel,
-                        message = message,
-                        imageLoader = imageLoader,
-                    )
+                    Box(modifier = Modifier.align(Alignment.BottomStart)) {
+                        ThumbDecryptedOrNotImageView(
+                            navController = navController,
+                            viewModel = viewModel,
+                            message = message,
+                            imageLoader = imageLoader,
+                        )
+                    }
                 }
             }
         }
@@ -365,9 +371,9 @@ fun MsgTypeContent(
                     )
                 ) {
                     Column(
-                        modifier = Modifier.padding(12.dp),
-                        verticalArrangement = Arrangement.Center
+                        modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.Center
                     ) {
+                        var index = 0
                         for (answerUnit in faqAnswer) {
                             when (answerUnit.type) {
                                 0 -> {
@@ -384,13 +390,17 @@ fun MsgTypeContent(
                                 1 -> {
                                     val faqEntryUrl =
                                         Gson().fromJson(answerUnit.content, FaqEntryUrl::class.java)
+                                    val navRoute =
+                                        "${NavRoute.MEDIA_VIEWER}/${message.clientMsgID}_$index"
                                     Log.d("Faq", "Answer faqEntryUrl --->>> $faqEntryUrl")
                                     NormalDecryptedOrNotImageView(
                                         key = faqEntryUrl.key,
                                         url = faqEntryUrl.url,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(250.dp),
+                                            .clickable {
+                                                navController.navigate(navRoute)
+                                            },
                                         imageLoader
                                     )
                                 }
@@ -440,6 +450,7 @@ fun MsgTypeContent(
                                     }
                                 }
                             }
+                            index++
                         }
                     }
                 }
