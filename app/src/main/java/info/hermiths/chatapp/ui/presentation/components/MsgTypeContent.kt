@@ -235,10 +235,10 @@ fun MsgTypeContent(
             if (!fromUser) {
                 Log.d("Faq", "Topic body --->>> ${message.msgBody}")
                 val faq = Gson().fromJson(message.msgBody, FaqTopic::class.java)
-                faq.knowledgeBaseList.removeAt(1)
-                faq.knowledgeBaseList.add(faq.knowledgeBaseList[0])
-                faq.knowledgeBaseList.add(faq.knowledgeBaseList[0])
-                faq.knowledgeBaseList.add(faq.knowledgeBaseList[0])
+//                faq.knowledgeBaseList.removeAt(1)
+//                faq.knowledgeBaseList.add(faq.knowledgeBaseList[0])
+//                faq.knowledgeBaseList.add(faq.knowledgeBaseList[0])
+//                faq.knowledgeBaseList.add(faq.knowledgeBaseList[0])
 
                 val gridHeight = 105 * (1 + faq.knowledgeBaseList.size / 3)
                 Log.d("Faq", "计算高度 --->>> $gridHeight")
@@ -270,39 +270,40 @@ fun MsgTypeContent(
                             modifier = Modifier.height(gridHeight.dp)
                         ) {
                             items(faq.knowledgeBaseList) { item ->
-                                Column(horizontalAlignment = Alignment.CenterHorizontally,
-                                    modifier = Modifier.clickable {
-                                        viewModel.faq(FaqReqBody(faqType = 1, id = item.id))
-                                    }) {
-                                    val topicEntryUrl =
-                                        Gson().fromJson(item.url, FaqEntryUrl::class.java)
-                                    Log.d("Faq", "topicEntryUrl --->>> $topicEntryUrl")
-                                    Surface(
-                                        color = Color(0xffF3F4F6),
-                                        modifier = Modifier
-                                            .height(76.dp)
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(8.dp))
-                                    ) {
-                                        Box(contentAlignment = Alignment.Center) {
-                                            NormalDecryptedOrNotImageView(
-                                                key = topicEntryUrl.key,
-                                                url = topicEntryUrl.url,
-                                                modifier = Modifier.size(width = 28.dp, 26.dp),
-                                                imageLoader
+                                if (item.url.isNotEmpty()) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier.clickable {
+                                            viewModel.faq(FaqReqBody(faqType = 1, id = item.id))
+                                        }) {
+                                        val topicEntryUrl =
+                                            Gson().fromJson(item.url, FaqEntryUrl::class.java)
+                                        Log.d("Faq", "topicEntryUrl --->>> $topicEntryUrl")
+                                        Surface(
+                                            color = Color(0xffF3F4F6),
+                                            modifier = Modifier
+                                                .height(76.dp)
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(8.dp))
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                NormalDecryptedOrNotImageView(
+                                                    key = topicEntryUrl.key,
+                                                    url = topicEntryUrl.url,
+                                                    modifier = Modifier.size(width = 28.dp, 26.dp),
+                                                    imageLoader
 //                                                    .clip(CircleShape)
-                                            )
+                                                )
+                                            }
                                         }
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            item.knowledgeBaseName, style = TextStyle(
+                                                color = Color(0xff0054FC),
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.W500
+                                            ), maxLines = 2, overflow = TextOverflow.Ellipsis
+                                        )
                                     }
-                                    Spacer(modifier = Modifier.height(8.dp))
-//                                    Text(item.knowledgeBaseName)
-                                    Text(
-                                        "售后问题", style = TextStyle(
-                                            color = Color(0xff0054FC),
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.W500
-                                        ), maxLines = 2, overflow = TextOverflow.Ellipsis
-                                    )
                                 }
                             }
                         }

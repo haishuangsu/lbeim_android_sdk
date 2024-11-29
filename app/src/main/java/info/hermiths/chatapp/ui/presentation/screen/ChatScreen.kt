@@ -81,6 +81,7 @@ import info.hermiths.chatapp.model.MessageEntity
 import info.hermiths.chatapp.ui.presentation.components.MsgTypeContent
 import info.hermiths.chatapp.ui.presentation.components.NavRoute
 import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel
+import info.hermiths.chatapp.ui.presentation.viewmodel.ChatScreenViewModel.Companion.lbeIdentity
 import info.hermiths.chatapp.ui.presentation.viewmodel.ConnectionStatus
 import info.hermiths.chatapp.utils.FileUtils
 import info.hermiths.chatapp.utils.TimeUtils
@@ -517,14 +518,14 @@ fun ToBottom(viewModel: ChatScreenViewModel, goToTop: () -> Unit) {
 @Composable
 fun NickIdPrompt(onStart: (nid: String, nName: String, lbeIdentity: String) -> Unit) {
     // HermitK15
-    var nickId by remember { mutableStateOf("HermitK1") }
-    var nickName by remember { mutableStateOf("HermitK1") }
+    var nickId by remember { mutableStateOf("android004") }
+    var nickName by remember { mutableStateOf("android004") }
 
     // dev: 42nz10y3hhah; faq: 43hw3seddn2i
 //    var lbeIdentity by remember { mutableStateOf("43hw3seddn2i") }
 
-    // sit: 441zy52mn2yy
-    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
+    // sit: my: 441zy52mn2yy
+    var lbeIdentity by remember { mutableStateOf("43qf47gjuimi") }
 
     Dialog(onDismissRequest = { }) {
         Card {
