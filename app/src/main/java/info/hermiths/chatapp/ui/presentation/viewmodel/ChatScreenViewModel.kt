@@ -180,8 +180,9 @@ class ChatScreenViewModel : ViewModel() {
                 viewModelScope.launch(Dispatchers.IO) {
                     fetchSessionList()
                     observerConnection()
-//                    fetchTimeoutConfig()
+                    fetchTimeoutConfig()
                     faq(faqReqBody = FaqReqBody(faqType = 0, id = ""))
+                    schedulePingJob()
                 }
             } catch (e: Exception) {
                 println("Prepare error: $e")
@@ -418,6 +419,22 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
+    fun turnCustomerService() {
+        viewModelScope.launch(Dispatchers.IO) {
+            delay(500)
+            try {
+                val turnCSResp = LbeImRepository.turnCustomerService(
+                    lbeSign = lbeSign,
+                    lbeToken = lbeToken,
+                    lbeIdentity = lbeIdentity,
+                    lbeSession = lbeSession,
+                )
+            } catch (e: Exception) {
+                println("Fetch turnCSResp  error --->>>  $e")
+            }
+        }
+    }
+
     private suspend fun fetchHistoryAndSync(currentSession: SessionEntry?) {
         try {
             val history = LbeImRepository.fetchHistory(
@@ -508,7 +525,7 @@ class ChatScreenViewModel : ViewModel() {
             val value = (message as Message.Bytes).value
             viewModelScope.launch {
                 val msgEntity = IMMsg.MsgEntityToFrontEnd.parseFrom(value)
-//                if (msgEntity.msgBody.sessionId.isEmpty() || msgEntity.msgBody.clientMsgID.isEmpty()) {
+
                 if (msgEntity.msgBody.senderUid == "111") {
                     return@launch
                 }
@@ -567,6 +584,21 @@ class ChatScreenViewModel : ViewModel() {
         } catch (e: Exception) {
             Log.e(TAG, "handleOnMessageReceived: ", e)
         }
+    }
+
+    private fun schedulePingJob() {
+        val period = 1000 * 15L
+        val pingTimer = Timer()
+        val toServer = IMMsg.MsgEntityToServer.newBuilder()
+            .setMsgType(IMMsg.MsgType.TextMsgType)
+            .setMsgBody(IMMsg.MsgBody.newBuilder().setMsgBody("ping").build())
+            .build()
+        pingTimer.schedule(object : TimerTask() {
+            override fun run() {
+                Log.d("Ping Job", toServer.toString())
+                chatService?.sendMessage(toServer.toByteArray())
+            }
+        }, period, period)
     }
 
     private fun scheduleTimeoutJob() {
