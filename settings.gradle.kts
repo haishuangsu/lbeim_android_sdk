@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "ChatApp"
 include(":app")
- 
+include(":LbeIMSdk")
