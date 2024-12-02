@@ -29,7 +29,7 @@ private const val FETCH_HISTORY_LIST_URL = "miner-api/trans/session-list"
 private const val FETCH_TIMEOUT_CONFIG = "miner-api/trans/timeout-config"
 private const val MARK_READ = "miner-api/trans/mark-msg-as-read"
 private const val FAQ = "miner-api/trans/faq"
-
+private const val TURN = "miner-api/trans/service-support"
 
 
 interface LbeIMAPiService {
@@ -86,5 +86,13 @@ interface LbeIMAPiService {
         @Header(LBE_IDENTITY) lbeIdentity: String,
         @Header(LBE_SESSION) lbeSession: String,
         @Body body: FaqReqBody
+    )
+
+    @POST(TURN)
+    suspend fun turnCustomerService(
+        @Header(LBE_SIGN) lbeSign: String,
+        @Header(LBE_TOKEN) lbeToken: String,
+        @Header(LBE_IDENTITY) lbeIdentity: String,
+        @Header(LBE_SESSION) lbeSession: String,
     )
 }

@@ -13,7 +13,6 @@ import info.hermiths.chatapp.model.resp.Session
 import info.hermiths.chatapp.model.resp.SessionListRep
 import info.hermiths.chatapp.model.resp.TimeoutRespBody
 import info.hermiths.chatapp.service.RetrofitInstance
-import okhttp3.Response
 
 object LbeImRepository {
     private val lbeIMRepository = RetrofitInstance.imApiService
@@ -70,6 +69,20 @@ object LbeImRepository {
     ) {
         lbeIMRepository.faq(
             lbeToken = lbeToken, lbeIdentity = lbeIdentity, lbeSession = lbeSession, body = body
+        )
+    }
+
+    suspend fun turnCustomerService(
+        lbeSign: String,
+        lbeToken: String,
+        lbeIdentity: String,
+        lbeSession: String,
+    ) {
+        lbeIMRepository.turnCustomerService(
+            lbeSign = lbeSign,
+            lbeToken = lbeToken,
+            lbeIdentity = lbeIdentity,
+            lbeSession = lbeSession
         )
     }
 }

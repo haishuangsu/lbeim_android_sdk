@@ -14,6 +14,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -130,9 +131,7 @@ fun Appbar(navController: NavController) {
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ChatScreen(
-    navController: NavController,
-    viewModel: ChatScreenViewModel,
-    imageLoader: ImageLoader
+    navController: NavController, viewModel: ChatScreenViewModel, imageLoader: ImageLoader
 ) {
     val context = LocalContext.current
 
@@ -179,8 +178,7 @@ fun ChatScreen(
         }
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
+    Scaffold(modifier = Modifier.fillMaxSize(),
         topBar = { Appbar(navController) }) { innerPadding ->
         Surface(
             modifier = Modifier
@@ -197,7 +195,7 @@ fun ChatScreen(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 // TODO connectionStatus
-//        Text(text = "Connection Status: ${uiState.connectionStatus.name}")
+                //  Text(text = "Connection Status: ${uiState.connectionStatus.name}")
                 HorizontalDivider(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -301,157 +299,154 @@ fun ChatScreen(
                     }
                 }
 
-                Column {
-                    val timeoutVisibility by viewModel.isTimeOut.collectAsState()
-                    Log.d("TimeOut", "timeoutVisibility --->>> $timeoutVisibility")
-                    AnimatedVisibility(visible = timeoutVisibility) {
-                        Column {
-                            Surface(
-                                color = Color(0xffEBEBEB), modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    "您已超过${viewModel.timeOut}分钟未回复",
-                                    style = TextStyle(
-                                        color = Color(0xff979797),
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.W400
-                                    ),
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(top = 14.dp, bottom = 14.dp)
-                                )
-                            }
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp)
 
-                            Spacer(modifier = Modifier.height(12.dp))
-                        }
-                    }
-
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp)
-
+                ) {
+                    Surface(
+                        color = Color.White, modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape)
                     ) {
-                        Surface(
-                            color = Color.White, modifier = Modifier
-                                .size(42.dp)
-                                .clip(CircleShape)
-                        ) {
-                            Image(painter = painterResource(R.drawable.open_file),
-                                contentDescription = "",
-                                modifier = Modifier
-                                    .padding(5.dp)
-                                    .size(21.dp, 16.dp)
-                                    .clickable {
-                                        if (!hasMediaPermission) {
-                                            mediaPermissionState.launchMultiplePermissionRequest()
-                                        } else {
-                                            launcher.launch(PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo))
-                                        }
+                        Image(painter = painterResource(R.drawable.open_file),
+                            contentDescription = "",
+                            modifier = Modifier
+                                .padding(5.dp)
+                                .size(21.dp, 16.dp)
+                                .clickable {
+                                    if (!hasMediaPermission) {
+                                        mediaPermissionState.launchMultiplePermissionRequest()
+                                    } else {
+                                        launcher.launch(PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo))
+                                    }
 //                            open mime type
 //                            val mimeType = "image/gif"
 //                            pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.SingleMimeType(mimeType)))
-                                    })
-                            LaunchedEffect(
-                                pickFilesResult.value
-                            ) {
-                                if (pickFilesResult.value.isNotEmpty()) {
-                                    val uris = pickFilesResult.value
-                                    Log.d(
-                                        ChatScreenViewModel.FILESELECT, "${pickFilesResult.value}"
+                                })
+                        LaunchedEffect(
+                            pickFilesResult.value
+                        ) {
+                            if (pickFilesResult.value.isNotEmpty()) {
+                                val uris = pickFilesResult.value
+                                Log.d(
+                                    ChatScreenViewModel.FILESELECT, "${pickFilesResult.value}"
+                                )
+                                for (uri in uris) {
+                                    val cr = context.contentResolver
+                                    cr.takePersistableUriPermission(
+                                        uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
                                     )
-                                    for (uri in uris) {
-                                        val cr = context.contentResolver
-                                        cr.takePersistableUriPermission(
-                                            uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
-                                        )
-                                        val projection = arrayOf(
-                                            MediaStore.MediaColumns.DATA,
-                                            MediaStore.MediaColumns.MIME_TYPE,
-                                            MediaStore.MediaColumns.WIDTH,
-                                            MediaStore.MediaColumns.HEIGHT
-                                        )
-                                        val metaCursor = cr.query(uri, projection, null, null, null)
-                                        metaCursor?.use { mCursor ->
-                                            if (mCursor.moveToFirst()) {
-                                                val path = mCursor.getString(0)
-                                                val mime = mCursor.getString(1)
-                                                val width = mCursor.getInt(2)
-                                                val height = mCursor.getInt(3)
-                                                Log.d(
-                                                    ChatScreenViewModel.FILESELECT,
-                                                    "path: $path, width: $width, height: $height"
-                                                )
-                                                val file = File(path)
-                                                val mediaMessage = MediaMessage(
-                                                    width = width,
-                                                    height = height,
-                                                    file = file,
-                                                    path = uri.toString(),
-                                                    mime = mime,
-                                                    isImage = FileUtils.isImage(mime),
-                                                )
-                                                viewModel.upload(mediaMessage)
-                                                Log.d(
-                                                    ChatScreenViewModel.FILESELECT,
-                                                    "found file --->> ${file.name}, ${file.path}, ${file.length()}, ${file.absolutePath}, mimeType: $mime, Is image file: ${
-                                                        FileUtils.isImage(
-                                                            mime
-                                                        )
-                                                    }"
-                                                )
-                                            }
+                                    val projection = arrayOf(
+                                        MediaStore.MediaColumns.DATA,
+                                        MediaStore.MediaColumns.MIME_TYPE,
+                                        MediaStore.MediaColumns.WIDTH,
+                                        MediaStore.MediaColumns.HEIGHT
+                                    )
+                                    val metaCursor = cr.query(uri, projection, null, null, null)
+                                    metaCursor?.use { mCursor ->
+                                        if (mCursor.moveToFirst()) {
+                                            val path = mCursor.getString(0)
+                                            val mime = mCursor.getString(1)
+                                            val width = mCursor.getInt(2)
+                                            val height = mCursor.getInt(3)
+                                            Log.d(
+                                                ChatScreenViewModel.FILESELECT,
+                                                "path: $path, width: $width, height: $height"
+                                            )
+                                            val file = File(path)
+                                            val mediaMessage = MediaMessage(
+                                                width = width,
+                                                height = height,
+                                                file = file,
+                                                path = uri.toString(),
+                                                mime = mime,
+                                                isImage = FileUtils.isImage(mime),
+                                            )
+                                            viewModel.upload(mediaMessage)
+                                            Log.d(
+                                                ChatScreenViewModel.FILESELECT,
+                                                "found file --->> ${file.name}, ${file.path}, ${file.length()}, ${file.absolutePath}, mimeType: $mime, Is image file: ${
+                                                    FileUtils.isImage(
+                                                        mime
+                                                    )
+                                                }"
+                                            )
                                         }
                                     }
                                 }
                             }
                         }
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        BasicTextField(value = input,
-                            modifier = Modifier.fillMaxWidth(),
-                            onValueChange = viewModel::onMessageChange,
-                            maxLines = 5,
-                            decorationBox = { innerTextField ->
-                                Surface(
-                                    color = Color.White,
-                                    modifier = Modifier
-                                        .height(42.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 12.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Box(Modifier.weight(1f)) {
-                                            if (input.isEmpty()) Text(
-                                                "请输入你想咨询的问题", style = TextStyle(
-                                                    color = Color(0xffEBEBEB),
-                                                    fontSize = 14.sp,
-                                                    fontWeight = FontWeight.W400,
-                                                )
-                                            )
-                                            innerTextField()
-                                        }
-
-                                        Image(painter = painterResource(R.drawable.send),
-                                            contentDescription = "Send Button",
-                                            modifier = Modifier
-                                                .size(18.dp)
-                                                .clickable {
-                                                    viewModel.sendMessageFromTextInput(messageSent = {
-                                                        currentFocus.clearFocus()
-                                                    })
-                                                })
-                                    }
-                                }
-                            })
                     }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    BasicTextField(value = input,
+                        modifier = Modifier.fillMaxWidth(),
+                        onValueChange = viewModel::onMessageChange,
+                        maxLines = 5,
+                        decorationBox = { innerTextField ->
+                            Surface(
+                                color = Color.White,
+                                modifier = Modifier
+                                    .height(42.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(Modifier.weight(1f)) {
+                                        if (input.isEmpty()) Text(
+                                            "请输入你想咨询的问题", style = TextStyle(
+                                                color = Color(0xffEBEBEB),
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.W400,
+                                            )
+                                        )
+                                        innerTextField()
+                                    }
+
+                                    Image(painter = painterResource(R.drawable.send),
+                                        contentDescription = "Send Button",
+                                        modifier = Modifier
+                                            .size(18.dp)
+                                            .clickable {
+                                                viewModel.sendMessageFromTextInput(messageSent = {
+                                                    currentFocus.clearFocus()
+                                                })
+                                            })
+                                }
+                            }
+                        })
                 }
+            }
+        }
 
-
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(bottom = 59.dp)
+            ) {
+                Surface(color = Color(0xFFFFFFFF).copy(alpha = 0.9f),
+                    modifier = Modifier
+                        .padding(start = 16.dp)
+                        .clip(RoundedCornerShape(23.dp))
+                        .clickable {
+                            viewModel.turnCustomerService()
+                        }) {
+                    Text(
+                        "人工客服", style = TextStyle(
+                            color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.W400
+                        ), modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                timeoutTips(viewModel = viewModel)
             }
         }
 
@@ -465,11 +460,34 @@ fun ChatScreen(
             ToBottom(viewModel = viewModel, goToTop = {
                 viewModel.scrollToBottom()
                 viewModel.resetRecivCount()
-//                coroutineScope.launch {
-//                    lazyListState.animateScrollToItem(uiState.messages.size)
-//                }
             })
 
+        }
+    }
+}
+
+@Composable
+fun timeoutTips(viewModel: ChatScreenViewModel) {
+    val timeoutVisibility by viewModel.isTimeOut.collectAsState()
+    AnimatedVisibility(visible = timeoutVisibility) {
+        Log.d("TimeOut", "timeoutVisibility --->>> $timeoutVisibility")
+        Column {
+            Surface(
+                color = Color(0xffEBEBEB), modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 12.dp)
+            ) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    "您已超过${viewModel.timeOut}分钟未回复",
+                    style = TextStyle(
+                        color = Color(0xff979797), fontSize = 12.sp, fontWeight = FontWeight.W400
+                    ),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 14.dp, bottom = 14.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
@@ -480,7 +498,7 @@ fun ToBottom(viewModel: ChatScreenViewModel, goToTop: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
         Surface(color = Color(0xff0054FC).copy(alpha = 0.15f),
             modifier = Modifier
-                .padding(bottom = 89.dp, end = 16.dp)
+                .padding(bottom = 109.dp, end = 16.dp)
                 .clip(
                     RoundedCornerShape(
                         topStart = 12.dp,
@@ -518,14 +536,14 @@ fun ToBottom(viewModel: ChatScreenViewModel, goToTop: () -> Unit) {
 @Composable
 fun NickIdPrompt(onStart: (nid: String, nName: String, lbeIdentity: String) -> Unit) {
     // HermitK15
-    var nickId by remember { mutableStateOf("android004") }
-    var nickName by remember { mutableStateOf("android004") }
+    var nickId by remember { mutableStateOf("HermitK1") }
+    var nickName by remember { mutableStateOf("HermitK1") }
 
     // dev: 42nz10y3hhah; faq: 43hw3seddn2i
 //    var lbeIdentity by remember { mutableStateOf("43hw3seddn2i") }
 
     // sit: my: 441zy52mn2yy
-    var lbeIdentity by remember { mutableStateOf("43qf47gjuimi") }
+    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
 
     Dialog(onDismissRequest = { }) {
         Card {
