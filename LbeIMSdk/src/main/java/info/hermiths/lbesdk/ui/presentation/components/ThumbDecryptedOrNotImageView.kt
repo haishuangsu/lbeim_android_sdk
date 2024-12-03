@@ -31,11 +31,11 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import com.google.gson.Gson
+import info.hermiths.lbesdk.R
 import info.hermiths.lbesdk.model.MessageEntity
 import info.hermiths.lbesdk.model.resp.MediaSource
 import info.hermiths.lbesdk.ui.presentation.viewmodel.ChatScreenViewModel
 import info.hermiths.lbesdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.CONTINUE_UPLOAD
-import info.hermiths.mylibrary.R
 import java.io.File
 
 

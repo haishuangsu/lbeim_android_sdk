@@ -74,6 +74,7 @@ import coil3.compose.AsyncImage
 
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import info.hermiths.lbesdk.R
 import info.hermiths.lbesdk.model.MediaMessage
 import info.hermiths.lbesdk.model.MessageEntity
 
@@ -83,7 +84,6 @@ import info.hermiths.lbesdk.ui.presentation.viewmodel.ChatScreenViewModel
 import info.hermiths.lbesdk.ui.presentation.viewmodel.ConnectionStatus
 import info.hermiths.lbesdk.utils.FileUtils
 import info.hermiths.lbesdk.utils.TimeUtils
-import info.hermiths.mylibrary.R
 import java.io.File
 import java.util.Date
 
