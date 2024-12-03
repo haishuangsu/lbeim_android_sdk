@@ -1,11 +1,11 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("io.realm.kotlin")
+    id("io.realm.kotlin") version "1.16.0"
 }
 
 android {
-    namespace = "info.hermiths.mylibrary"
+    namespace = "info.hermiths.lbesdk"
     compileSdk = 34
 
     defaultConfig {

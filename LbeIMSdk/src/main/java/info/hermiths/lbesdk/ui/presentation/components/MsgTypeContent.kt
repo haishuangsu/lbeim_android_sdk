@@ -40,6 +40,7 @@ import androidx.navigation.NavController
 import coil3.ImageLoader
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import info.hermiths.lbesdk.R
 import info.hermiths.lbesdk.model.MessageEntity
 import info.hermiths.lbesdk.model.req.FaqReqBody
 import info.hermiths.lbesdk.model.resp.FaqAnswer
@@ -48,7 +49,6 @@ import info.hermiths.lbesdk.model.resp.FaqTopic
 import info.hermiths.lbesdk.model.resp.FaqEntryUrl
 import info.hermiths.lbesdk.model.resp.LinkText
 import info.hermiths.lbesdk.ui.presentation.viewmodel.ChatScreenViewModel
-import info.hermiths.mylibrary.R
 
 
 @Composable
