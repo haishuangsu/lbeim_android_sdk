@@ -27,7 +27,7 @@ class LbeChatActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val initArgsJson = intent.getStringExtra("initArgs")
         val initArgs = Gson().fromJson(initArgsJson, InitArgs::class.java)
-        Log.d("LbeIMSdk", initArgs.toString())
+        Log.d("LbeIMSdk", "Sdk 接收 args --->> $initArgs")
         setContent {
             ChatAppTheme {
                 val navController = rememberNavController()

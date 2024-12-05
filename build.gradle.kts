@@ -2,6 +2,15 @@
 plugins {
     id("com.android.application") version "8.2.2" apply false
     id("org.jetbrains.kotlin.android") version "1.9.0" apply false
-    id ("io.realm.kotlin") version "1.16.0" apply false
+    id("io.realm.kotlin") version "1.16.0" apply false
 //    id("com.google.dagger.hilt.android") version "2.52" apply false
 }
+
+//buildscript {
+//    repositories {
+//        mavenCentral()
+//    }
+//    dependencies {
+//        classpath("com.github.kezong:fat-aar:1.3.8")
+//    }
+//}
