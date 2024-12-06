@@ -125,7 +125,7 @@ afterEvaluate {
                 from(components["release"]) // 发布 release 组件
                 groupId = "com.github.haishuangsu" // 你的 JitPack 组名
                 artifactId = "LbeIMSdk"           // 库的名称
-                version = "1.0.2"                 // 库的版本号
+                version = "1.0.3"                 // 库的版本号
             }
         }
 
