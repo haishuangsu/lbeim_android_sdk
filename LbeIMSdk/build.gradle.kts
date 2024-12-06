@@ -2,7 +2,7 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("io.realm.kotlin") version "1.16.0"
-//    id("com.kezong.fat-aar")
+    id("maven-publish")
 }
 
 android {
@@ -13,15 +13,15 @@ android {
         minSdk = 24
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-//        consumerProguardFiles("consumer-rules.pro")
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-//            proguardFiles(
-//                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
-//            )
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            )
         }
     }
     kotlinOptions {
@@ -41,9 +41,6 @@ android {
     libraryVariants.all { variant ->
         variant.outputs.all { output ->
             if (output is com.android.build.gradle.internal.api.BaseVariantOutputImpl) {
-//                val outputFile = output.outputFile
-//                outputFile.writeToFile()
-                // 修改 AAR 输出文件名
                 output.outputFileName = "LbeIm-release.aar"
             }
             true
@@ -189,5 +186,24 @@ dependencies {
 
     api("com.google.accompanist:accompanist-permissions:0.36.0") {
         isTransitive = true
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            create("release", MavenPublication::class.java) {
+                from(components["release"]) // 发布 release 组件
+                groupId = "com.github.haishuangsu" // 你的 JitPack 组名
+                artifactId = "LbeIMSdk"           // 库的名称
+                version = "1.0.1"                 // 库的版本号
+            }
+        }
+
+        repositories {
+            maven {
+                url = uri("https://jitpack.io")
+            }
+        }
     }
 }
