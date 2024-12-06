@@ -1,12 +1,7 @@
-import com.android.build.gradle.internal.scope.ProjectInfo.Companion.getBaseName
-import java.util.Properties
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-//    id("io.realm.kotlin")
 //    id("kotlin-kapt")
-//    id("com.google.dagger.hilt.android")
 //    id ("com.google.protobuf") version "0.9.4"
 }
 
@@ -25,10 +20,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-        val properties = Properties()
-        properties.load(rootProject.file("local.properties").reader())
-        buildConfigField("String", "websocketApiKey", "\"${properties["WEB_SOCKET_API_KEY"]}\"")
-        buildConfigField("String", "lbeSign", "\"${properties["LBE_SIGN"]}\"")
     }
 
     signingConfigs {
@@ -50,11 +41,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     buildFeatures {
         compose = true
@@ -66,6 +57,11 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(18))
         }
     }
 }
@@ -95,56 +91,6 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     implementation(project(":LbeIMSdk"))
 
-//    // ViewModel
-//    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
-//
-//    // LiveData
-//    implementation("androidx.compose.runtime:runtime-livedata:1.7.4")
-//
-//    // Scarlet
-//    implementation("com.tinder.scarlet:scarlet:0.1.12")
-//    implementation("com.tinder.scarlet:message-adapter-protobuf:0.1.12")
-//    implementation("com.tinder.scarlet:websocket-okhttp:0.1.12")
-//    implementation("com.tinder.scarlet:stream-adapter-rxjava2:0.1.12")
-//
-//    //RX
-//    implementation("io.reactivex.rxjava2:rxjava:2.2.21")
-//    implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
-//    implementation("io.reactivex.rxjava2:rxkotlin:2.4.0")
-//
-//    // Gson
+    // Gson
     implementation("com.google.code.gson:gson:2.10.1")
-//
-//    // Protobuf
-//    implementation("com.google.protobuf:protobuf-kotlin:4.29.0-RC1")
-//    implementation("com.google.protobuf:protobuf-java:3.22.3")
-//    // implementation ("com.google.protobuf:protobuf-lite:3.0.1")
-//    // implementation("io.grpc:grpc-stub:1.57.0")
-//    // implementation("io.grpc:grpc-protobuf:1.57.0")
-//
-//    //  Coil
-//    implementation("io.coil-kt.coil3:coil-compose:3.0.4")
-//    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
-//    implementation("io.coil-kt.coil3:coil-gif:3.0.4")
-//
-//    // Glide
-////    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
-//
-//    // Retrofit
-//    implementation("com.squareup.retrofit2:retrofit:2.11.0")
-//    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-//    api("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2")
-//
-//    // Exoplayer
-//    implementation("androidx.media3:media3-exoplayer:1.4.1")
-//    implementation("androidx.media3:media3-ui:1.4.1")
-//
-//    // Realm
-//    implementation("io.realm.kotlin:library-base:1.16.0")
-//
-//    implementation("com.google.accompanist:accompanist-permissions:0.36.0")
-
-    // Hilt
-    //  implementation("com.google.dagger:hilt-android:2.52")
-    //  kapt("com.google.dagger:hilt-android-compiler:2.44")
 }
