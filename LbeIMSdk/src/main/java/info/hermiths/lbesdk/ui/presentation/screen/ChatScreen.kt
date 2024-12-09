@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.provider.MediaStore
 import android.util.Log
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -100,6 +101,8 @@ enum class MessagePosition {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Appbar(navController: NavController) {
+    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -113,7 +116,8 @@ fun Appbar(navController: NavController) {
         ),
         navigationIcon = {
             IconButton(onClick = {
-                navController.navigate(NavRoute.MEDIA_VIEWER)
+                onBackPressedDispatcher?.onBackPressed()
+//                navController.popBackStack()
             }) {
                 Image(
                     painter = painterResource(R.drawable.back),
