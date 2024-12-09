@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.2.2" type="baseline" client="gradle" dependencies="false" name="AGP (8.2.2)" variant="all" version="8.2.2">
+
+    <issue
+        id="ObsoleteLintCustomCheck"
+        message="Library lint checks reference invalid APIs; these checks **will be skipped**!&#xA;&#xA;Lint found an issue registry (`androidx.compose.runtime.lint.RuntimeIssueRegistry`)&#xA;which contains some references to invalid API:&#xA;org.jetbrains.kotlin.analysis.api.session.KtAnalysisSessionProvider: org.jetbrains.kotlin.analysis.api.lifetime.KtLifetimeTokenFactory getTokenFactory()&#xA;(Referenced from androidx/compose/runtime/lint/AutoboxingStateCreationDetector.class)&#xA;&#xA;Therefore, this lint check library is **not** included&#xA;in analysis. This affects the following lint checks:&#xA;`AutoboxingStateValueProperty`&#xA;`AutoboxingStateCreation`&#xA;`CoroutineCreationDuringComposition`&#xA;`FlowOperatorInvokedInComposition`&#xA;`ComposableLambdaParameterNaming`&#xA;`ComposableLambdaParameterPosition`&#xA;`ComposableNaming`&#xA;`StateFlowValueCalledInComposition`&#xA;`CompositionLocalNaming`&#xA;`MutableCollectionMutableState`&#xA;`ProduceStateDoesNotAssignValue`&#xA;`RememberReturnType`&#xA;`OpaqueUnitKey`&#xA;`UnrememberedMutableState`&#xA;&#xA;To use this lint check, upgrade to a more recent version&#xA;of the library.">
+        <location
+            file="$GRADLE_USER_HOME/caches/transforms-3/0810db050f38ba628a2ec860ab370196/transformed/runtime-release/jars/lint.jar"/>
+    </issue>
+
+    <issue
+        id="ObsoleteLintCustomCheck"
+        message="Library lint checks reference invalid APIs; these checks **will be skipped**!&#xA;&#xA;Lint found an issue registry (`androidx.compose.ui.lint.UiIssueRegistry`)&#xA;which contains some references to invalid API:&#xA;org.jetbrains.kotlin.analysis.api.session.KtAnalysisSessionProvider: org.jetbrains.kotlin.analysis.api.lifetime.KtLifetimeTokenFactory getTokenFactory()&#xA;(Referenced from androidx/compose/ui/lint/ModifierDeclarationDetectorKt$ensureReceiverIsReferenced$1.class)&#xA;&#xA;Therefore, this lint check library is **not** included&#xA;in analysis. This affects the following lint checks:&#xA;`UnnecessaryComposedModifier`&#xA;`ModifierFactoryExtensionFunction`&#xA;`ModifierFactoryReturnType`&#xA;`ModifierFactoryUnreferencedReceiver`&#xA;`ModifierNodeInspectableProperties`&#xA;`ModifierParameter`&#xA;`MultipleAwaitPointerEventScopes`&#xA;`ReturnFromAwaitPointerEventScope`&#xA;`SuspiciousCompositionLocalModifierRead`&#xA;`SuspiciousModifierThen`&#xA;&#xA;To use this lint check, upgrade to a more recent version&#xA;of the library.">
+        <location
+            file="$GRADLE_USER_HOME/caches/transforms-3/90c08d6a9b9990714d9f2f4ce4e9030a/transformed/ui-release/jars/lint.jar"/>
+    </issue>
+
+    <issue
+        id="ObsoleteLintCustomCheck"
+        message="Library lint checks reference invalid APIs; these checks **will be skipped**!&#xA;&#xA;Lint found an issue registry (`androidx.lifecycle.lint.LiveDataCoreIssueRegistry`)&#xA;which contains some references to invalid API:&#xA;org.jetbrains.kotlin.analysis.api.session.KtAnalysisSessionProvider: org.jetbrains.kotlin.analysis.api.lifetime.KtLifetimeTokenFactory getTokenFactory()&#xA;(Referenced from androidx/lifecycle/lint/NonNullableMutableLiveDataDetector$createUastHandler$1.class)&#xA;&#xA;Therefore, this lint check library is **not** included&#xA;in analysis. This affects the following lint checks:&#xA;`NullSafeMutableLiveData`&#xA;&#xA;To use this lint check, upgrade to a more recent version&#xA;of the library.">
+        <location
+            file="$GRADLE_USER_HOME/caches/transforms-3/16591295b6505177d2005a380fad0dc5/transformed/lifecycle-livedata-core-2.8.7/jars/lint.jar"/>
+    </issue>
+
+    <issue
+        id="SimpleDateFormat"
+        message="To get local formatting use `getDateInstance()`, `getDateTimeInstance()`, or `getTimeInstance()`, or use `new SimpleDateFormat(String template, Locale locale)` with for example `Locale.US` for ASCII dates."
+        errorLine1="        val fmt = SimpleDateFormat(&quot;yyyyMMdd&quot;)"
+        errorLine2="                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/info/hermiths/lbesdk/utils/TimeUtils.kt"
+            line="22"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="SimpleDateFormat"
+        message="To get local formatting use `getDateInstance()`, `getDateTimeInstance()`, or `getTimeInstance()`, or use `new SimpleDateFormat(String template, Locale locale)` with for example `Locale.US` for ASCII dates."
+        errorLine1="        val formatter = SimpleDateFormat(&quot;HH:mm&quot;);"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/info/hermiths/lbesdk/utils/TimeUtils.kt"
+            line="27"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="SimpleDateFormat"
+        message="To get local formatting use `getDateInstance()`, `getDateTimeInstance()`, or `getTimeInstance()`, or use `new SimpleDateFormat(String template, Locale locale)` with for example `Locale.US` for ASCII dates."
+        errorLine1="        val formatter = SimpleDateFormat(&quot;yyyy-MM-dd HH:mm&quot;);"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/info/hermiths/lbesdk/utils/TimeUtils.kt"
+            line="33"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="TestManifestGradleConfiguration"
+        message="Please use debugImplementation."
+        errorLine1="    api &apos;androidx.compose.ui:ui-test-manifest&apos;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="72"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.core:core-ktx than 1.13.1 is available: 1.15.0"
+        errorLine1="    api &apos;androidx.core:core-ktx:1.13.1&apos;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="57"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.8.6 is available: 2.8.7"
+        errorLine1="    api &apos;androidx.lifecycle:lifecycle-runtime-ktx:2.8.6&apos;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="58"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.compose:compose-bom than 2024.10.00 is available: 2024.11.00"
+        errorLine1="    api platform(&apos;androidx.compose:compose-bom:2024.10.00&apos;)"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="60"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.navigation:navigation-compose than 2.8.3 is available: 2.8.4"
+        errorLine1="    api &apos;androidx.navigation:navigation-compose:2.8.3&apos;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="66"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.lifecycle:lifecycle-viewmodel-compose than 2.8.6 is available: 2.8.7"
+        errorLine1="    api &apos;androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6&apos;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="75"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.compose.runtime:runtime-livedata than 1.7.4 is available: 1.7.5"
+        errorLine1="    api &apos;androidx.compose.runtime:runtime-livedata:1.7.4&apos;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="78"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.code.gson:gson than 2.10.1 is available: 2.11.0"
+        errorLine1="    api &apos;com.google.code.gson:gson:2.10.1&apos;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="92"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.protobuf:protobuf-kotlin than 4.29.0-RC1 is available: 4.29.0"
+        errorLine1="    api &apos;com.google.protobuf:protobuf-kotlin:4.29.0-RC1&apos;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="95"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.protobuf:protobuf-java than 3.22.3 is available: 4.29.0"
+        errorLine1="    api &apos;com.google.protobuf:protobuf-java:3.22.3&apos;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="96"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.media3:media3-exoplayer than 1.4.1 is available: 1.5.0"
+        errorLine1="    api &apos;androidx.media3:media3-exoplayer:1.4.1&apos;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="115"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.media3:media3-ui than 1.4.1 is available: 1.5.0"
+        errorLine1="    api &apos;androidx.media3:media3-ui:1.4.1&apos;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="116"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AcceptsUserCertificates"
+        message="The Network Security Configuration allows the use of user certificates in the release version of your app"
+        errorLine1="            &lt;certificates src=&quot;user&quot; />"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/network_security_config.xml"
+            line="7"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="InsecureBaseConfiguration"
+        message="Insecure Base Configuration"
+        errorLine1="    &lt;base-config cleartextTrafficPermitted=&quot;true&quot;>"
+        errorLine2="                                            ~~~~">
+        <location
+            file="src/main/res/xml/network_security_config.xml"
+            line="4"
+            column="45"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 29"
+        errorLine1="    @RequiresApi(Build.VERSION_CODES.Q)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/info/hermiths/lbesdk/ui/presentation/viewmodel/ChatScreenViewModel.kt"
+            line="754"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 29"
+        errorLine1="    @RequiresApi(Build.VERSION_CODES.Q)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/info/hermiths/lbesdk/ui/presentation/viewmodel/ChatScreenViewModel.kt"
+            line="764"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 29"
+        errorLine1="    @RequiresApi(Build.VERSION_CODES.Q)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/info/hermiths/lbesdk/ui/presentation/viewmodel/ChatScreenViewModel.kt"
+            line="862"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 29"
+        errorLine1="    @RequiresApi(Build.VERSION_CODES.Q)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/info/hermiths/lbesdk/ui/presentation/viewmodel/ChatScreenViewModel.kt"
+            line="1211"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 29"
+        errorLine1="                    if (SDK_INT >= 28) {"
+        errorLine2="                        ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/info/hermiths/lbesdk/LbeChatActivity.kt"
+            line="38"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="This folder configuration (`v26`) is unnecessary; `minSdkVersion` is 29. Merge all the resources in this folder into `mipmap-anydpi`.">
+        <location
+            file="src/main/res/mipmap-anydpi-v26"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/back.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/back.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/cs_avatar.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/cs_avatar.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/loading_small.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/loading_small.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/no_read.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/no_read.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/open_file.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/open_file.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/pending.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/pending.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/play.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/play.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/readed.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/readed.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/send.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/send.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/send_fail.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/send_fail.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/to_bottom.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/to_bottom.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/video_fial_send.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/video_fial_send.png"/>
+    </issue>
+
+</issues>
