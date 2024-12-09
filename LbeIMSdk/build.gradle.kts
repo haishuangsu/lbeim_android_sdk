@@ -121,18 +121,28 @@ dependencies {
 afterEvaluate {
     publishing {
         publications {
-            create("release", MavenPublication::class.java) {
-                from(components["release"]) // 发布 release 组件
-                groupId = "com.github.haishuangsu" // 你的 JitPack 组名
-                artifactId = "LbeIMSdk"           // 库的名称
-                version = "1.0.3"                 // 库的版本号
+            create<MavenPublication>("release") {
+                from(components["release"])
+                groupId = "com.github.haishuangsu"  // 你的 JitPack 组名
+                artifactId = "LbeIMSdk"             // 库的名称
+                version = "1.0.5"                   // 库的版本号
             }
         }
-
         repositories {
             maven {
                 url = uri("https://jitpack.io")
             }
         }
+    }
+}
+
+// 确保发布任务在构建任务之后执行
+tasks.named("publishToMavenLocal") {
+    dependsOn("assemble")
+}
+
+tasks.register("componentsList") {
+    doLast {
+        println("Components ---: ${components}")
     }
 }
