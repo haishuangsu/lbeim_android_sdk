@@ -507,7 +507,7 @@ class ChatScreenViewModel : ViewModel() {
         Log.d(TAG, "Observing Connection")
         updateConnectionStatus(ConnectionStatus.CONNECTING)
         chatService?.observeConnection()?.subscribe({ response ->
-            Log.d(TAG, response.toString())
+            Log.d(TAG, "什么鬼 --->>> ${response.toString()}")
             onResponseReceived(response)
         }, { error ->
             error.localizedMessage?.let { Log.e(TAG, it) }
@@ -533,12 +533,11 @@ class ChatScreenViewModel : ViewModel() {
             val value = (message as Message.Bytes).value
             viewModelScope.launch {
                 val msgEntity = IMMsg.MsgEntityToFrontEnd.parseFrom(value)
+                Log.d(TAG, "handleOnMessageReceived protobuf bytes --->>>  $msgEntity")
 
                 if (msgEntity.msgBody.senderUid == "111") {
                     return@launch
                 }
-
-                Log.d(TAG, "handleOnMessageReceived protobuf bytes --->>>  $msgEntity")
 
                 if (msgEntity.msgType == IMMsg.MsgType.TextMsgType || msgEntity.msgType == IMMsg.MsgType.ImgMsgType || msgEntity.msgType == IMMsg.MsgType.VideoMsgType) {
 

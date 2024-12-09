@@ -1,13 +1,13 @@
 package info.hermiths.lbesdk.ui.presentation.screen
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.provider.MediaStore
 import android.util.Log
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -80,7 +80,6 @@ import info.hermiths.lbesdk.model.MediaMessage
 import info.hermiths.lbesdk.model.MessageEntity
 
 import info.hermiths.lbesdk.ui.presentation.components.MsgTypeContent
-import info.hermiths.lbesdk.ui.presentation.components.NavRoute
 import info.hermiths.lbesdk.ui.presentation.viewmodel.ChatScreenViewModel
 import info.hermiths.lbesdk.ui.presentation.viewmodel.ConnectionStatus
 import info.hermiths.lbesdk.utils.FileUtils
@@ -100,8 +99,9 @@ enum class MessagePosition {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Appbar(navController: NavController) {
-    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+fun Appbar() {
+//    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    val ctx = LocalContext.current
 
     CenterAlignedTopAppBar(
         title = {
@@ -116,8 +116,10 @@ fun Appbar(navController: NavController) {
         ),
         navigationIcon = {
             IconButton(onClick = {
-                onBackPressedDispatcher?.onBackPressed()
-//                navController.popBackStack()
+                if (ctx is Activity) {
+                    ctx.finish()
+                }
+//                onBackPressedDispatcher?.onBackPressed()
             }) {
                 Image(
                     painter = painterResource(R.drawable.back),
@@ -180,9 +182,7 @@ fun ChatScreen(
         }
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = { Appbar(navController) }) { innerPadding ->
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { Appbar() }) { innerPadding ->
         Surface(
             modifier = Modifier
                 .fillMaxSize()
