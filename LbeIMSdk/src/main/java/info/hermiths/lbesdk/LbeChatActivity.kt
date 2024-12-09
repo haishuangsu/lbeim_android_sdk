@@ -6,6 +6,9 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -28,6 +31,7 @@ class LbeChatActivity : ComponentActivity() {
         val initArgsJson = intent.getStringExtra("initArgs")
         val initArgs = Gson().fromJson(initArgsJson, InitArgs::class.java)
         Log.d("LbeIMSdk", "Sdk 接收 args --->> $initArgs")
+        enableEdgeToEdge()
         setContent {
             ChatAppTheme {
                 val navController = rememberNavController()
@@ -58,6 +62,15 @@ class LbeChatActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    private fun enableEdgeToEdge() {
+        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+        insetsController.apply {
+            hide(WindowInsetsCompat.Type.statusBars())
+            hide(WindowInsetsCompat.Type.navigationBars())
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     }
 }
