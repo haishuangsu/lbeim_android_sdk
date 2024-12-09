@@ -40,14 +40,6 @@ android {
         kotlinCompilerExtensionVersion = '1.5.1'
     }
 
-//    libraryVariants.all { variant ->
-//        variant.outputs.all { output ->
-//            if (output instanceof com.android.build.gradle.internal.api.BaseVariantOutputImpl) {
-//                output.outputFileName = 'LbeIm-release.aar'
-//            }
-//        }
-//    }
-
     lint {
         baseline = file("lint-baseline.xml")
     }
@@ -129,7 +121,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.haishuangsu'
                 artifactId = 'LbeIMSdk'
-                version = '1.0.8'
+                version = '1.0.9'
             }
         }
         repositories {
