@@ -39,14 +39,14 @@ android {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
 
-    libraryVariants.all { variant ->
-        variant.outputs.all { output ->
-            if (output is com.android.build.gradle.internal.api.BaseVariantOutputImpl) {
-                output.outputFileName = "LbeIm-release.aar"
-            }
-            true
-        }
-    }
+//    libraryVariants.all { variant ->
+//        variant.outputs.all { output ->
+//            if (output is com.android.build.gradle.internal.api.BaseVariantOutputImpl) {
+//                output.outputFileName = "LbeIm-release.aar"
+//            }
+//            true
+//        }
+//    }
 }
 
 dependencies {
@@ -136,13 +136,13 @@ afterEvaluate {
     }
 }
 
-// 确保发布任务在构建任务之后执行
-tasks.named("publishToMavenLocal") {
-    dependsOn("assemble")
-}
-
 tasks.register("componentsList") {
     doLast {
         println("Components ---: ${components}")
     }
+}
+
+// 确保发布任务在构建任务之后执行
+tasks.named("publishToMavenLocal") {
+    dependsOn("assemble")
 }
