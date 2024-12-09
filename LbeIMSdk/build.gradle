@@ -129,7 +129,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.haishuangsu'
                 artifactId = 'LbeIMSdk'
-                version = '1.0.7'
+                version = '1.0.8'
             }
         }
         repositories {
@@ -137,12 +137,6 @@ afterEvaluate {
                 url = uri('https://jitpack.io')
             }
         }
-    }
-}
-
-tasks.register('componentsList') {
-    doLast {
-        println "Components ---: ${components}"
     }
 }
 
