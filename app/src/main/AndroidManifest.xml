@@ -34,7 +34,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="info.hermiths.lbesdk.LbeChatActivity" />
+        <activity android:name="com.lbe.imsdk.LbeChatActivity" />
     </application>
 
 </manifest>
