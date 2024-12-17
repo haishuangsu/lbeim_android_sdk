@@ -7,12 +7,11 @@ plugins {
 
 android {
     namespace = "info.hermiths.chatapp"
-    compileSdk = 34
+    compileSdk = 33
 
     defaultConfig {
         applicationId = "info.hermiths.chatapp"
         minSdk = 21
-        targetSdk = 34
         versionCode = 2
         versionName = "0.0.5"
 
@@ -41,11 +40,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -61,7 +60,7 @@ android {
     }
     java {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(18))
+            languageVersion.set(JavaLanguageVersion.of(17))
         }
     }
 }
