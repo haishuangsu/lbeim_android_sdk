@@ -86,17 +86,12 @@ dependencies {
     // Protobuf
     api 'com.google.protobuf:protobuf-kotlin:4.29.0-RC1'
     api 'com.google.protobuf:protobuf-java:3.22.3'
-    // implementation 'com.google.protobuf:protobuf-lite:3.0.1'
-    // implementation 'io.grpc:grpc-stub:1.57.0'
-    // implementation 'io.grpc:grpc-protobuf:1.57.0'
 
     // Coil
     api 'io.coil-kt.coil3:coil-compose:3.0.4'
     api 'io.coil-kt.coil3:coil-network-okhttp:3.0.4'
     api 'io.coil-kt.coil3:coil-gif:3.0.4'
-
-    // Glide
-//    implementation 'com.github.bumptech.glide:compose:1.0.0-beta01'
+    api 'io.coil-kt.coil3:coil-video:3.0.4'
 
     // Retrofit
     api 'com.squareup.retrofit2:retrofit:2.11.0'

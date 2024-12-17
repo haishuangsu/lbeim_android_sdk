@@ -2,11 +2,7 @@ package com.lbe.imsdk.ui.presentation.viewmodel
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
-import android.media.ThumbnailUtils
-import android.os.Build
 import android.util.Log
-import android.util.Size
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.State
 import androidx.lifecycle.LiveData
@@ -34,6 +30,7 @@ import com.lbe.imsdk.model.InitArgs
 import com.lbe.imsdk.model.LocalMediaFile
 import com.lbe.imsdk.model.MediaMessage
 import com.lbe.imsdk.model.MessageEntity
+import com.lbe.imsdk.model.TempUploadInfo
 import com.lbe.imsdk.model.UploadTask
 import com.lbe.imsdk.model.proto.IMMsg
 import com.lbe.imsdk.model.req.CompleteMultiPartUploadReq
@@ -114,7 +111,7 @@ class ChatScreenViewModel : ViewModel() {
         var nickName: String = ""
         var lbeIdentity: String = "" // 42nz10y3hhah
         var progressList: MutableMap<String, MutableStateFlow<Float>> = mutableMapOf()
-        var uploadThumbs: MutableMap<String, MutableStateFlow<Bitmap>> = mutableMapOf()
+        val tempUploadInfos: MutableMap<String, TempUploadInfo> = mutableMapOf()
     }
 
     private val jobs: MutableMap<String, Job> = mutableMapOf()
@@ -507,7 +504,7 @@ class ChatScreenViewModel : ViewModel() {
         Log.d(TAG, "Observing Connection")
         updateConnectionStatus(ConnectionStatus.CONNECTING)
         chatService?.observeConnection()?.subscribe({ response ->
-            Log.d(TAG, "什么鬼 --->>> ${response.toString()}")
+            Log.d(TAG, "什么鬼 --->>> $response")
             onResponseReceived(response)
         }, { error ->
             error.localizedMessage?.let { Log.e(TAG, it) }
@@ -750,80 +747,94 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
-    fun upload(mediaMessage: MediaMessage) {
-        Log.d(UPLOAD, "upload file size---->>> ${mediaMessage.file.length()}")
-        if (mediaMessage.file.length() > UploadBigFileUtils.defaultChunkSize) {
-            bigFileUpload(mediaMessage)
-        } else {
-            singleUpload(mediaMessage)
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.Q)
-    private fun singleUpload(mediaMessage: MediaMessage) {
+    fun preInsertUpload(mediaMessage: MediaMessage) {
         val sendBody = genMsgBody(
             type = if (mediaMessage.isImage) 2 else 3,
         )
 
         val localFile = genLocalFile(mediaMessage)
-        localFile.isBigFile = false
+        localFile.isBigFile = mediaMessage.file.length() > UploadBigFileUtils.defaultChunkSize
 
         val entity = insertCacheMaybeUpdateUI(
             sendBody = sendBody, localFile = localFile
         )
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val thumbnailResp = uploadThumbnail(mediaMessage, sendBody.clientMsgId)
+        tempUploadInfos[entity.clientMsgID] =
+            TempUploadInfo(sendBody = sendBody, mediaMessage = mediaMessage)
+    }
 
-                val rep = UploadRepository.singleUpload(
-                    file = MultipartBody.Part.createFormData(
-                        "file",
-                        mediaMessage.file.name,
-                        ProgressRequestBody(delegate = mediaMessage.file.asRequestBody(),
-                            listener = { bytesWritten, contentLength ->
-                                val progress = (1.0 * bytesWritten) / contentLength
-                                Log.d(
-                                    UPLOAD,
-                                    "Single upload  ${mediaMessage.file.name} ---->>>  bytesWritten: $bytesWritten, $contentLength, progress: $progress"
-                                )
-                                val emitProgress = progressList[entity.clientMsgID]
-                                if (emitProgress != null) {
-                                    viewModelScope.launch(Dispatchers.Main) {
-                                        emitProgress.value = progress.toFloat()
-                                    }
+    fun upload(
+        message: MessageEntity, thumbBitmap: Bitmap
+    ) {
+        Log.d(UPLOAD, "upload file size---->>> ${message.localFile?.size}")
+        message.localFile?.size?.let {
+            if (it > UploadBigFileUtils.defaultChunkSize) {
+                bigFileUpload(message, thumbBitmap)
+            } else {
+                singleUpload(message, thumbBitmap)
+            }
+        }
+    }
 
-                                    if (emitProgress.value == 1.0f) {
-                                        val uploadTask = UploadTask()
-                                        uploadTask.progress = 1.0f
-                                        viewModelScope.launch(Dispatchers.IO) {
-                                            findMediaMsgAndUpdateProgress(
-                                                entity.clientMsgID, uploadTask
-                                            )
+    private fun singleUpload(message: MessageEntity, thumbBitmap: Bitmap) {
+        val tempUploadInfo = tempUploadInfos[message.clientMsgID]
+        tempUploadInfo?.let {
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    val thumbnailResp = uploadThumbnail(thumbBitmap)
+
+                    val rep = UploadRepository.singleUpload(
+                        file = MultipartBody.Part.createFormData(
+                            "file",
+                            it.mediaMessage.file.name,
+                            ProgressRequestBody(delegate = it.mediaMessage.file.asRequestBody(),
+                                listener = { bytesWritten, contentLength ->
+                                    val progress = (1.0 * bytesWritten) / contentLength
+                                    Log.d(
+                                        UPLOAD,
+                                        "Single upload  ${it.mediaMessage.file.name} ---->>>  bytesWritten: $bytesWritten, $contentLength, progress: $progress"
+                                    )
+                                    val emitProgress = progressList[message.clientMsgID]
+                                    if (emitProgress != null) {
+                                        viewModelScope.launch(Dispatchers.Main) {
+                                            emitProgress.value = progress.toFloat()
+                                        }
+
+                                        if (emitProgress.value == 1.0f) {
+                                            val uploadTask = UploadTask()
+                                            uploadTask.progress = 1.0f
+                                            viewModelScope.launch(Dispatchers.IO) {
+                                                findMediaMsgAndUpdateProgress(
+                                                    message.clientMsgID, uploadTask
+                                                )
+                                            }
                                         }
                                     }
-                                }
-                            })
-                    ), signType = if (mediaMessage.isImage) 2 else 1
-                )
-                Log.d(UPLOAD, "Single upload ---->>> ${rep.data.paths[0]}")
-                val mediaSource = MediaSource(
-                    width = mediaMessage.width, height = mediaMessage.height, thumbnail = Thumbnail(
-                        url = thumbnailResp.data.paths[0].url, key = thumbnailResp.data.paths[0].key
-                    ), resource = Resource(
-                        url = rep.data.paths[0].url, key = rep.data.paths[0].key
+                                })
+                        ), signType = if (it.mediaMessage.isImage) 2 else 1
                     )
-                )
-                sendBody.msgBody = Gson().toJson(mediaSource)
-                senMessageFromMedia(sendBody, preSend = {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        IMLocalRepository.findMediaMsgAndUpdateBody(
-                            sendBody.clientMsgId, sendBody.msgBody
+                    Log.d(UPLOAD, "Single upload ---->>> ${rep.data.paths[0]}")
+                    val mediaSource = MediaSource(
+                        width = it.mediaMessage.width,
+                        height = it.mediaMessage.height,
+                        thumbnail = Thumbnail(
+                            url = thumbnailResp.data.paths[0].url,
+                            key = thumbnailResp.data.paths[0].key
+                        ),
+                        resource = Resource(
+                            url = rep.data.paths[0].url, key = rep.data.paths[0].key
                         )
-                    }
-                })
-            } catch (e: Exception) {
-                Log.d(UPLOAD, "Single upload error --->> $e")
+                    )
+                    it.sendBody.msgBody = Gson().toJson(mediaSource)
+                    senMessageFromMedia(it.sendBody, preSend = {
+                        viewModelScope.launch(Dispatchers.IO) {
+                            IMLocalRepository.findMediaMsgAndUpdateBody(
+                                message.clientMsgID, it.sendBody.msgBody
+                            )
+                        }
+                    })
+                } catch (e: Exception) {
+                    Log.d(UPLOAD, "Single upload error --->> $e")
+                }
             }
         }
     }
@@ -858,100 +869,96 @@ class ChatScreenViewModel : ViewModel() {
         return localFile
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
-    private fun bigFileUpload(mediaMessage: MediaMessage) {
+    private fun bigFileUpload(message: MessageEntity, thumbBitmap: Bitmap) {
         try {
-            val sendBody = genMsgBody(
-                type = if (mediaMessage.isImage) 2 else 3,
-            )
+            val tempUploadInfo = tempUploadInfos[message.clientMsgID]
+            tempUploadInfo?.let { it ->
+                var executeIndex = 1
+                val uploadTask = UploadTask()
+                uploadTask.executeIndex = executeIndex
+                uploadTasks[message.clientMsgID] = uploadTask
 
-            val localFile = genLocalFile(mediaMessage)
-            localFile.isBigFile = true
-
-            val entity = insertCacheMaybeUpdateUI(
-                sendBody = sendBody, localFile = localFile
-            )
-
-            var executeIndex = 1
-            val uploadTask = UploadTask()
-            uploadTask.executeIndex = executeIndex
-            uploadTasks[entity.clientMsgID] = uploadTask
-
-            mergeMultiUploadReqQueue[entity.clientMsgID] = CompleteMultiPartUploadReq(
-                uploadId = "", name = mediaMessage.file.name, part = mutableListOf()
-            )
-
-            val job = viewModelScope.launch(Dispatchers.IO) {
-                val thumbnailResp = uploadThumbnail(mediaMessage, sendBody.clientMsgId)
-                val thumbnailSource = MediaSource(
-                    width = mediaMessage.width, height = mediaMessage.height, thumbnail = Thumbnail(
-                        url = thumbnailResp.data.paths[0].url, key = thumbnailResp.data.paths[0].key
-                    ), resource = Resource(
-                        url = "", key = ""
-                    )
+                mergeMultiUploadReqQueue[message.clientMsgID] = CompleteMultiPartUploadReq(
+                    uploadId = "", name = it.mediaMessage.file.name, part = mutableListOf()
                 )
-                sendBody.msgBody = Gson().toJson(thumbnailSource)
-                IMLocalRepository.findMediaMsgAndUpdateBody(sendBody.clientMsgId, sendBody.msgBody)
-                updateSingleMessage(source = entity) { m ->
-                    m.msgBody = sendBody.msgBody
-                }
-                scrollToBottom()
 
-                val initRep = UploadRepository.initMultiPartUpload(
-                    body = InitMultiPartUploadBody(
-                        size = mediaMessage.file.length(),
-                        name = mediaMessage.file.name,
-                        contentType = ""
-                    )
-                )
-                Log.d(UPLOAD, "init multi upload --->>> $initRep")
-                uploadTask.initTrunksRepJson = Gson().toJson(initRep)
-                val start = System.currentTimeMillis()
-                Log.d(
-                    UPLOAD,
-                    "Big file upload ---->>> fileName: ${mediaMessage.file.name}, Fs hash: ${mediaMessage.file.hashCode()}, split start: $start"
-                )
-                if (initRep.data.node.size > 1) {
-                    UploadBigFileUtils.splitFile(
-                        mediaMessage.file, UploadBigFileUtils.defaultChunkSize
-                    )
-                } else {
-                    UploadBigFileUtils.splitFile(
-                        mediaMessage.file, initRep.data.node[0].size
-                    )
-                }
-                val end = System.currentTimeMillis()
-                Log.d(UPLOAD, "split end: $end, diff: ${end - start}")
-
-                val taskLength = initRep.data.node.size
-                uploadTasks[entity.clientMsgID]?.taskLength = taskLength
-
-                mergeMultiUploadReqQueue[entity.clientMsgID] = CompleteMultiPartUploadReq(
-                    uploadId = initRep.data.uploadId,
-                    name = mediaMessage.file.name,
-                    part = mutableListOf()
-                )
-                val buffers = UploadBigFileUtils.blocks[mediaMessage.file.hashCode()]
-
-                if (buffers != null) {
-                    var deltaSize = 0L
-                    for (buffer in buffers) {
-                        val md5 = MessageDigest.getInstance("MD5")
-                        val sign = md5.digest(buffer.array())
-                        val hexString = sign.joinToString("") { "%02x".format(it) }
-                        Log.d(
-                            UPLOAD,
-                            "split chunk size: ${buffer.array().size}, hexString: $hexString"
+                val job = viewModelScope.launch(Dispatchers.IO) {
+                    val thumbnailResp = uploadThumbnail(thumbBitmap)
+                    val thumbnailSource = MediaSource(
+                        width = it.mediaMessage.width,
+                        height = it.mediaMessage.height,
+                        thumbnail = Thumbnail(
+                            url = thumbnailResp.data.paths[0].url,
+                            key = thumbnailResp.data.paths[0].key
+                        ),
+                        resource = Resource(
+                            url = "", key = ""
                         )
+                    )
+                    it.sendBody.msgBody = Gson().toJson(thumbnailSource)
+                    IMLocalRepository.findMediaMsgAndUpdateBody(
+                        message.clientMsgID, it.sendBody.msgBody
+                    )
+                    updateSingleMessage(source = message) { m ->
+                        m.msgBody = it.sendBody.msgBody
+                    }
+                    scrollToBottom()
 
-                        val bodyFromBuffer =
-                            ProgressRequestBody(delegate = buffer.array().toRequestBody(
-                                contentType = "application/octet-stream".toMediaTypeOrNull(),
-                                byteCount = buffer.array().size
-                            ), listener = { bytesWritten, contentLength ->
-                                val totalProgress =
-                                    (1.0 * (deltaSize + bytesWritten)) / mediaMessage.file.length()
-                                val progress = (1.0 * bytesWritten) / contentLength
+                    val initRep = UploadRepository.initMultiPartUpload(
+                        body = InitMultiPartUploadBody(
+                            size = it.mediaMessage.file.length(),
+                            name = it.mediaMessage.file.name,
+                            contentType = ""
+                        )
+                    )
+                    Log.d(UPLOAD, "init multi upload --->>> $initRep")
+                    uploadTask.initTrunksRepJson = Gson().toJson(initRep)
+                    val start = System.currentTimeMillis()
+                    Log.d(
+                        UPLOAD,
+                        "Big file upload ---->>> fileName: ${it.mediaMessage.file.name}, Fs hash: ${it.mediaMessage.file.hashCode()}, split start: $start"
+                    )
+                    if (initRep.data.node.size > 1) {
+                        UploadBigFileUtils.splitFile(
+                            it.mediaMessage.file, UploadBigFileUtils.defaultChunkSize
+                        )
+                    } else {
+                        UploadBigFileUtils.splitFile(
+                            it.mediaMessage.file, initRep.data.node[0].size
+                        )
+                    }
+                    val end = System.currentTimeMillis()
+                    Log.d(UPLOAD, "split end: $end, diff: ${end - start}")
+
+                    val taskLength = initRep.data.node.size
+                    uploadTasks[message.clientMsgID]?.taskLength = taskLength
+
+                    mergeMultiUploadReqQueue[message.clientMsgID] = CompleteMultiPartUploadReq(
+                        uploadId = initRep.data.uploadId,
+                        name = it.mediaMessage.file.name,
+                        part = mutableListOf()
+                    )
+                    val buffers = UploadBigFileUtils.blocks[it.mediaMessage.file.hashCode()]
+
+                    if (buffers != null) {
+                        var deltaSize = 0L
+                        for (buffer in buffers) {
+                            val md5 = MessageDigest.getInstance("MD5")
+                            val sign = md5.digest(buffer.array())
+                            val hexString = sign.joinToString("") { "%02x".format(it) }
+                            Log.d(
+                                UPLOAD,
+                                "split chunk size: ${buffer.array().size}, hexString: $hexString"
+                            )
+
+                            val bodyFromBuffer =
+                                ProgressRequestBody(delegate = buffer.array().toRequestBody(
+                                    contentType = "application/octet-stream".toMediaTypeOrNull(),
+                                    byteCount = buffer.array().size
+                                ), listener = { bytesWritten, contentLength ->
+                                    val totalProgress =
+                                        (1.0 * (deltaSize + bytesWritten)) / it.mediaMessage.file.length()
+                                    val progress = (1.0 * bytesWritten) / contentLength
 
 //                                Log.d(
 //                                    UPLOAD, "Split Upload progress ${
@@ -960,64 +967,70 @@ class ChatScreenViewModel : ViewModel() {
 //                                        )].url
 //                                    } ---->>>  split trunk bytesWritten: $bytesWritten, $contentLength, split trunk progress: $progress || Total progress: $totalProgress"
 //                                )
-                                val emitProgress = progressList[entity.clientMsgID]
-                                if (emitProgress != null) {
-                                    viewModelScope.launch(Dispatchers.Main) {
-                                        emitProgress.value = totalProgress.toFloat()
-                                    }
+                                    val emitProgress = progressList[message.clientMsgID]
+                                    if (emitProgress != null) {
+                                        viewModelScope.launch(Dispatchers.Main) {
+                                            emitProgress.value = totalProgress.toFloat()
+                                        }
 
 
-                                    if (emitProgress.value == 1.0f) {
-                                        uploadTask.progress = 1.0f
-                                        uploadTask.reqBodyJson =
-                                            Gson().toJson(mergeMultiUploadReqQueue[entity.clientMsgID])
-                                        viewModelScope.launch(Dispatchers.IO) {
-                                            findMediaMsgAndUpdateProgress(
-                                                entity.clientMsgID, uploadTask
-                                            )
+                                        if (emitProgress.value == 1.0f) {
+                                            uploadTask.progress = 1.0f
+                                            uploadTask.reqBodyJson =
+                                                Gson().toJson(mergeMultiUploadReqQueue[message.clientMsgID])
+                                            viewModelScope.launch(Dispatchers.IO) {
+                                                findMediaMsgAndUpdateProgress(
+                                                    message.clientMsgID, uploadTask
+                                                )
+                                            }
                                         }
                                     }
-                                }
-                            })
-                        UploadRepository.uploadBinary(
-                            url = initRep.data.node[buffers.indexOf(buffer)].url, bodyFromBuffer
-                        )
-
-                        mergeMultiUploadReqQueue[entity.clientMsgID]?.part?.add(
-                            Part(
-                                partNumber = executeIndex, etag = hexString
+                                })
+                            UploadRepository.uploadBinary(
+                                url = initRep.data.node[buffers.indexOf(buffer)].url, bodyFromBuffer
                             )
-                        )
-                        uploadTasks[entity.clientMsgID]?.executeIndex = executeIndex
-                        deltaSize += buffer.array().size
-                        executeIndex++
+
+                            mergeMultiUploadReqQueue[message.clientMsgID]?.part?.add(
+                                Part(
+                                    partNumber = executeIndex, etag = hexString
+                                )
+                            )
+                            uploadTasks[message.clientMsgID]?.executeIndex = executeIndex
+                            deltaSize += buffer.array().size
+                            executeIndex++
+                        }
                     }
-                }
-                Log.d(UPLOAD, "iter --->> ${mergeMultiUploadReqQueue[entity.clientMsgID]}")
-                val mergeUpload = mergeMultiUploadReqQueue[entity.clientMsgID]?.let {
-                    UploadRepository.completeMultiPartUpload(
-                        body = it
-                    )
-                }
-                UploadBigFileUtils.releaseMemory(mediaMessage.file.hashCode())
-                Log.d(UPLOAD, "BigFileUpload success ---> ${mergeUpload?.data?.location}")
-                val mediaSource = MediaSource(
-                    width = mediaMessage.width, height = mediaMessage.height, thumbnail = Thumbnail(
-                        url = thumbnailResp.data.paths[0].url, key = thumbnailResp.data.paths[0].key
-                    ), resource = Resource(
-                        url = mergeUpload?.data?.location ?: "", key = ""
-                    )
-                )
-                sendBody.msgBody = Gson().toJson(mediaSource)
-                senMessageFromMedia(sendBody, preSend = {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        IMLocalRepository.findMediaMsgAndUpdateBody(
-                            sendBody.clientMsgId, sendBody.msgBody
+                    Log.d(UPLOAD, "iter --->> ${mergeMultiUploadReqQueue[message.clientMsgID]}")
+                    val mergeUpload =
+                        mergeMultiUploadReqQueue[message.clientMsgID]?.let { reqBody ->
+                            UploadRepository.completeMultiPartUpload(
+                                body = reqBody
+                            )
+                        }
+                    UploadBigFileUtils.releaseMemory(it.mediaMessage.file.hashCode())
+                    Log.d(UPLOAD, "BigFileUpload success ---> ${mergeUpload?.data?.location}")
+                    val mediaSource = MediaSource(
+                        width = it.mediaMessage.width,
+                        height = it.mediaMessage.height,
+                        thumbnail = Thumbnail(
+                            url = thumbnailResp.data.paths[0].url,
+                            key = thumbnailResp.data.paths[0].key
+                        ),
+                        resource = Resource(
+                            url = mergeUpload?.data?.location ?: "", key = ""
                         )
-                    }
-                })
+                    )
+                    it.sendBody.msgBody = Gson().toJson(mediaSource)
+                    senMessageFromMedia(it.sendBody, preSend = {
+                        viewModelScope.launch(Dispatchers.IO) {
+                            IMLocalRepository.findMediaMsgAndUpdateBody(
+                                message.clientMsgID, it.sendBody.msgBody
+                            )
+                        }
+                    })
+                }
+                jobs[message.clientMsgID] = job
             }
-            jobs[sendBody.clientMsgId] = job
         } catch (e: Exception) {
             Log.d(UPLOAD, "Big file upload error --->>> $e")
         }
@@ -1207,26 +1220,15 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     private suspend fun uploadThumbnail(
-        mediaMessage: MediaMessage, clientMsgId: String
+        bitmap: Bitmap
     ): SingleUploadRep {
-        val bmp = if (mediaMessage.isImage) {
-            ThumbnailUtils.createImageThumbnail(
-                mediaMessage.file, Size(mediaMessage.width, mediaMessage.height), null
-            )
-        } else {
-            ThumbnailUtils.createVideoThumbnail(
-                mediaMessage.file, Size(mediaMessage.width, mediaMessage.height), null
-            )
-        }
-        uploadThumbs[clientMsgId] = MutableStateFlow(bmp)
         val bao = ByteArrayOutputStream()
-        bmp.compress(Bitmap.CompressFormat.PNG, 100, bao)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 75, bao)
         val buffer = bao.toByteArray()
         val thumbnailResp = UploadRepository.singleUpload(
             file = MultipartBody.Part.createFormData(
-                "file", "lbe_${uuidGen()}_${timeStampGen()}.png", buffer.toRequestBody()
+                "file", "lbe_${uuidGen()}_${timeStampGen()}.jpg", buffer.toRequestBody()
             ), signType = 2
         )
         withContext(Dispatchers.IO) {

@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import coil3.ImageLoader
 import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
+import coil3.video.VideoFrameDecoder
 import com.google.gson.Gson
 import com.lbe.imsdk.model.InitArgs
 import com.lbe.imsdk.ui.presentation.components.NavRoute
@@ -40,6 +41,7 @@ class LbeChatActivity : ComponentActivity() {
                     } else {
                         add(GifDecoder.Factory())
                     }
+                    add(VideoFrameDecoder.Factory())
                 }.build()
 
                 NavHost(

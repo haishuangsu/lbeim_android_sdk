@@ -43,6 +43,7 @@ class MainActivity : ComponentActivity() {
                         "initArgs", Gson().toJson(initArgs)
                     )
                     context.startActivity(intent)
+                    finish()
                 }
             }
         }

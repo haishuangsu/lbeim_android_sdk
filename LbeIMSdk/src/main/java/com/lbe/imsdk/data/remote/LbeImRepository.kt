@@ -26,7 +26,7 @@ object LbeImRepository {
     }
 
     suspend fun createSession(lbeSign: String, lbeIdentity: String, body: SessionBody): Session {
-        return lbeIMRepository.createSession(lbeSign = lbeSign, lbeIdentity = lbeIdentity, body);
+        return lbeIMRepository.createSession(lbeSign = lbeSign, lbeIdentity = lbeIdentity, body)
     }
 
     suspend fun fetchHistory(

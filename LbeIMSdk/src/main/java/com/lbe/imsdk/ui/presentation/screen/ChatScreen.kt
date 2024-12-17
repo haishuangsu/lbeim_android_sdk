@@ -163,7 +163,8 @@ fun ChatScreen(
 
     val mediaPermissionState = rememberMultiplePermissionsState(
         permissions = if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) listOf(
-            Manifest.permission.READ_MEDIA_IMAGES
+            Manifest.permission.READ_MEDIA_IMAGES,
+            Manifest.permission.READ_MEDIA_VIDEO,
         ) else listOf(
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -367,7 +368,7 @@ fun ChatScreen(
                                                 mime = mime,
                                                 isImage = FileUtils.isImage(mime),
                                             )
-                                            viewModel.upload(mediaMessage)
+                                            viewModel.preInsertUpload(mediaMessage)
                                             Log.d(
                                                 ChatScreenViewModel.FILESELECT,
                                                 "found file --->> ${file.name}, ${file.path}, ${file.length()}, ${file.absolutePath}, mimeType: $mime, Is image file: ${
