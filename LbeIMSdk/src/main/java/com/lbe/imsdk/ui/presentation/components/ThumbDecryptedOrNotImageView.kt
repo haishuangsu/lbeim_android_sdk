@@ -14,6 +14,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,9 +64,9 @@ fun ThumbDecryptedOrNotImageView(
         println("DecryptedOrNotImageView Json parse error -->> ${message.msgBody}")
     }
 
-    val progress = ChatScreenViewModel.progressList[message.clientMsgID]?.collectAsState()
+    val rememberProgress = remember { ChatScreenViewModel.progressList[message.clientMsgID] }
+    val progress = rememberProgress?.collectAsState()
     val isGif = FileUtils.isGif(message.localFile?.mimeType ?: "")
-
 
     Box(contentAlignment = Alignment.Center) {
         val ctx = LocalPlatformContext.current
@@ -121,12 +122,16 @@ fun ThumbDecryptedOrNotImageView(
                 contentDescription = "Frame",
                 contentScale = ContentScale.Crop,
                 onSuccess = { state ->
-                    val bitmap = state.result.image.toBitmap()
-                    Log.d(
-                        "ThumbnailGen",
-                        "bitmap --->> width: ${bitmap.width}, height: ${bitmap.height}"
-                    )
-                    viewModel?.upload(message, bitmap)
+                    progress?.value?.let {
+                        if (it <= 0) {
+                            val bitmap = state.result.image.toBitmap()
+                            Log.d(
+                                "ThumbnailGen",
+                                "bitmap --->> width: ${bitmap.width}, height: ${bitmap.height}"
+                            )
+                            viewModel?.upload(message, bitmap)
+                        }
+                    }
                 },
                 loading = { },
                 error = { },

@@ -777,6 +777,8 @@ class ChatScreenViewModel : ViewModel() {
 
     private fun singleUpload(message: MessageEntity, thumbBitmap: Bitmap) {
         val tempUploadInfo = tempUploadInfos[message.clientMsgID]
+        val thumbWidth = thumbBitmap.width
+        val thumbHeight = thumbBitmap.height
         tempUploadInfo?.let {
             viewModelScope.launch(Dispatchers.IO) {
                 try {
@@ -814,8 +816,8 @@ class ChatScreenViewModel : ViewModel() {
                     )
                     Log.d(UPLOAD, "Single upload ---->>> ${rep.data.paths[0]}")
                     val mediaSource = MediaSource(
-                        width = it.mediaMessage.width,
-                        height = it.mediaMessage.height,
+                        width = thumbWidth,
+                        height = thumbHeight,
                         thumbnail = Thumbnail(
                             url = thumbnailResp.data.paths[0].url,
                             key = thumbnailResp.data.paths[0].key
@@ -872,6 +874,8 @@ class ChatScreenViewModel : ViewModel() {
     private fun bigFileUpload(message: MessageEntity, thumbBitmap: Bitmap) {
         try {
             val tempUploadInfo = tempUploadInfos[message.clientMsgID]
+            val thumbWidth = thumbBitmap.width
+            val thumbHeight = thumbBitmap.height
             tempUploadInfo?.let { it ->
                 var executeIndex = 1
                 val uploadTask = UploadTask()
@@ -885,8 +889,8 @@ class ChatScreenViewModel : ViewModel() {
                 val job = viewModelScope.launch(Dispatchers.IO) {
                     val thumbnailResp = uploadThumbnail(thumbBitmap)
                     val thumbnailSource = MediaSource(
-                        width = it.mediaMessage.width,
-                        height = it.mediaMessage.height,
+                        width = thumbWidth,
+                        height = thumbHeight,
                         thumbnail = Thumbnail(
                             url = thumbnailResp.data.paths[0].url,
                             key = thumbnailResp.data.paths[0].key
@@ -1010,8 +1014,8 @@ class ChatScreenViewModel : ViewModel() {
                     UploadBigFileUtils.releaseMemory(it.mediaMessage.file.hashCode())
                     Log.d(UPLOAD, "BigFileUpload success ---> ${mergeUpload?.data?.location}")
                     val mediaSource = MediaSource(
-                        width = it.mediaMessage.width,
-                        height = it.mediaMessage.height,
+                        width = thumbWidth,
+                        height = thumbHeight,
                         thumbnail = Thumbnail(
                             url = thumbnailResp.data.paths[0].url,
                             key = thumbnailResp.data.paths[0].key
