@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "info.hermiths.chatapp"
-        minSdk = 29
+        minSdk = 21
         targetSdk = 34
         versionCode = 2
         versionName = "0.0.5"
@@ -41,11 +41,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "11"
     }
     buildFeatures {
         compose = true
