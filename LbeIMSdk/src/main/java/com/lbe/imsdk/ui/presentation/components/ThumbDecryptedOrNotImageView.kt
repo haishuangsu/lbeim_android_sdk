@@ -18,8 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -29,13 +29,16 @@ import androidx.navigation.NavController
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
+import coil3.toBitmap
 import com.google.gson.Gson
 import com.lbe.imsdk.R
 import com.lbe.imsdk.model.MessageEntity
 import com.lbe.imsdk.model.resp.MediaSource
 import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel
 import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.CONTINUE_UPLOAD
+import com.lbe.imsdk.utils.FileUtils
 import java.io.File
 
 
@@ -61,17 +64,14 @@ fun ThumbDecryptedOrNotImageView(
     }
 
     val progress = ChatScreenViewModel.progressList[message.clientMsgID]?.collectAsState()
-    val thumbBmp = ChatScreenViewModel.uploadThumbs[message.clientMsgID]?.collectAsState()
-    Log.d(ChatScreenViewModel.UPLOAD, "thumbBmp isExist: ${thumbBmp == null}, thumbUrl: $thumbUrl")
-//    val isGif = FileUtils.isGif(message.localFile?.mimeType ?: "")
-    val isGif = false
+    val isGif = FileUtils.isGif(message.localFile?.mimeType ?: "")
 
 
     Box(contentAlignment = Alignment.Center) {
         val ctx = LocalPlatformContext.current
         val modifier = Modifier
             .fillMaxWidth(0.5f)
-            .height(200.dp)
+            .height(180.dp)
             .clip(RoundedCornerShape(16.dp))
             .clickable {
                 if (fullUrl.isNotEmpty()) {
@@ -86,7 +86,9 @@ fun ThumbDecryptedOrNotImageView(
                             viewModel?.cancelJob(message.clientMsgID, progress = progress)
                         } else {
                             Log.d(CONTINUE_UPLOAD, "续传 ---->>>> ${message.uploadTask}")
-                            Log.d(CONTINUE_UPLOAD, "续传 uri ---->>>> ${message.localFile?.path}")
+                            Log.d(
+                                CONTINUE_UPLOAD, "续传 uri ---->>>> ${message.localFile?.path}"
+                            )
                             Log.d(
                                 CONTINUE_UPLOAD,
                                 "续传 executeIndex: ${message.uploadTask?.executeIndex}"
@@ -110,12 +112,24 @@ fun ThumbDecryptedOrNotImageView(
                 }
             }
 
-        if (thumbBmp != null) {
-            Image(
-                bitmap = thumbBmp.value.asImageBitmap(),
-                contentDescription = "Yo",
-                contentScale = ContentScale.FillWidth,
+        if (fullUrl.isEmpty()) {
+            val context = LocalContext.current
+            Log.d("ThumbnailGen", "Uri --->> ${message.localFile?.path ?: ""}")
+            SubcomposeAsyncImage(
                 modifier = modifier,
+                model = ImageRequest.Builder(context).data(message.localFile?.path ?: "").build(),
+                contentDescription = "Frame",
+                contentScale = ContentScale.Crop,
+                onSuccess = { state ->
+                    val bitmap = state.result.image.toBitmap()
+                    Log.d(
+                        "ThumbnailGen",
+                        "bitmap --->> width: ${bitmap.width}, height: ${bitmap.height}"
+                    )
+                    viewModel?.upload(message, bitmap)
+                },
+                loading = { },
+                error = { },
             )
         } else {
             AsyncImage(
@@ -127,7 +141,7 @@ fun ThumbDecryptedOrNotImageView(
                         )
                     ).build(),
                 contentDescription = "Yo",
-                contentScale = ContentScale.FillWidth,
+                contentScale = ContentScale.Crop,
                 modifier = modifier,
                 imageLoader = imageLoader,
             )

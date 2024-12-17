@@ -5,7 +5,7 @@ import com.lbe.imsdk.model.resp.Config
 import com.lbe.imsdk.model.req.ConfigBody
 
 object LbeConfigRepository {
-    private val lbeIMRepository = RetrofitInstance.baseApiService;
+    private val lbeIMRepository = RetrofitInstance.baseApiService
 
     suspend fun fetchConfig(lbeSign: String, lbeIdentity: String, body: ConfigBody): Config {
         return lbeIMRepository.fetchConfig(

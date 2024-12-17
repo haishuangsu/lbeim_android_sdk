@@ -91,7 +91,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     implementation(project(":LbeIMSdk"))
-//    implementation("com.github.haishuangsu:lbeim:1.1.1")
+//    implementation("com.github.haishuangsu:lbeim:1.1.3")
     // Gson
     implementation("com.google.code.gson:gson:2.10.1")
 }
