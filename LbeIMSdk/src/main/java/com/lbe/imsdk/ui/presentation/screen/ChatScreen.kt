@@ -345,24 +345,16 @@ fun ChatScreen(
                                     val projection = arrayOf(
                                         MediaStore.MediaColumns.DATA,
                                         MediaStore.MediaColumns.MIME_TYPE,
-                                        MediaStore.MediaColumns.WIDTH,
-                                        MediaStore.MediaColumns.HEIGHT
                                     )
                                     val metaCursor = cr.query(uri, projection, null, null, null)
                                     metaCursor?.use { mCursor ->
                                         if (mCursor.moveToFirst()) {
                                             val path = mCursor.getString(0)
                                             val mime = mCursor.getString(1)
-                                            val width = mCursor.getInt(2)
-                                            val height = mCursor.getInt(3)
-                                            Log.d(
-                                                ChatScreenViewModel.FILESELECT,
-                                                "path: $path, width: $width, height: $height"
-                                            )
                                             val file = File(path)
                                             val mediaMessage = MediaMessage(
-                                                width = width,
-                                                height = height,
+                                                width = 1080,
+                                                height = 1920,
                                                 file = file,
                                                 path = uri.toString(),
                                                 mime = mime,
