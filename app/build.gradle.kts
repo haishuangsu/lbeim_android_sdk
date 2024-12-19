@@ -1,17 +1,15 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-//    id("kotlin-kapt")
-//    id ("com.google.protobuf") version "0.9.4"
 }
 
 android {
     namespace = "info.hermiths.chatapp"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "info.hermiths.chatapp"
-        minSdk = 21
+        minSdk = 29
         versionCode = 2
         versionName = "0.0.5"
 

@@ -131,6 +131,8 @@ class ChatScreenViewModel : ViewModel() {
     var timer: Timer? = null
     var timeOut: Long = 3
 
+    private lateinit var initArgs: InitArgs
+
 //    private val _messages = MutableStateFlow<List<MessageEntity>>(mutableListOf())
 //    val messageList = _messages
 
@@ -158,22 +160,12 @@ class ChatScreenViewModel : ViewModel() {
         }
     }
 
-    fun setNickId(nid: String, nName: String, identity: String) {
-        if (nid.isEmpty()) {
-            return
-        }
-        _uiState.postValue(_uiState.value?.copy(login = true))
-        nickId = nid
-        nickName = nName
-        lbeIdentity = identity
-        prepare()
-    }
-
-    fun initSdk(initArgs: InitArgs) {
-        lbeSign = initArgs.lbeSign
-        nickId = initArgs.nickId
-        nickName = initArgs.nickName
-        lbeIdentity = initArgs.lbeIdentity
+    fun initSdk(args: InitArgs) {
+        lbeSign = args.lbeSign
+        nickId = args.nickId
+        nickName = args.nickName
+        lbeIdentity = args.lbeIdentity
+        initArgs = args
         prepare()
     }
 
@@ -210,12 +202,17 @@ class ChatScreenViewModel : ViewModel() {
         try {
             val session = LbeImRepository.createSession(
                 lbeSign, lbeIdentity = lbeIdentity, SessionBody(
-                    extraInfo = "",
-                    headIcon = "",
+                    identityID = initArgs.lbeIdentity,
                     nickId = nickId,
                     nickName = nickName,
+                    phone = initArgs.phone,
+                    email = initArgs.email,
+                    language = initArgs.language,
+                    device = initArgs.device,
+                    source = initArgs.source,
+                    extraInfo = "",
+                    headIcon = "",
                     uid = "",
-                    language = "zh"
                 )
             )
             lbeToken = session.data.token
@@ -816,13 +813,10 @@ class ChatScreenViewModel : ViewModel() {
                     )
                     Log.d(UPLOAD, "Single upload ---->>> ${rep.data.paths[0]}")
                     val mediaSource = MediaSource(
-                        width = thumbWidth,
-                        height = thumbHeight,
-                        thumbnail = Thumbnail(
+                        width = thumbWidth, height = thumbHeight, thumbnail = Thumbnail(
                             url = thumbnailResp.data.paths[0].url,
                             key = thumbnailResp.data.paths[0].key
-                        ),
-                        resource = Resource(
+                        ), resource = Resource(
                             url = rep.data.paths[0].url, key = rep.data.paths[0].key
                         )
                     )
@@ -889,13 +883,10 @@ class ChatScreenViewModel : ViewModel() {
                 val job = viewModelScope.launch(Dispatchers.IO) {
                     val thumbnailResp = uploadThumbnail(thumbBitmap)
                     val thumbnailSource = MediaSource(
-                        width = thumbWidth,
-                        height = thumbHeight,
-                        thumbnail = Thumbnail(
+                        width = thumbWidth, height = thumbHeight, thumbnail = Thumbnail(
                             url = thumbnailResp.data.paths[0].url,
                             key = thumbnailResp.data.paths[0].key
-                        ),
-                        resource = Resource(
+                        ), resource = Resource(
                             url = "", key = ""
                         )
                     )
@@ -1014,13 +1005,10 @@ class ChatScreenViewModel : ViewModel() {
                     UploadBigFileUtils.releaseMemory(it.mediaMessage.file.hashCode())
                     Log.d(UPLOAD, "BigFileUpload success ---> ${mergeUpload?.data?.location}")
                     val mediaSource = MediaSource(
-                        width = thumbWidth,
-                        height = thumbHeight,
-                        thumbnail = Thumbnail(
+                        width = thumbWidth, height = thumbHeight, thumbnail = Thumbnail(
                             url = thumbnailResp.data.paths[0].url,
                             key = thumbnailResp.data.paths[0].key
-                        ),
-                        resource = Resource(
+                        ), resource = Resource(
                             url = mergeUpload?.data?.location ?: "", key = ""
                         )
                     )
