@@ -20,11 +20,13 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            keyAlias = "hermit"
-            keyPassword = "gavin@95"
-            storeFile = file("../hermit.jks")
-            storePassword = "gavin@95"
+        if (System.getenv("JITPACK") == null) {
+            create("release") {
+                keyAlias = "hermit"
+                keyPassword = "gavin@95"
+                storeFile = file("../hermit.jks")
+                storePassword = "gavin@95"
+            }
         }
     }
 
@@ -34,7 +36,9 @@ android {
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            if (System.getenv("JITPACK") == null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
     compileOptions {
