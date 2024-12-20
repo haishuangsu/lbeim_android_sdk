@@ -187,6 +187,33 @@ public object MsgEntityToFrontEndKt {
 
     public val MsgEntityToFrontEndKt.Dsl.hasReadReceiptMsgOrNull: IMMsg.HasReadReceiptMsg?
       get() = _builder.hasReadReceiptMsgOrNull
+
+    /**
+     * `.EndSessionMsg endSessionMsg = 7;`
+     */
+    public var endSessionMsg: IMMsg.EndSessionMsg
+      @JvmName("getEndSessionMsg")
+      get() = _builder.endSessionMsg
+      @JvmName("setEndSessionMsg")
+      set(value) {
+        _builder.endSessionMsg = value
+      }
+    /**
+     * `.EndSessionMsg endSessionMsg = 7;`
+     */
+    public fun clearEndSessionMsg() {
+      _builder.clearEndSessionMsg()
+    }
+    /**
+     * `.EndSessionMsg endSessionMsg = 7;`
+     * @return Whether the endSessionMsg field is set.
+     */
+    public fun hasEndSessionMsg(): kotlin.Boolean {
+      return _builder.hasEndSessionMsg()
+    }
+
+    public val MsgEntityToFrontEndKt.Dsl.endSessionMsgOrNull: IMMsg.EndSessionMsg?
+      get() = _builder.endSessionMsgOrNull
   }
 }
 @kotlin.jvm.JvmSynthetic
@@ -207,4 +234,7 @@ public val IMMsg.MsgEntityToFrontEndOrBuilder.agentUserJoinSessionMsgOrNull: IMM
 
 public val IMMsg.MsgEntityToFrontEndOrBuilder.hasReadReceiptMsgOrNull: IMMsg.HasReadReceiptMsg?
   get() = if (hasHasReadReceiptMsg()) getHasReadReceiptMsg() else null
+
+public val IMMsg.MsgEntityToFrontEndOrBuilder.endSessionMsgOrNull: IMMsg.EndSessionMsg?
+  get() = if (hasEndSessionMsg()) getEndSessionMsg() else null
 

@@ -310,6 +310,31 @@ public object MsgBodyKt {
     public fun clearSendTime() {
       _builder.clearSendTime()
     }
+
+    /**
+     * ```
+     * 标题
+     * ```
+     *
+     * `string title = 12;`
+     */
+    public var title: kotlin.String
+      @JvmName("getTitle")
+      get() = _builder.title
+      @JvmName("setTitle")
+      set(value) {
+        _builder.title = value
+      }
+    /**
+     * ```
+     * 标题
+     * ```
+     *
+     * `string title = 12;`
+     */
+    public fun clearTitle() {
+      _builder.clearTitle()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic
