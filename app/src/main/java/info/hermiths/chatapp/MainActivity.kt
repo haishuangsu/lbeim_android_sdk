@@ -1,6 +1,5 @@
 package info.hermiths.chatapp
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,9 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.google.gson.Gson
-import com.lbe.imsdk.LbeChatActivity
-import com.lbe.imsdk.model.InitArgs
+
+import com.lbe.imsdk.LbeSdk
 import info.hermiths.lbesdk.ui.theme.ChatAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -32,24 +30,18 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
             ChatAppTheme {
-                NickIdPrompt { nid, nName, lbeIdentity, lbeSign, phone, email, language, device ->
-                    val initArgs = InitArgs(
+                NickIdPrompt { nickId, nickName, lbeIdentity, lbeSign, phone, email, language, device ->
+                    LbeSdk.init(
+                        context = context,
                         lbeSign = lbeSign,
                         lbeIdentity = lbeIdentity,
-                        nickId = nid,
-                        nickName = nName,
+                        nickId = nickId,
+                        nickName = nickName,
                         phone = phone,
                         email = email,
-                        headerIcon = "",
                         language = language,
                         device = device,
-                        source = "",
-//                        extraInfo = mutableMapOf(),
                     )
-                    val intent = Intent(context, LbeChatActivity::class.java).putExtra(
-                        "initArgs", Gson().toJson(initArgs)
-                    )
-                    context.startActivity(intent)
                     finish()
                 }
             }
@@ -58,7 +50,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NickIdPrompt(onStart: (nid: String, nName: String, lbeIdentity: String, lbeSign: String, phone: String, email: String, language: String, device: String) -> Unit) {
+fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String, lbeSign: String, phone: String, email: String, language: String, device: String) -> Unit) {
     // HermitK15
     // HermitK1, sit
     var nickId by remember { mutableStateOf("android0095") }
