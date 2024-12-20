@@ -33,6 +33,7 @@ object LbeSdk {
         val intent = Intent(context, LbeChatActivity::class.java).putExtra(
             "initArgs", Gson().toJson(initArgs)
         )
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
         context.startActivity(intent)
     }
 }
