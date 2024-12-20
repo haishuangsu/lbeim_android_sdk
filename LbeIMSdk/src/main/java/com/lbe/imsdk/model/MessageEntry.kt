@@ -20,6 +20,8 @@ class MessageEntity : RealmObject {
 
     var sendTime: Long = 0L
 
+    var faqListTile: String = ""
+
     // true: send success; false: send fail
     var sendSuccess: Boolean = true
 
