@@ -428,20 +428,20 @@ fun ChatScreen(
                     .align(Alignment.BottomStart)
                     .padding(bottom = 59.dp)
             ) {
-                Surface(color = Color(0xFFFFFFFF).copy(alpha = 0.9f),
-                    modifier = Modifier
-                        .padding(start = 16.dp)
-                        .clip(RoundedCornerShape(23.dp))
-                        .clickable {
-                            viewModel.turnCustomerService()
-                        }) {
-                    Text(
-                        "人工客服", style = TextStyle(
-                            color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.W400
-                        ), modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
+//                Surface(color = Color(0xFFFFFFFF).copy(alpha = 0.9f),
+//                    modifier = Modifier
+//                        .padding(start = 16.dp)
+//                        .clip(RoundedCornerShape(23.dp))
+//                        .clickable {
+//                            viewModel.turnCustomerService()
+//                        }) {
+//                    Text(
+//                        "人工客服", style = TextStyle(
+//                            color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.W400
+//                        ), modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
+//                    )
+//                }
+//                Spacer(modifier = Modifier.height(12.dp))
                 timeoutTips(viewModel = viewModel)
             }
         }
