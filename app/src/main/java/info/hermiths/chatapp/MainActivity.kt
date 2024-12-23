@@ -53,14 +53,14 @@ class MainActivity : ComponentActivity() {
 fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String, lbeSign: String, phone: String, email: String, language: String, device: String) -> Unit) {
     // HermitK15
     // HermitK1, sit
-    var nickId by remember { mutableStateOf("android0095") }
-    var nickName by remember { mutableStateOf("android0095") }
+    var nickId by remember { mutableStateOf("HermitK1") }
+    var nickName by remember { mutableStateOf("HermitK1") }
 
     // dev: 42nz10y3hhah; faq: 43hw3seddn2i
 //    var lbeIdentity by remember { mutableStateOf("43hw3seddn2i") }
 
     // sit: my: 441zy52mn2yy
-    var lbeIdentity by remember { mutableStateOf("43qf47gjuimi") }
+    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
 
     var lbeSign by remember { mutableStateOf("b184b8e64c5b0004c58b5a3c9af6f3868d63018737e68e2a1ccc61580afbc8f112119431511175252d169f0c64d9995e5de2339fdae5cbddda93b65ce305217700") }
 

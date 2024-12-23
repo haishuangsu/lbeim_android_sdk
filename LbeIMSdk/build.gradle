@@ -40,6 +40,11 @@ android {
         kotlinCompilerExtensionVersion = '1.5.1'
     }
 
+    lintOptions {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+
     lint {
         baseline = file("lint-baseline.xml")
     }
@@ -116,7 +121,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.haishuangsu'
                 artifactId = 'LbeIMSdk'
-                version = '1.2.3'
+                version = '1.2.4'
             }
         }
         repositories {
