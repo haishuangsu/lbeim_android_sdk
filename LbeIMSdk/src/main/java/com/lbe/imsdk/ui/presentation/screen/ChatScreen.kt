@@ -80,6 +80,7 @@ import com.lbe.imsdk.model.MediaMessage
 import com.lbe.imsdk.model.MessageEntity
 
 import com.lbe.imsdk.ui.presentation.components.MsgTypeContent
+import com.lbe.imsdk.ui.presentation.components.NavRoute
 import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel
 import com.lbe.imsdk.ui.presentation.viewmodel.ConnectionStatus
 import com.lbe.imsdk.utils.FileUtils
@@ -99,7 +100,7 @@ enum class MessagePosition {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Appbar() {
+fun Appbar(navController: NavController) {
 //    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     val ctx = LocalContext.current
 
@@ -116,10 +117,10 @@ fun Appbar() {
         ),
         navigationIcon = {
             IconButton(onClick = {
-                if (ctx is Activity) {
-                    ctx.finish()
-                }
-//                onBackPressedDispatcher?.onBackPressed()
+//                if (ctx is Activity) {
+//                    ctx.finish()
+//                }
+                navController.navigate(NavRoute.CUSTOM_REFRESH)
             }) {
                 Image(
                     painter = painterResource(R.drawable.back),
@@ -183,7 +184,7 @@ fun ChatScreen(
         }
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { Appbar() }) { innerPadding ->
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { Appbar(navController) }) { innerPadding ->
         Surface(
             modifier = Modifier
                 .fillMaxSize()
