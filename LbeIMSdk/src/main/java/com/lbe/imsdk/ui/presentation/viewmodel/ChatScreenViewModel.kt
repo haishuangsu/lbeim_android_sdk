@@ -291,8 +291,8 @@ class ChatScreenViewModel : ViewModel() {
 
     private fun afterSendUpdateList() {
         currentSessionIndex = 0
-        val currentSession = sessionList[currentSessionIndex]
-        val cacheMessages = IMLocalRepository.filterMessages(currentSession.sessionId)
+        currentSession = sessionList[currentSessionIndex]
+        val cacheMessages = IMLocalRepository.filterMessages(currentSession?.sessionId ?: "")
         currentSessionTotalPages = cacheMessages.size / showPageSize
         currentPage = currentSessionTotalPages
         val subList = pagination(cacheMessages)
@@ -336,7 +336,7 @@ class ChatScreenViewModel : ViewModel() {
     private fun pagination(source: List<MessageEntity>): List<MessageEntity> {
         currentSessionTotalPages = source.size / showPageSize
         val yu = source.size % showPageSize
-        Log.d(REALM, "分页总页数: $currentSessionTotalPages, 取余: $yu")
+        Log.d(REALM, "分页总页数: $currentSessionTotalPages, currentPage: $currentPage, 取余: $yu")
 
         val subList = if (currentPage == 1 && yu != 0) {
             val start = Math.max((currentPage - 1) * showPageSize, 0)
@@ -349,7 +349,8 @@ class ChatScreenViewModel : ViewModel() {
             )
             val end = Math.min(start + showPageSize, source.size)
             Log.d(
-                REALM, "非最后一页 --->>> currentPage: $currentPage, start: $start, end: $end"
+                REALM,
+                "非最后一页 --->>> source.size: ${source.size}, currentPage: $currentPage, start: $start, end: $end"
             )
             source.subList(start, end)
         }

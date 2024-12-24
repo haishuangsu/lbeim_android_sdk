@@ -1,7 +1,7 @@
 package com.lbe.imsdk.ui.presentation.screen
 
+import LightPullToRefreshList
 import android.Manifest
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -184,7 +184,8 @@ fun ChatScreen(
         }
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { Appbar(navController) }) { innerPadding ->
+    Scaffold(modifier = Modifier.fillMaxSize(),
+        topBar = { Appbar(navController) }) { innerPadding ->
         Surface(
             modifier = Modifier
                 .fillMaxSize()
@@ -208,101 +209,61 @@ fun ChatScreen(
                     color = Color(0xffEBEBEB),
                 )
 
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 16.dp, end = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    contentPadding = PaddingValues(top = 20.dp),
-                    state = lazyListState
-                ) {
-                    itemsIndexed(
-                        uiState.messages,
-                        key = { _, msg ->
-                            msg.clientMsgID
-                        },
-                    ) { index, message ->
-                        MessageItem(
-                            uiState.messages,
-                            message = message,
-                            if (message.senderUid == ChatScreenViewModel.uid) MessagePosition.RIGHT
-                            else MessagePosition.LEFT,
-                            viewModel,
-                            navController,
-                            imageLoader,
-                        )
+                LightPullToRefreshList(
+                    modifier = Modifier.weight(1f),
+                    listState = lazyListState,
+                    onRefresh = {
+                        if (ChatScreenViewModel.currentPage > 1) {
+                            ChatScreenViewModel.currentPage -= 1
+                            viewModel.filterLocalMessages()
+                        } else {
+                            viewModel.loadHistory()
+                        }
 
-//                        val shouldLoadHistory = remember {
-//                            derivedStateOf {
-//                                val totalSize = lazyListState.layoutInfo.totalItemsCount
-//                                val firVisibilityIndex =
-//                                    lazyListState.layoutInfo.visibleItemsInfo.firstOrNull()?.index
-//                                        ?: 0
-//                                totalSize - firVisibilityIndex > ChatScreenViewModel.showPageSize - 3
-//                            }
-//                        }
-//
-//                        LaunchedEffect(shouldLoadHistory) {
-//                            val nowEntry = uiState.messages[index]
-//                            if (ChatScreenViewModel.currentPage > 1) {
-//                                if (viewModel.paginationSet.contains(nowEntry.clientMsgID)) {
-//                                    return@LaunchedEffect
-//                                } else {
-//                                    viewModel.paginationSet.add(nowEntry.clientMsgID)
-//                                }
-//                                ChatScreenViewModel.currentPage -= 1
-//                                Log.d(
-//                                    "列表滑动",
-//                                    "分页时的 old index: $index, msgs size: ${uiState.messages.size}, msg: ${uiState.messages[index].msgBody}, session: ${ChatScreenViewModel.currentSession?.sessionId} ,currentPage: ${ChatScreenViewModel.currentPage}"
-//                                )
-//                                viewModel.filterLocalMessages()
-//                            } else {
-//                                viewModel.loadHistory()
-//                            }
-//                        }
+                    },
+                    lazyColumn = {
+                        LazyColumn(
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            contentPadding = PaddingValues(top = 20.dp),
+                            state = lazyListState
+                        ) {
+                            itemsIndexed(
+                                uiState.messages,
+                                key = { _, msg ->
+                                    msg.clientMsgID
+                                },
+                            ) { index, message ->
+                                MessageItem(
+                                    uiState.messages,
+                                    message = message,
+                                    if (message.senderUid == ChatScreenViewModel.uid) MessagePosition.RIGHT
+                                    else MessagePosition.LEFT,
+                                    viewModel,
+                                    navController,
+                                    imageLoader,
+                                )
 
-                        LaunchedEffect(uiState.messages) {
-                            val visitAbleMsg = uiState.messages[index]
-//                                Log.d(
-//                                    "列表滑动",
-//                                    "VisitAble Entry --->>  index: $index, clientMsgID || ${visitAbleMsg.clientMsgID} || msg: ${visitAbleMsg.msgBody} || readed: ${visitAbleMsg.readed} "
-//                                )
-                            if (!visitAbleMsg.readed && visitAbleMsg.senderUid != ChatScreenViewModel.uid) {
-                                viewModel.markRead(message)
-                            }
-
-//                            val buffer =
-//                                if (uiState.messages.size > ChatScreenViewModel.showPageSize) {
-//                                    ChatScreenViewModel.showPageSize - 3
-//                                } else {
-//                                    ChatScreenViewModel.showPageSize - 15
-//                                }
-
-                            if (lazyListState.isScrollInProgress) {
-                                currentFocus.clearFocus()
-                                if (uiState.messages.size - index > ChatScreenViewModel.showPageSize - 3) {
-                                    val nowEntry = uiState.messages[index]
-                                    if (ChatScreenViewModel.currentPage > 1) {
-                                        if (viewModel.paginationSet.contains(nowEntry.clientMsgID)) {
-                                            return@LaunchedEffect
-                                        } else {
-                                            viewModel.paginationSet.add(nowEntry.clientMsgID)
+                                LaunchedEffect(uiState.messages) {
+                                    if (index <= uiState.messages.size - 1) {
+                                        val visitAbleMsg = uiState.messages[index]
+//                                        Log.d(
+//                                            "列表滑动",
+//                                            "VisitAble Entry --->>  index: $index, clientMsgID || ${visitAbleMsg.clientMsgID} || msg: ${visitAbleMsg.msgBody} || readed: ${visitAbleMsg.readed} "
+//                                        )
+                                        if (!visitAbleMsg.readed && visitAbleMsg.senderUid != ChatScreenViewModel.uid) {
+                                            viewModel.markRead(message)
                                         }
+                                    }
 
-                                        ChatScreenViewModel.currentPage -= 1
-                                        Log.d(
-                                            "列表滑动",
-                                            "分页时的 old index: $index, msgs size: ${uiState.messages.size}, msg: ${uiState.messages[index].msgBody}, session: ${ChatScreenViewModel.currentSession?.sessionId} ,currentPage: ${ChatScreenViewModel.currentPage}"
-                                        )
-                                        viewModel.filterLocalMessages()
-                                    } else {
-                                        viewModel.loadHistory()
+                                    if (lazyListState.isScrollInProgress) {
+                                        currentFocus.clearFocus()
                                     }
                                 }
                             }
                         }
-                    }
-                }
+                    },
+                )
 
                 Row(
                     horizontalArrangement = Arrangement.Center,

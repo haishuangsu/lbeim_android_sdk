@@ -1,6 +1,5 @@
 package com.lbe.imsdk
 
-import PullToRefreshListWithProgressIndicator
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.util.Log
@@ -60,7 +59,6 @@ class LbeChatActivity : ComponentActivity() {
                         }
                     }
                     composable(route = NavRoute.CUSTOM_REFRESH) {
-                        PullToRefreshListWithProgressIndicator()
                     }
                 }
             }
