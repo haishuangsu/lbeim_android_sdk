@@ -185,8 +185,9 @@ fun ChatScreen(
         }
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
+    val isConnected by viewModel.isConnected.observeAsState(initial = true)
+
+    Scaffold(modifier = Modifier.fillMaxSize(),
         topBar = { Appbar(navController) }) { innerPadding ->
         Surface(
             modifier = Modifier
@@ -202,12 +203,40 @@ fun ChatScreen(
                     .padding(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                HorizontalDivider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(0.5.dp),
-                    color = Color(0xffEBEBEB),
-                )
+                if (!isConnected) {
+                    Surface(
+                        color = Color(0xffFF6164).copy(0.1f), modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.network_unavailable),
+                                contentDescription = "",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                "网络不可用，请检查你的网络",
+                                style = TextStyle(
+                                    color = Color(0xff979797),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.W400
+                                ),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(top = 14.dp, bottom = 14.dp)
+                            )
+                        }
+                    }
+                } else {
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(0.5.dp),
+                        color = Color(0xffEBEBEB),
+                    )
+                }
 
                 LightPullToRefreshList(
                     modifier = Modifier.weight(1f),
@@ -522,8 +551,7 @@ fun ChatScreen(
                                         .padding(16.dp)
                                 ) {
                                     Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
+                                        modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
                                         Surface(color = Color.White,
@@ -552,14 +580,11 @@ fun ChatScreen(
                                     }
                                     Spacer(Modifier.height(8.dp))
                                     BasicTextField(
-                                        value = input,
-                                        onValueChange = { newValue ->
+                                        value = input, onValueChange = { newValue ->
                                             if (newValue.length <= maxLength) {
                                                 viewModel.onMessageChange(newValue)
                                             }
-                                        },
-                                        modifier = Modifier.fillMaxSize(),
-                                        textStyle = TextStyle(
+                                        }, modifier = Modifier.fillMaxSize(), textStyle = TextStyle(
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.W400,
                                             color = Color.Black,

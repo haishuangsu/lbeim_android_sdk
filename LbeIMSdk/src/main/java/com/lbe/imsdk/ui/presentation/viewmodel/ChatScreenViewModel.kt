@@ -1,13 +1,15 @@
 package com.lbe.imsdk.ui.presentation.viewmodel
 
+import NetworkMonitor
 import android.annotation.SuppressLint
+import android.app.Application
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.State
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.tinder.scarlet.Message
@@ -85,7 +87,7 @@ enum class ConnectionStatus {
     NOT_STARTED, OPENED, CLOSED, CONNECTING, CLOSING, FAILED, RECEIVED
 }
 
-class ChatScreenViewModel : ViewModel() {
+class ChatScreenViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object {
         private const val TAG = "IM Websocket"
@@ -129,14 +131,12 @@ class ChatScreenViewModel : ViewModel() {
 
     var lastCsMessage: MessageEntity? = null
     var timer: Timer? = null
-    var timeOut: Long = 3
+    var timeOut: Long = 1
 
     private lateinit var initArgs: InitArgs
 
 //    private val _messages = MutableStateFlow<List<MessageEntity>>(mutableListOf())
 //    val messageList = _messages
-
-    val paginationSet: MutableSet<String> = mutableSetOf()
 
     private val _inputMsg = MutableLiveData("")
     val inputMsg: LiveData<String> = _inputMsg
@@ -144,10 +144,19 @@ class ChatScreenViewModel : ViewModel() {
     private var chatService: ChatService? = null
     var lazyListState: LazyListState? = null
 
+    private val networkMonitor = NetworkMonitor(application)
+
+    val isConnected = networkMonitor.isConnected
+
     init {
-        // TODO
+        networkMonitor.startMonitoring()
         // prepare()
         // testOfflineTakeByCache()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        networkMonitor.stopMonitoring()
     }
 
     private fun testOfflineTakeByCache() {
@@ -170,6 +179,7 @@ class ChatScreenViewModel : ViewModel() {
     }
 
     private fun prepare() {
+        checkNetworkAvailable()
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 fetchConfig()
@@ -184,6 +194,12 @@ class ChatScreenViewModel : ViewModel() {
             } catch (e: Exception) {
                 println("Prepare error: $e")
             }
+        }
+    }
+
+    private fun checkNetworkAvailable() {
+        if (isConnected.value == false) {
+            return
         }
     }
 
@@ -664,6 +680,7 @@ class ChatScreenViewModel : ViewModel() {
     }
 
     private fun send(messageSent: () -> Unit, preSend: () -> Unit, msgBody: MsgBody) {
+        checkNetworkAvailable()
         viewModelScope.launch(Dispatchers.IO) {
             preSend()
             try {
@@ -688,10 +705,8 @@ class ChatScreenViewModel : ViewModel() {
                 println("send error -->> $e")
                 IMLocalRepository.findMsgAndSetStatus(msgBody.clientMsgId, false)
             } finally {
-                paginationSet.clear()
                 afterSendUpdateList()
                 scrollToBottom()
-//                syncPageInfo(sessionList[0])
                 viewModelScope.launch(Dispatchers.Main) {
                     messageSent()
                     clearInput()
@@ -716,6 +731,8 @@ class ChatScreenViewModel : ViewModel() {
     }
 
     fun reSendMessage(clientMsgId: String) {
+        checkNetworkAvailable()
+
         val entity = IMLocalRepository.findMsgByClientMsgId(clientMsgId)
         var newClientMsgId = ""
         if (entity != null) {
@@ -764,6 +781,7 @@ class ChatScreenViewModel : ViewModel() {
         message: MessageEntity, thumbBitmap: Bitmap
     ) {
         Log.d(UPLOAD, "upload file size---->>> ${message.localFile?.size}")
+        checkNetworkAvailable()
         message.localFile?.size?.let {
             if (it > UploadBigFileUtils.defaultChunkSize) {
                 bigFileUpload(message, thumbBitmap)
@@ -1030,6 +1048,7 @@ class ChatScreenViewModel : ViewModel() {
     }
 
     fun continueSplitTrunksUpload(message: MessageEntity, file: File) {
+        checkNetworkAvailable()
         val job = viewModelScope.launch(Dispatchers.IO) {
             IMLocalRepository.findMediaMsgSetUploadContinue(message.clientMsgID)
             updateSingleMessage(source = message) { m ->

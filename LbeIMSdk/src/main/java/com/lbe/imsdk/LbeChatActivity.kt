@@ -58,8 +58,7 @@ class LbeChatActivity : ComponentActivity() {
                             )
                         }
                     }
-                    composable(route = NavRoute.CUSTOM_REFRESH) {
-                    }
+                    composable(route = NavRoute.CUSTOM_REFRESH) {}
                 }
             }
         }
