@@ -2,6 +2,7 @@ package com.lbe.imsdk.ui.presentation.screen
 
 import LightPullToRefreshList
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,14 +36,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -52,6 +52,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -61,6 +62,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -69,6 +71,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
@@ -80,7 +83,6 @@ import com.lbe.imsdk.model.MediaMessage
 import com.lbe.imsdk.model.MessageEntity
 
 import com.lbe.imsdk.ui.presentation.components.MsgTypeContent
-import com.lbe.imsdk.ui.presentation.components.NavRoute
 import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel
 import com.lbe.imsdk.ui.presentation.viewmodel.ConnectionStatus
 import com.lbe.imsdk.utils.FileUtils
@@ -101,7 +103,6 @@ enum class MessagePosition {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Appbar(navController: NavController) {
-//    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     val ctx = LocalContext.current
 
     CenterAlignedTopAppBar(
@@ -117,10 +118,9 @@ fun Appbar(navController: NavController) {
         ),
         navigationIcon = {
             IconButton(onClick = {
-//                if (ctx is Activity) {
-//                    ctx.finish()
-//                }
-                navController.navigate(NavRoute.CUSTOM_REFRESH)
+                if (ctx is Activity) {
+                    ctx.finish()
+                }
             }) {
                 Image(
                     painter = painterResource(R.drawable.back),
@@ -132,19 +132,20 @@ fun Appbar(navController: NavController) {
     )
 }
 
-
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ChatScreen(
     navController: NavController, viewModel: ChatScreenViewModel, imageLoader: ImageLoader
 ) {
     val context = LocalContext.current
+    val density = LocalDensity.current
 
     val uiState by viewModel.uiState.observeAsState(ChatScreenUiState())
 
 //    val messages by viewModel.messageList.collectAsState()
 
     val input by viewModel.inputMsg.observeAsState("init")
+    var showDialog by remember { mutableStateOf(false) }
 
     val currentFocus = LocalFocusManager.current
 //    val keyboardController = LocalSoftwareKeyboardController.current
@@ -184,7 +185,8 @@ fun ChatScreen(
         }
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize(),
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
         topBar = { Appbar(navController) }) { innerPadding ->
         Surface(
             modifier = Modifier
@@ -200,8 +202,6 @@ fun ChatScreen(
                     .padding(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // TODO connectionStatus
-                //  Text(text = "Connection Status: ${uiState.connectionStatus.name}")
                 HorizontalDivider(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -265,72 +265,237 @@ fun ChatScreen(
                     },
                 )
 
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+//                var isExpanded by remember { mutableStateOf(false) }
+//                var lineCount by remember { mutableIntStateOf(1) }
+//                Row(
+////                    horizontalArrangement = Arrangement.Center,
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    modifier = Modifier.padding(start = 14.dp, end = 16.dp)
+//                ) {
+//
+//                    // IconBox
+//                    Box() {
+//                        if (isExpanded) {
+//                            Text("Expanded", modifier = Modifier.align(Alignment.TopStart))
+//                        }
+//
+//                        Surface(
+//                            color = Color.White,
+//                            modifier = Modifier
+//                                .size(42.dp)
+//                                .clip(CircleShape)
+//                                .align(Alignment.BottomStart)
+//                        ) {
+//                            Image(painter = painterResource(R.drawable.open_file),
+//                                contentDescription = "",
+//                                modifier = Modifier
+//                                    .padding(5.dp)
+//                                    .size(21.dp, 16.dp)
+//                                    .clickable {
+//                                        if (!hasMediaPermission) {
+//                                            mediaPermissionState.launchMultiplePermissionRequest()
+//                                        } else {
+//                                            launcher.launch(PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo))
+//                                        }
+////                            open mime type
+////                            val mimeType = "image/gif"
+////                            pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.SingleMimeType(mimeType)))
+//                                    })
+//                            LaunchedEffect(
+//                                pickFilesResult.value
+//                            ) {
+//                                if (pickFilesResult.value.isNotEmpty()) {
+//                                    val uris = pickFilesResult.value
+//                                    Log.d(
+//                                        ChatScreenViewModel.FILESELECT, "${pickFilesResult.value}"
+//                                    )
+//                                    for (uri in uris) {
+//                                        val cr = context.contentResolver
+//                                        cr.takePersistableUriPermission(
+//                                            uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+//                                        )
+//                                        val projection = arrayOf(
+//                                            MediaStore.MediaColumns.DATA,
+//                                            MediaStore.MediaColumns.MIME_TYPE,
+//                                        )
+//                                        val metaCursor = cr.query(uri, projection, null, null, null)
+//                                        metaCursor?.use { mCursor ->
+//                                            if (mCursor.moveToFirst()) {
+//                                                val path = mCursor.getString(0)
+//                                                val mime = mCursor.getString(1)
+//                                                val file = File(path)
+//                                                val mediaMessage = MediaMessage(
+//                                                    width = 1080,
+//                                                    height = 1920,
+//                                                    file = file,
+//                                                    path = uri.toString(),
+//                                                    mime = mime,
+//                                                    isImage = FileUtils.isImage(mime),
+//                                                )
+//                                                viewModel.preInsertUpload(mediaMessage)
+//                                                Log.d(
+//                                                    ChatScreenViewModel.FILESELECT,
+//                                                    "found file --->> ${file.name}, ${file.path}, ${file.length()}, ${file.absolutePath}, mimeType: $mime, Is image file: ${
+//                                                        FileUtils.isImage(
+//                                                            mime
+//                                                        )
+//                                                    }"
+//                                                )
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//
+//                    Spacer(modifier = Modifier.width(12.dp))
+//
+//                    println("动态 TextField --->> isExpanded: $isExpanded")
+//                    BasicTextField(
+//                        value = input,
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .heightIn(max = 180.dp),
+//                        onValueChange = viewModel::onMessageChange,
+//                        maxLines = 6,
+//                        onTextLayout = { textLayoutResult ->
+//                            lineCount = textLayoutResult.lineCount
+//                            println("动态 TextField --->> lineCount: $lineCount")
+//                            isExpanded = lineCount > 1
+//                        },
+//                        decorationBox = { innerTextField ->
+//                            Surface(
+//                                color = Color.White,
+//                                modifier = Modifier
+//                                    .heightIn(min = 42.dp)
+//                                    .clip(RoundedCornerShape(12.dp))
+//                            ) {
+//                                Row(
+//                                    modifier = Modifier
+//                                        .fillMaxWidth()
+//                                        .padding(
+//                                            start = 12.dp, end = 12.dp, top = 9.dp, bottom = 11.dp
+//                                        ),
+//                                    verticalAlignment = Alignment.Bottom,
+//                                ) {
+//                                    Box(Modifier.weight(1f)) {
+//                                        if (input.isEmpty()) Text(
+//                                            "请输入你想咨询的问题", style = TextStyle(
+//                                                color = Color(0xffEBEBEB),
+//                                                fontSize = 14.sp,
+//                                                fontWeight = FontWeight.W400,
+//                                            )
+//                                        )
+//                                        innerTextField()
+//                                    }
+//
+//                                    Image(painter = painterResource(R.drawable.send),
+//                                        contentDescription = "Send Button",
+//                                        modifier = Modifier
+//                                            .size(18.dp)
+//                                            .clickable {
+//                                                viewModel.sendMessageFromTextInput(messageSent = {
+//                                                    currentFocus.clearFocus()
+//                                                })
+//                                            })
+//                                }
+//                            }
+//                        },
+//                    )
+//                }
 
+                var isExpanded by remember { mutableStateOf(false) }
+                var lineCount by remember { mutableIntStateOf(1) }
+                var textFieldHeight by remember { mutableStateOf(42.dp) }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 14.dp, end = 16.dp)
                 ) {
-                    Surface(
-                        color = Color.White, modifier = Modifier
-                            .size(42.dp)
-                            .clip(CircleShape)
+                    Box(
+                        modifier = Modifier.height(textFieldHeight)
                     ) {
-                        Image(painter = painterResource(R.drawable.open_file),
-                            contentDescription = "",
+                        if (isExpanded) {
+                            Surface(color = Color.White,
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(CircleShape)
+                                    .align(Alignment.TopStart)
+                                    .clickable {
+                                        showDialog = true
+                                    }) {
+                                Image(
+                                    painter = painterResource(R.drawable.expanded),
+                                    contentDescription = "",
+                                    modifier = Modifier
+                                        .padding(5.dp)
+                                        .size(8.dp)
+                                )
+                            }
+                        }
+
+                        Surface(color = Color.White,
                             modifier = Modifier
-                                .padding(5.dp)
-                                .size(21.dp, 16.dp)
+                                .size(42.dp)
+                                .clip(CircleShape)
+                                .align(Alignment.BottomStart)
                                 .clickable {
                                     if (!hasMediaPermission) {
                                         mediaPermissionState.launchMultiplePermissionRequest()
                                     } else {
                                         launcher.launch(PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo))
                                     }
-//                            open mime type
-//                            val mimeType = "image/gif"
-//                            pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.SingleMimeType(mimeType)))
-                                })
-                        LaunchedEffect(
-                            pickFilesResult.value
-                        ) {
-                            if (pickFilesResult.value.isNotEmpty()) {
-                                val uris = pickFilesResult.value
-                                Log.d(
-                                    ChatScreenViewModel.FILESELECT, "${pickFilesResult.value}"
-                                )
-                                for (uri in uris) {
-                                    val cr = context.contentResolver
-                                    cr.takePersistableUriPermission(
-                                        uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                }) {
+                            Image(
+                                painter = painterResource(R.drawable.open_file),
+                                contentDescription = "",
+                                modifier = Modifier
+                                    .padding(5.dp)
+                                    .size(21.dp, 16.dp)
+                            )
+                            LaunchedEffect(
+                                pickFilesResult.value
+                            ) {
+                                if (pickFilesResult.value.isNotEmpty()) {
+                                    val uris = pickFilesResult.value
+                                    Log.d(
+                                        ChatScreenViewModel.FILESELECT, "${pickFilesResult.value}"
                                     )
-                                    val projection = arrayOf(
-                                        MediaStore.MediaColumns.DATA,
-                                        MediaStore.MediaColumns.MIME_TYPE,
-                                    )
-                                    val metaCursor = cr.query(uri, projection, null, null, null)
-                                    metaCursor?.use { mCursor ->
-                                        if (mCursor.moveToFirst()) {
-                                            val path = mCursor.getString(0)
-                                            val mime = mCursor.getString(1)
-                                            val file = File(path)
-                                            val mediaMessage = MediaMessage(
-                                                width = 1080,
-                                                height = 1920,
-                                                file = file,
-                                                path = uri.toString(),
-                                                mime = mime,
-                                                isImage = FileUtils.isImage(mime),
-                                            )
-                                            viewModel.preInsertUpload(mediaMessage)
-                                            Log.d(
-                                                ChatScreenViewModel.FILESELECT,
-                                                "found file --->> ${file.name}, ${file.path}, ${file.length()}, ${file.absolutePath}, mimeType: $mime, Is image file: ${
-                                                    FileUtils.isImage(
-                                                        mime
-                                                    )
-                                                }"
-                                            )
+                                    for (uri in uris) {
+                                        val cr = context.contentResolver
+                                        cr.takePersistableUriPermission(
+                                            uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                        )
+                                        val projection = arrayOf(
+                                            MediaStore.MediaColumns.DATA,
+                                            MediaStore.MediaColumns.MIME_TYPE,
+                                        )
+                                        val metaCursor = cr.query(uri, projection, null, null, null)
+                                        metaCursor?.use { mCursor ->
+                                            if (mCursor.moveToFirst()) {
+                                                val path = mCursor.getString(0)
+                                                val mime = mCursor.getString(1)
+                                                val file = File(path)
+                                                val mediaMessage = MediaMessage(
+                                                    width = 1080,
+                                                    height = 1920,
+                                                    file = file,
+                                                    path = uri.toString(),
+                                                    mime = mime,
+                                                    isImage = FileUtils.isImage(mime),
+                                                )
+                                                viewModel.preInsertUpload(mediaMessage)
+                                                Log.d(
+                                                    ChatScreenViewModel.FILESELECT,
+                                                    "found file --->> ${file.name}, ${file.path}, ${file.length()}, ${file.absolutePath}, mimeType: $mime, Is image file: ${
+                                                        FileUtils.isImage(
+                                                            mime
+                                                        )
+                                                    }"
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -340,22 +505,113 @@ fun ChatScreen(
 
                     Spacer(modifier = Modifier.width(12.dp))
 
-                    BasicTextField(value = input,
-                        modifier = Modifier.fillMaxWidth(),
-                        onValueChange = viewModel::onMessageChange,
+                    val maxLength = 500
+                    if (showDialog) {
+                        Dialog(
+                            onDismissRequest = { showDialog = false },
+                            properties = DialogProperties(usePlatformDefaultWidth = false)
+                        ) {
+                            Surface(
+                                modifier = Modifier.fillMaxSize(),
+                                shape = MaterialTheme.shapes.medium,
+                                color = Color(0xFFF3F4F6)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(16.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Surface(color = Color.White,
+                                            modifier = Modifier
+                                                .size(24.dp)
+                                                .clip(CircleShape)
+                                                .clickable {
+                                                    showDialog = false
+                                                }) {
+                                            Image(
+                                                painter = painterResource(R.drawable.close),
+                                                contentDescription = "",
+                                                modifier = Modifier
+                                                    .padding(5.dp)
+                                                    .size(8.dp)
+                                            )
+                                        }
+
+                                        Text(
+                                            "${input.length}/$maxLength", style = TextStyle(
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.W400,
+                                                color = Color(0xff979797)
+                                            )
+                                        )
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                    BasicTextField(
+                                        value = input,
+                                        onValueChange = { newValue ->
+                                            if (newValue.length <= maxLength) {
+                                                viewModel.onMessageChange(newValue)
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxSize(),
+                                        textStyle = TextStyle(
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.W400,
+                                            color = Color.Black,
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    println("动态 TextField --->> isExpanded: $isExpanded")
+                    BasicTextField(
+                        value = input,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 180.dp),
+                        onValueChange = { newValue ->
+                            if (newValue.length <= maxLength) {
+                                viewModel.onMessageChange(newValue)
+                            }
+                        },
                         maxLines = 5,
+                        onTextLayout = { textLayoutResult ->
+                            lineCount = textLayoutResult.lineCount
+                            println("动态 TextField --->> lineCount: $lineCount")
+                            isExpanded = lineCount > 4
+
+                            if (!isExpanded) {
+                                if (lineCount < 2) {
+                                    textFieldHeight = 42.dp
+                                } else {
+                                    val calculatedHeightPx = textLayoutResult.size.height
+                                    textFieldHeight = with(density) {
+                                        calculatedHeightPx.toDp().plus(23.dp).coerceAtMost(203.dp)
+                                    }
+                                }
+                            }
+                        },
                         decorationBox = { innerTextField ->
                             Surface(
                                 color = Color.White,
                                 modifier = Modifier
-                                    .height(42.dp)
+                                    .heightIn(min = 42.dp)
                                     .clip(RoundedCornerShape(12.dp))
                             ) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                        .padding(
+                                            start = 12.dp, end = 12.dp, top = 9.dp, bottom = 11.dp
+                                        ),
+                                    verticalAlignment = Alignment.Bottom,
                                 ) {
                                     Box(Modifier.weight(1f)) {
                                         if (input.isEmpty()) Text(
@@ -379,8 +635,10 @@ fun ChatScreen(
                                             })
                                 }
                             }
-                        })
+                        },
+                    )
                 }
+
             }
         }
 
@@ -390,29 +648,9 @@ fun ChatScreen(
                     .align(Alignment.BottomStart)
                     .padding(bottom = 59.dp)
             ) {
-//                Surface(color = Color(0xFFFFFFFF).copy(alpha = 0.9f),
-//                    modifier = Modifier
-//                        .padding(start = 16.dp)
-//                        .clip(RoundedCornerShape(23.dp))
-//                        .clickable {
-//                            viewModel.turnCustomerService()
-//                        }) {
-//                    Text(
-//                        "人工客服", style = TextStyle(
-//                            color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.W400
-//                        ), modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
-//                    )
-//                }
-//                Spacer(modifier = Modifier.height(12.dp))
                 timeoutTips(viewModel = viewModel)
             }
         }
-
-//        AnimatedVisibility(visible = !uiState.login) {
-//            NickIdPrompt { nid, nName, lbeIdentity ->
-//                viewModel.setNickId(nid, nName, lbeIdentity)
-//            }
-//        }
 
         AnimatedVisibility(visible = showToBottomButton, enter = fadeIn(), exit = fadeOut()) {
             ToBottom(viewModel = viewModel, goToTop = {
@@ -490,43 +728,6 @@ fun ToBottom(viewModel: ChatScreenViewModel, goToTop: () -> Unit) {
         }
     }
 }
-
-@Composable
-fun NickIdPrompt(onStart: (nid: String, nName: String, lbeIdentity: String) -> Unit) {
-    // HermitK15
-    var nickId by remember { mutableStateOf("HermitK1") }
-    var nickName by remember { mutableStateOf("HermitK1") }
-
-    // dev: 42nz10y3hhah; faq: 43hw3seddn2i
-//    var lbeIdentity by remember { mutableStateOf("43hw3seddn2i") }
-
-    // sit: my: 441zy52mn2yy
-    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
-
-    Dialog(onDismissRequest = { }) {
-        Card {
-            Column(
-                modifier = Modifier.padding(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                OutlinedTextField(value = nickId,
-                    onValueChange = { nickId = it },
-                    label = { Text(text = "NickId") })
-                OutlinedTextField(value = nickName,
-                    onValueChange = { nickName = it },
-                    label = { Text(text = "NickName") })
-                OutlinedTextField(value = lbeIdentity,
-                    onValueChange = { lbeIdentity = it },
-                    label = { Text(text = "LbeIdentity") })
-                Button(onClick = { onStart(nickId, nickName, lbeIdentity) }) {
-                    Text(text = "Connect")
-                }
-            }
-        }
-    }
-}
-
 
 @Composable
 fun MessageItem(
@@ -672,7 +873,10 @@ fun UserInput(
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             Column(
-                horizontalAlignment = Alignment.End, modifier = Modifier.padding(8.dp)
+                horizontalAlignment = Alignment.End,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(8.dp),
             ) {
                 Text(
                     text = message.senderUid,
