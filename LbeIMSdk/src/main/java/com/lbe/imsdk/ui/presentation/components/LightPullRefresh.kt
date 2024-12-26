@@ -111,11 +111,16 @@ fun LightPullToRefreshList(
     }
 
     Box(
-        modifier = modifier.nestedScroll(nestedScrollConnection)
+        modifier = modifier
+            .fillMaxHeight()
+            .nestedScroll(nestedScrollConnection)
     ) {
 
         // 列表内容
-        Column(modifier = modifier.offset { IntOffset(0, animatedOffsetY.roundToInt()) }) {
+        Column(
+            modifier = modifier
+                .fillMaxHeight()
+                .offset { IntOffset(0, animatedOffsetY.roundToInt()) }) {
             lazyColumn()
         }
 

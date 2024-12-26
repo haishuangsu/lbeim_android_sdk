@@ -179,9 +179,13 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun prepare() {
-        checkNetworkAvailable()
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                println("网络监听 prepare---->>> ${networkMonitor.isNetworkAvailable()}")
+                if (!networkAvailable()) {
+                    return@launch
+                }
+                delay(100)
                 fetchConfig()
                 createSession()
                 viewModelScope.launch(Dispatchers.IO) {
@@ -197,13 +201,14 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    private fun checkNetworkAvailable() {
-        if (isConnected.value == false) {
-            return
-        }
+    private fun networkAvailable(): Boolean {
+        return networkMonitor.isNetworkAvailable()
     }
 
     private suspend fun fetchConfig() {
+        if (!networkAvailable()) {
+            return
+        }
         try {
             val config = LbeConfigRepository.fetchConfig(lbeSign, lbeIdentity, ConfigBody(0, 1))
             wssHost = config.data.ws[0]
@@ -215,6 +220,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private suspend fun createSession() {
+        if (!networkAvailable()) {
+            return
+        }
         try {
             val session = LbeImRepository.createSession(
                 lbeSign, lbeIdentity = lbeIdentity, SessionBody(
@@ -240,6 +248,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private suspend fun fetchSessionList() {
+        if (!networkAvailable()) {
+            return
+        }
         try {
             val sessionListRep = LbeImRepository.fetchSessionList(
                 lbeToken = lbeToken, lbeIdentity = lbeIdentity, body = SessionListReq(
@@ -392,6 +403,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private suspend fun fetchTimeoutConfig() {
+        if (!networkAvailable()) {
+            return
+        }
         try {
             val timeoutConfig = LbeImRepository.fetchTimeoutConfig(
                 lbeSign = lbeSign,
@@ -406,6 +420,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun markRead(message: MessageEntity) {
+        if (!networkAvailable()) {
+            return
+        }
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val markRead = LbeImRepository.markRead(
@@ -424,6 +441,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
     fun faq(faqReqBody: FaqReqBody) {
         viewModelScope.launch(Dispatchers.IO) {
+            if (!networkAvailable()) {
+                return@launch
+            }
             delay(500)
             try {
                 val faqResp = LbeImRepository.faq(
@@ -455,6 +475,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private suspend fun fetchHistoryAndSync(currentSession: SessionEntry?) {
+        if (!networkAvailable()) {
+            return
+        }
         try {
             val history = LbeImRepository.fetchHistory(
                 lbeSign = lbeSign,
@@ -680,7 +703,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun send(messageSent: () -> Unit, preSend: () -> Unit, msgBody: MsgBody) {
-        checkNetworkAvailable()
+//        if (!networkAvailable()) {
+//            return
+//        }
         viewModelScope.launch(Dispatchers.IO) {
             preSend()
             try {
@@ -731,7 +756,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun reSendMessage(clientMsgId: String) {
-        checkNetworkAvailable()
+        if (!networkAvailable()) {
+            return
+        }
 
         val entity = IMLocalRepository.findMsgByClientMsgId(clientMsgId)
         var newClientMsgId = ""
@@ -781,7 +808,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         message: MessageEntity, thumbBitmap: Bitmap
     ) {
         Log.d(UPLOAD, "upload file size---->>> ${message.localFile?.size}")
-        checkNetworkAvailable()
+        if (!networkAvailable()) {
+            return
+        }
         message.localFile?.size?.let {
             if (it > UploadBigFileUtils.defaultChunkSize) {
                 bigFileUpload(message, thumbBitmap)
@@ -1048,7 +1077,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun continueSplitTrunksUpload(message: MessageEntity, file: File) {
-        checkNetworkAvailable()
+        if (!networkAvailable()) {
+            return
+        }
         val job = viewModelScope.launch(Dispatchers.IO) {
             IMLocalRepository.findMediaMsgSetUploadContinue(message.clientMsgID)
             updateSingleMessage(source = message) { m ->

@@ -28,4 +28,9 @@ class NetworkMonitor(context: Context) {
     fun stopMonitoring() {
         connectivityManager.unregisterNetworkCallback(networkCallback)
     }
+
+    fun isNetworkAvailable(): Boolean {
+        val activeNetwork = connectivityManager.activeNetworkInfo
+        return activeNetwork?.isConnectedOrConnecting == true
+    }
 }
