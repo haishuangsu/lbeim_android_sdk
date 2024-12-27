@@ -129,7 +129,7 @@ fun MediaViewer(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 39..dp)
+                    .padding(start = 16.dp, end = 16.dp, bottom = 39.dp)
                     .align(Alignment.BottomCenter), horizontalArrangement = Arrangement.SpaceBetween
             ) {
 //                Surface(color = Color(0xff979797).copy(alpha = 0.4f),
@@ -328,8 +328,7 @@ fun BufferedProgressBar(
 fun CustomProgressBar(
     progress: Float, // 当前播放进度 (0f..1f)
     bufferedProgress: Float, // 缓冲进度 (0f..1f)
-    modifier: Modifier = Modifier,
-    onValueChange: (Float) -> Unit
+    modifier: Modifier = Modifier, onValueChange: (Float) -> Unit
 ) {
     // 获取当前 Density
     val density = LocalDensity.current

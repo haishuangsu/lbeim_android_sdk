@@ -66,7 +66,7 @@ fun ThumbDecryptedOrNotImageView(
 
     val rememberProgress = remember { ChatScreenViewModel.progressList[message.clientMsgID] }
     val progress = rememberProgress?.collectAsState()
-    val isGif = FileUtils.isGif(message.localFile?.mimeType ?: "")
+    val isGif = FileUtils.isGif(message.localFile?.mimeType ?: "") || FileUtils.isGif(fullUrl)
 
     Box(contentAlignment = Alignment.Center) {
         val ctx = LocalPlatformContext.current

@@ -289,7 +289,13 @@ fun MsgTypeContent(
                                                 "after seri topicEntryUrl --->>> $topicEntryUrl"
                                             )
                                             if (topicEntryUrl == null) {
-                                                Spacer(modifier = Modifier.height(26.dp))
+                                                Image(
+                                                    painter = painterResource(R.drawable.faq_default_icon),
+                                                    contentDescription = "",
+                                                    modifier = Modifier.size(
+                                                        width = 28.dp, 26.dp
+                                                    ),
+                                                )
                                             } else {
                                                 NormalDecryptedOrNotImageView(
                                                     key = topicEntryUrl.key,
@@ -421,8 +427,7 @@ fun MsgTypeContent(
                                         val linkTextType =
                                             object : TypeToken<MutableList<LinkText>>() {}.type
                                         val linkTexts = Gson().fromJson<MutableList<LinkText>>(
-                                            answerUnit.contents,
-                                            linkTextType
+                                            answerUnit.contents, linkTextType
                                         )
                                         Text(buildAnnotatedString {
                                             for (content in linkTexts) {

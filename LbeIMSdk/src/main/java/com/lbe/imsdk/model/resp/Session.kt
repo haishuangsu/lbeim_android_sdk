@@ -13,4 +13,5 @@ data class SessionData(
     val uid: String,
     val token: String,
     val sessionId: String,
+    val nickId: String,
 )

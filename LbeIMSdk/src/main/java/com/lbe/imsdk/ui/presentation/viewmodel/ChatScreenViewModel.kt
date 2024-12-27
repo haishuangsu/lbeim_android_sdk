@@ -3,6 +3,8 @@ package com.lbe.imsdk.ui.presentation.viewmodel
 import NetworkMonitor
 import android.annotation.SuppressLint
 import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.foundation.lazy.LazyListState
@@ -66,6 +68,7 @@ import com.lbe.imsdk.utils.Converts.sendBodyToEntity
 import com.lbe.imsdk.utils.TimeUtils.timeStampGen
 import com.lbe.imsdk.utils.UUIDUtils.uuidGen
 import com.lbe.imsdk.utils.UploadBigFileUtils
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -77,8 +80,10 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.asRequestBody
+import retrofit2.HttpException
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
 import java.security.MessageDigest
 import java.util.Timer
 import java.util.TimerTask
@@ -148,6 +153,13 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
     val isConnected = networkMonitor.isConnected
 
+    private val sharedPreferences: SharedPreferences =
+        application.getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
+
+    private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        println("coroutineExceptionHandler --->> Unhandled exception: ${throwable.message}")
+    }
+
     init {
         networkMonitor.startMonitoring()
         // prepare()
@@ -171,7 +183,10 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
     fun initSdk(args: InitArgs) {
         lbeSign = args.lbeSign
-        nickId = args.nickId
+        nickId = args.nickId.ifEmpty {
+            sharedPreferences.edit().putBoolean("needSaveNickId", true).apply()
+            sharedPreferences.getString("anonymousNickId", "").toString()
+        }
         nickName = args.nickName
         lbeIdentity = args.lbeIdentity
         initArgs = args
@@ -179,9 +194,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun prepare() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             try {
-                println("网络监听 prepare---->>> ${networkMonitor.isNetworkAvailable()}")
+                println("NetworkMonitor [prepare]---->>> ${networkMonitor.isNetworkAvailable()}")
                 if (!networkAvailable()) {
                     return@launch
                 }
@@ -205,27 +220,45 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         return networkMonitor.isNetworkAvailable()
     }
 
+    private suspend fun <T> safeApiCall(apiCall: suspend () -> T): Result<T> {
+        return try {
+            Result.success(apiCall())
+        } catch (e: HttpException) {
+            println("SafeApiCall HTTP error: ${e.code()} - ${e.message()}")
+            Result.failure(e)
+        } catch (e: IOException) {
+            println("SafeApiCall Network error: ${e.localizedMessage}")
+            Result.failure(e)
+        } catch (e: Exception) {
+            println("SafeApiCall Unexpected error: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
     private suspend fun fetchConfig() {
         if (!networkAvailable()) {
             return
         }
-        try {
-            val config = LbeConfigRepository.fetchConfig(lbeSign, lbeIdentity, ConfigBody(0, 1))
+        val result = safeApiCall {
+            LbeConfigRepository.fetchConfig(lbeSign, lbeIdentity, ConfigBody(0, 1))
+        }
+        result.onSuccess { config ->
             wssHost = config.data.ws[0]
             RetrofitInstance.IM_URL = config.data.rest[0]
             RetrofitInstance.UPLOAD_BASE_URL = config.data.oss[0]
-        } catch (e: Exception) {
-            println("Fetch config error: $e")
+        }.onFailure { err ->
+            println("网络异常 ---> Fetch config error: $err")
         }
     }
+
 
     private suspend fun createSession() {
         if (!networkAvailable()) {
             return
         }
-        try {
-            val session = LbeImRepository.createSession(
-                lbeSign, lbeIdentity = lbeIdentity, SessionBody(
+        val result = safeApiCall {
+            LbeImRepository.createSession(
+                lbeSign, lbeIdentity, SessionBody(
                     identityID = initArgs.lbeIdentity,
                     nickId = nickId,
                     nickName = nickName,
@@ -239,11 +272,17 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     uid = "",
                 )
             )
+        }
+        result.onSuccess { session ->
             lbeToken = session.data.token
             lbeSession = session.data.sessionId
             uid = session.data.uid
-        } catch (e: Exception) {
-            println("Create session error: $e")
+            if (sharedPreferences.getBoolean("needSaveNickId", false)) {
+                sharedPreferences.edit().putString("anonymousNickId", session.data.nickId).apply()
+                sharedPreferences.edit().putBoolean("needSaveNickId", false).apply()
+            }
+        }.onFailure { error ->
+            println("网络异常 --->>>  Create session error: $error")
         }
     }
 
@@ -251,14 +290,16 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         if (!networkAvailable()) {
             return
         }
-        try {
-            val sessionListRep = LbeImRepository.fetchSessionList(
+        val result = safeApiCall {
+            LbeImRepository.fetchSessionList(
                 lbeToken = lbeToken, lbeIdentity = lbeIdentity, body = SessionListReq(
                     pagination = Pagination(
                         pageNumber = 1, showNumber = 1000
                     ), sessionType = 2
                 )
             )
+        }
+        result.onSuccess { sessionListRep ->
             sessionList.addAll(sessionListRep.data.sessionList)
             currentSession = sessionList[currentSessionIndex]
             seq = currentSession?.latestMsg?.msgSeq ?: 0
@@ -268,8 +309,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             filterLocalMessages()
             scrollToBottom()
             syncPendingJobs()
-        } catch (e: Exception) {
-            println("Fetch session list error: $e")
+        }.onFailure { err ->
+            println("网络异常 ---> Fetch session list error: $err")
         }
     }
 
@@ -406,16 +447,18 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         if (!networkAvailable()) {
             return
         }
-        try {
-            val timeoutConfig = LbeImRepository.fetchTimeoutConfig(
+        val result = safeApiCall {
+            LbeImRepository.fetchTimeoutConfig(
                 lbeSign = lbeSign,
                 lbeToken = lbeToken,
                 lbeIdentity = lbeIdentity,
             )
+        }
+        result.onSuccess { timeoutConfig ->
             timeOut = timeoutConfig.data.timeout
             Log.d(REALM, "FetchTimeoutConfig ---->>> $timeoutConfig, timeOut: $timeOut")
-        } catch (e: Exception) {
-            println("FetchTimeoutConfig error --->>>  $e")
+        }.onFailure { err ->
+            println("网络异常 --->>> FetchTimeoutConfig error --->>>  $err")
         }
     }
 
@@ -423,7 +466,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         if (!networkAvailable()) {
             return
         }
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             try {
                 val markRead = LbeImRepository.markRead(
                     lbeSign = lbeSign,
@@ -445,15 +488,16 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                 return@launch
             }
             delay(500)
-            try {
-                val faqResp = LbeImRepository.faq(
+            val result = safeApiCall {
+                LbeImRepository.faq(
                     lbeSession = lbeSession,
                     lbeToken = lbeToken,
                     lbeIdentity = lbeIdentity,
                     body = faqReqBody
                 )
-            } catch (e: Exception) {
-                println("Fetch faq  error --->>>  $e")
+            }
+            result.onFailure { err ->
+                println("网络异常 --->>> Fetch faq  error --->>>  $err")
             }
         }
     }
@@ -478,8 +522,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         if (!networkAvailable()) {
             return
         }
-        try {
-            val history = LbeImRepository.fetchHistory(
+        val result = safeApiCall {
+            LbeImRepository.fetchHistory(
                 lbeSign = lbeSign,
                 lbeToken = lbeToken,
                 lbeIdentity = lbeIdentity,
@@ -489,6 +533,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     )
                 )
             )
+        }
+        result.onSuccess { history ->
             Log.d(REALM, "History sync")
             if (history.data.content.isNotEmpty()) {
                 seq = history.data.content.last().msgSeq
@@ -509,8 +555,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                 }
             }
             syncPageInfo(currentSession)
-        } catch (e: Exception) {
-            println("Fetch history error: $e")
+        }.onFailure { err ->
+            println("网络异常 --->> Fetch history error: $err")
         }
     }
 
@@ -537,11 +583,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             )
         ).addMessageAdapterFactory(ProtobufMessageAdapter.Factory())
             .addStreamAdapterFactory(RxJava2StreamAdapterFactory()).build().create<ChatService>()
-
         Log.d(TAG, "Observing Connection")
         updateConnectionStatus(ConnectionStatus.CONNECTING)
         chatService?.observeConnection()?.subscribe({ response ->
-            Log.d(TAG, "什么鬼 --->>> $response")
             onResponseReceived(response)
         }, { error ->
             error.localizedMessage?.let { Log.e(TAG, it) }
@@ -706,7 +750,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 //        if (!networkAvailable()) {
 //            return
 //        }
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             preSend()
             try {
                 val senMsg = LbeImRepository.sendMsg(
@@ -769,7 +813,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             newClientMsgId = list.joinToString(separator = "-")
             val body = entityToSendBody(entity, newClientMsgId)
             println("reSend ====>>> old: ${entity.clientMsgID}, new: $newClientMsgId")
-            viewModelScope.launch(Dispatchers.IO) {
+            viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
                 try {
                     val senMsg = LbeImRepository.sendMsg(
                         lbeToken = lbeToken,
@@ -780,7 +824,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     seq = senMsg.data.msgReq
                     IMLocalRepository.updateResendMessage(clientMsgId, newClientMsgId, seq)
                 } catch (e: Exception) {
-                    println("send error -->> $e")
+                    println("reSend error -->> $e")
                 } finally {
                     afterSendUpdateList()
                     scrollToBottom()
@@ -825,7 +869,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         val thumbWidth = thumbBitmap.width
         val thumbHeight = thumbBitmap.height
         tempUploadInfo?.let {
-            viewModelScope.launch(Dispatchers.IO) {
+            viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
                 try {
                     val thumbnailResp = uploadThumbnail(thumbBitmap)
 
@@ -928,7 +972,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     uploadId = "", name = it.mediaMessage.file.name, part = mutableListOf()
                 )
 
-                val job = viewModelScope.launch(Dispatchers.IO) {
+                val job = viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
                     val thumbnailResp = uploadThumbnail(thumbBitmap)
                     val thumbnailSource = MediaSource(
                         width = thumbWidth, height = thumbHeight, thumbnail = Thumbnail(
@@ -1080,7 +1124,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         if (!networkAvailable()) {
             return
         }
-        val job = viewModelScope.launch(Dispatchers.IO) {
+        val job = viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             IMLocalRepository.findMediaMsgSetUploadContinue(message.clientMsgID)
             updateSingleMessage(source = message) { m ->
                 m.pendingUpload = false
