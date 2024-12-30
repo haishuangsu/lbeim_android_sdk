@@ -54,10 +54,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,6 +67,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -96,6 +99,7 @@ import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel
 import com.lbe.imsdk.ui.presentation.viewmodel.ConnectionStatus
 import com.lbe.imsdk.utils.FileUtils
 import com.lbe.imsdk.utils.TimeUtils
+import kotlinx.coroutines.flow.distinctUntilChanged
 import java.io.File
 import java.util.Date
 
@@ -150,6 +154,7 @@ fun ChatScreen(
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
     val density = LocalDensity.current
 
     val uiState by viewModel.uiState.observeAsState(ChatScreenUiState())
@@ -191,13 +196,48 @@ fun ChatScreen(
 
     val hasMediaPermission = mediaPermissionState.allPermissionsGranted
 
+    val isConnected by viewModel.isConnected.observeAsState(initial = true)
+
     val showToBottomButton by remember {
         derivedStateOf {
-            lazyListState.firstVisibleItemIndex < uiState.messages.size - 10
+            println("滚动 --->>> firstVisibleItemIndex: ${lazyListState.firstVisibleItemIndex}, firstVisibleItemScrollOffset: ${lazyListState.firstVisibleItemScrollOffset}, uiState.messages.size: ${uiState.messages.size}, 终止条件: ${uiState.messages.size - 8}")
+            lazyListState.firstVisibleItemIndex < uiState.messages.size - 8
         }
     }
 
-    val isConnected by viewModel.isConnected.observeAsState(initial = true)
+//    val screenHeightPx =
+//        with(LocalDensity.current) { (configuration.screenHeightDp.dp - 100.dp).toPx() }
+//    var accumulatedScroll by remember { mutableFloatStateOf(0f) }
+//    var previousScrollOffset by remember { mutableIntStateOf(0) }
+//    var showToBottomButton by remember { mutableStateOf(false) }
+
+//    LaunchedEffect(lazyListState) {
+//        snapshotFlow { lazyListState.layoutInfo }
+//            .collect { layoutInfo ->
+//                val lastIndex = layoutInfo.totalItemsCount - 1
+//                val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull()
+//
+//                if (lastVisibleItem == null) {
+//                    // 列表暂无数据
+//                    showToBottomButton = false
+//                    return@collect
+//                }
+//
+//                // 如果连最后一条都没出现，说明用户还能继续往下滚
+//                // （已经远离底部了）
+//                if (lastVisibleItem.index < lastIndex) {
+//                    // 最后一条已经出现了 => 判断“距离底部”是否超过 600px
+//                    // offset + size = 当前Item底部在列表顶部的像素位置
+//                    // viewportEndOffset = 可视区域底部在列表顶部的像素位置
+//                    val itemBottom = lastVisibleItem.offset + lastVisibleItem.size
+//                    val distanceFromBottom = (layoutInfo.viewportEndOffset - itemBottom) * -1
+//                    // distanceFromBottom > 0 => 说明最后消息底部在可视区域之下(上滑了)
+//                    // 所以当 distanceFromBottom > 600 => 显示按钮
+//                    println("滚动 --->>> distanceFromBottom: $distanceFromBottom")
+//                    showToBottomButton = distanceFromBottom > 600
+//                }
+//            }
+//    }
 
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
@@ -212,9 +252,46 @@ fun ChatScreen(
         })
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = { Appbar() }) { innerPadding ->
+//    LaunchedEffect(lazyListState) {
+//        var previousIndex = 0
+//        snapshotFlow {
+//            Pair(
+//                lazyListState.firstVisibleItemIndex, lazyListState.firstVisibleItemScrollOffset
+//            )
+//        }.distinctUntilChanged().collect { (currentIndex, currentScrollOffset) ->
+//            val deltaIndex = currentIndex - previousIndex
+//            val deltaOffset = currentScrollOffset - previousScrollOffset
+//
+//            // Assuming average item height; adjust as needed
+//            val averageItemHeightPx = if (lazyListState.layoutInfo.visibleItemsInfo.isNotEmpty()) {
+//                lazyListState.layoutInfo.visibleItemsInfo.last().size.toFloat()
+//            } else {
+//                0f
+//            }
+//
+//            val deltaPx = deltaIndex * averageItemHeightPx + deltaOffset
+//
+//            // Positive deltaPx means scrolling down, negative means scrolling up
+//            accumulatedScroll -= deltaPx
+//
+//            // Clamp accumulatedScroll to not go below 0
+//            if (accumulatedScroll < 0f) accumulatedScroll = 0f
+//
+//            // Update previous values
+//            previousIndex = currentIndex
+//            previousScrollOffset = currentScrollOffset
+//
+//            // Determine if accumulatedScroll exceeds screen height
+//            if (accumulatedScroll > screenHeightPx) {
+//                showToBottomButton = true
+//            } else {
+//                showToBottomButton = false
+//            }
+//            println("Accumulated Scroll: $accumulatedScroll, Show Button: $showToBottomButton")
+//        }
+//    }
+
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { Appbar() }) { innerPadding ->
         Surface(color = Color(0xFFF3F4F6), modifier = Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
@@ -274,7 +351,6 @@ fun ChatScreen(
                         } else {
                             viewModel.loadHistory()
                         }
-
                     },
                     lazyColumn = {
                         LaunchedEffect(lazyListState.isScrollInProgress) {
@@ -306,15 +382,13 @@ fun ChatScreen(
                                     viewModel,
                                     navController,
                                     imageLoader,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 20.dp),
                                 )
-
                                 LaunchedEffect(uiState.messages) {
                                     if (index <= uiState.messages.size - 1) {
                                         val visitAbleMsg = uiState.messages[index]
-//                                        Log.d(
-//                                            "列表滑动",
-//                                            "VisitAble Entry --->>  index: $index, clientMsgID || ${visitAbleMsg.clientMsgID} || msg: ${visitAbleMsg.msgBody} || readed: ${visitAbleMsg.readed} "
-//                                        )
                                         if (!visitAbleMsg.readed && visitAbleMsg.senderUid != ChatScreenViewModel.uid) {
                                             viewModel.markRead(message)
                                         }
@@ -587,8 +661,10 @@ fun ChatScreen(
             ToBottom(viewModel = viewModel, goToTop = {
                 viewModel.scrollToBottom()
                 viewModel.resetRecivCount()
+//                accumulatedScroll = 0f
+//                previousScrollOffset = 0
+//                showToBottomButton = false
             })
-
         }
     }
 }
@@ -667,11 +743,10 @@ fun MessageItem(
     viewModel: ChatScreenViewModel,
     navController: NavController,
     imageLoader: ImageLoader,
+    modifier: Modifier,
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 20.dp),
+        modifier = modifier,
         contentAlignment = if (messagePosition == MessagePosition.LEFT) Alignment.TopStart else Alignment.BottomEnd
     ) {
         if (messagePosition == MessagePosition.LEFT) {

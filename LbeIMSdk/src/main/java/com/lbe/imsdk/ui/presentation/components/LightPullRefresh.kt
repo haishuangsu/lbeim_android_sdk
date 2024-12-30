@@ -9,7 +9,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -117,10 +116,9 @@ fun LightPullToRefreshList(
     ) {
 
         // 列表内容
-        Column(
-            modifier = modifier
-                .fillMaxHeight()
-                .offset { IntOffset(0, animatedOffsetY.roundToInt()) }) {
+        Column(modifier = modifier
+            .fillMaxHeight()
+            .offset { IntOffset(0, animatedOffsetY.roundToInt()) }) {
             lazyColumn()
         }
 
@@ -132,12 +130,6 @@ fun LightPullToRefreshList(
                 .align(Alignment.TopCenter),
             contentAlignment = Alignment.Center
         ) {
-//            CircularProgressIndicator(
-//                modifier = Modifier
-//                    .padding(top = 13.dp)
-//                    .size(indicatorSize.dp)
-//                    .alpha(indicatorAlpha)
-//            )
             RotatingImage(
                 modifier = Modifier
                     .padding(top = 13.dp)
@@ -151,7 +143,6 @@ fun LightPullToRefreshList(
 
 @Composable
 fun RotatingImage(modifier: Modifier = Modifier, imageRes: Int) {
-    // 定义无限重复旋转动画
     val infiniteTransition = rememberInfiniteTransition(label = "infiniteTransition")
     val rotation by infiniteTransition.animateFloat(
         initialValue = 0f, targetValue = 360f, animationSpec = infiniteRepeatable(
@@ -160,7 +151,6 @@ fun RotatingImage(modifier: Modifier = Modifier, imageRes: Int) {
         ), label = "rotation"
     )
 
-    // 加载图片并应用旋转效果
     Image(
         painter = painterResource(id = imageRes),
         contentDescription = null,
