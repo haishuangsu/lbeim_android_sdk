@@ -128,7 +128,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
     private val _uiState = MutableLiveData(ChatScreenUiState())
     val uiState: LiveData<ChatScreenUiState> = _uiState
-    var allMessageSize = 0
+    private var allMessageSize = 0
 
     var isTimeOut = MutableStateFlow(false)
 
@@ -685,7 +685,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun scheduleTimeoutJob() {
-        val period = 1000 * 60 * timeOut
+        val period = 1000 * 5 * timeOut
         if (timer == null) {
             Log.d("TimeOut", "超时提醒，period: $period")
             timer = Timer()
@@ -990,7 +990,6 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                         m.msgBody = it.sendBody.msgBody
                     }
                     scrollToBottom()
-
                     val initRep = UploadRepository.initMultiPartUpload(
                         body = InitMultiPartUploadBody(
                             size = it.mediaMessage.file.length(),

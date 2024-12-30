@@ -10,8 +10,8 @@ android {
     defaultConfig {
         applicationId = "info.hermiths.chatapp"
         minSdk = 29
-        versionCode = 2
-        versionName = "0.0.5"
+        versionCode = 7
+        versionName = "0.0.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

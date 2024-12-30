@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -76,6 +77,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
@@ -106,7 +111,7 @@ enum class MessagePosition {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Appbar(navController: NavController) {
+fun Appbar() {
     val ctx = LocalContext.current
 
     CenterAlignedTopAppBar(
@@ -139,7 +144,10 @@ fun Appbar(navController: NavController) {
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ChatScreen(
-    navController: NavController, viewModel: ChatScreenViewModel, imageLoader: ImageLoader
+    navController: NavController,
+    viewModel: ChatScreenViewModel,
+    imageLoader: ImageLoader,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -191,9 +199,22 @@ fun ChatScreen(
 
     val isConnected by viewModel.isConnected.observeAsState(initial = true)
 
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
+            override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    println("LbeChat Lifecycle --->> ChatScreen ON_RESUME")
+                }
+                if (event == Lifecycle.Event.ON_DESTROY) {
+                    println("LbeChat Lifecycle --->> ChatScreen ON_DESTROY")
+                }
+            }
+        })
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = { Appbar(navController) }) { innerPadding ->
+        topBar = { Appbar() }) { innerPadding ->
         Surface(color = Color(0xFFF3F4F6), modifier = Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
@@ -297,11 +318,6 @@ fun ChatScreen(
                                         if (!visitAbleMsg.readed && visitAbleMsg.senderUid != ChatScreenViewModel.uid) {
                                             viewModel.markRead(message)
                                         }
-
-//                                        if (lazyListState.isScrollInProgress) {
-//                                            currentFocus.clearFocus()
-//                                            keyboardController?.hide()
-//                                        }
                                     }
                                 }
                             }
@@ -312,242 +328,258 @@ fun ChatScreen(
                 var isExpanded by remember { mutableStateOf(false) }
                 var lineCount by remember { mutableIntStateOf(1) }
                 var textFieldHeight by remember { mutableStateOf(42.dp) }
+                Column {
+                    timeoutTips(viewModel = viewModel)
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(start = 14.dp, end = 16.dp)
-                ) {
-                    Box(
-                        modifier = Modifier.height(textFieldHeight)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(start = 14.dp, end = 16.dp)
                     ) {
-                        if (isExpanded) {
+                        Box(
+                            modifier = Modifier.height(textFieldHeight)
+                        ) {
+                            if (isExpanded) {
+                                Surface(color = Color.White,
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clip(CircleShape)
+                                        .align(Alignment.TopStart)
+                                        .clickable {
+                                            showDialog = true
+                                        }) {
+                                    Image(
+                                        painter = painterResource(R.drawable.expanded),
+                                        contentDescription = "",
+                                        modifier = Modifier
+                                            .padding(5.dp)
+                                            .size(8.dp)
+                                    )
+                                }
+                            }
+
                             Surface(color = Color.White,
                                 modifier = Modifier
-                                    .size(24.dp)
+                                    .size(42.dp)
                                     .clip(CircleShape)
-                                    .align(Alignment.TopStart)
+                                    .align(Alignment.BottomStart)
                                     .clickable {
-                                        showDialog = true
+                                        if (!hasMediaPermission) {
+                                            mediaPermissionState.launchMultiplePermissionRequest()
+                                        } else {
+                                            launcher.launch(PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo))
+                                        }
                                     }) {
                                 Image(
-                                    painter = painterResource(R.drawable.expanded),
+                                    painter = painterResource(R.drawable.open_file),
                                     contentDescription = "",
                                     modifier = Modifier
                                         .padding(5.dp)
-                                        .size(8.dp)
+                                        .size(21.dp, 16.dp)
                                 )
-                            }
-                        }
-
-                        Surface(color = Color.White,
-                            modifier = Modifier
-                                .size(42.dp)
-                                .clip(CircleShape)
-                                .align(Alignment.BottomStart)
-                                .clickable {
-                                    if (!hasMediaPermission) {
-                                        mediaPermissionState.launchMultiplePermissionRequest()
-                                    } else {
-                                        launcher.launch(PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo))
-                                    }
-                                }) {
-                            Image(
-                                painter = painterResource(R.drawable.open_file),
-                                contentDescription = "",
-                                modifier = Modifier
-                                    .padding(5.dp)
-                                    .size(21.dp, 16.dp)
-                            )
-                            LaunchedEffect(
-                                pickFilesResult.value
-                            ) {
-                                if (pickFilesResult.value.isNotEmpty()) {
-                                    val uris = pickFilesResult.value
-                                    Log.d(
-                                        ChatScreenViewModel.FILESELECT, "${pickFilesResult.value}"
-                                    )
-                                    for (uri in uris) {
-                                        val cr = context.contentResolver
-                                        cr.takePersistableUriPermission(
-                                            uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                LaunchedEffect(
+                                    pickFilesResult.value
+                                ) {
+                                    if (pickFilesResult.value.isNotEmpty()) {
+                                        val uris = pickFilesResult.value
+                                        Log.d(
+                                            ChatScreenViewModel.FILESELECT,
+                                            "${pickFilesResult.value}"
                                         )
-                                        val projection = arrayOf(
-                                            MediaStore.MediaColumns.DATA,
-                                            MediaStore.MediaColumns.MIME_TYPE,
-                                        )
-                                        val metaCursor = cr.query(uri, projection, null, null, null)
-                                        metaCursor?.use { mCursor ->
-                                            if (mCursor.moveToFirst()) {
-                                                val path = mCursor.getString(0)
-                                                val mime = mCursor.getString(1)
-                                                val file = File(path)
-                                                val mediaMessage = MediaMessage(
-                                                    width = 1080,
-                                                    height = 1920,
-                                                    file = file,
-                                                    path = uri.toString(),
-                                                    mime = mime,
-                                                    isImage = FileUtils.isImage(mime),
-                                                )
-                                                viewModel.preInsertUpload(mediaMessage)
-                                                Log.d(
-                                                    ChatScreenViewModel.FILESELECT,
-                                                    "found file --->> ${file.name}, ${file.path}, ${file.length()}, ${file.absolutePath}, mimeType: $mime, Is image file: ${
-                                                        FileUtils.isImage(
-                                                            mime
-                                                        )
-                                                    }"
-                                                )
+                                        for (uri in uris) {
+                                            val cr = context.contentResolver
+                                            cr.takePersistableUriPermission(
+                                                uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                            )
+                                            val projection = arrayOf(
+                                                MediaStore.MediaColumns.DATA,
+                                                MediaStore.MediaColumns.MIME_TYPE,
+                                            )
+                                            val metaCursor =
+                                                cr.query(uri, projection, null, null, null)
+                                            metaCursor?.use { mCursor ->
+                                                if (mCursor.moveToFirst()) {
+                                                    val path = mCursor.getString(0)
+                                                    val mime = mCursor.getString(1)
+                                                    val file = File(path)
+                                                    val mediaMessage = MediaMessage(
+                                                        width = 1080,
+                                                        height = 1920,
+                                                        file = file,
+                                                        path = uri.toString(),
+                                                        mime = mime,
+                                                        isImage = FileUtils.isImage(mime),
+                                                    )
+                                                    if (FileUtils.isImage(mediaMessage.mime) && mediaMessage.file.length() > 1024 * 1024 * 10) {
+                                                        Toast.makeText(
+                                                            context,
+                                                            "上传的图片最大为10MB",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                        return@LaunchedEffect
+                                                    }
+                                                    if (!FileUtils.isImage(mediaMessage.mime) && mediaMessage.file.length() > 1024 * 1024 * 100) {
+                                                        Toast.makeText(
+                                                            context,
+                                                            "上传的视频最大为100MB",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                        return@LaunchedEffect
+                                                    }
+                                                    viewModel.preInsertUpload(mediaMessage)
+                                                    Log.d(
+                                                        ChatScreenViewModel.FILESELECT,
+                                                        "found file --->> ${file.name}, ${file.path}, ${file.length()}, ${file.absolutePath}, mimeType: $mime, Is image file: ${
+                                                            FileUtils.isImage(
+                                                                mime
+                                                            )
+                                                        }"
+                                                    )
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
 
-                    val maxLength = 500
-                    if (showDialog) {
-                        Dialog(
-                            onDismissRequest = { showDialog = false },
-                            properties = DialogProperties(usePlatformDefaultWidth = false)
-                        ) {
-                            Surface(
-                                modifier = Modifier.fillMaxSize(),
-                                shape = MaterialTheme.shapes.medium,
-                                color = Color(0xFFF3F4F6)
+                        val maxLength = 500
+                        if (showDialog) {
+                            Dialog(
+                                onDismissRequest = { showDialog = false },
+                                properties = DialogProperties(usePlatformDefaultWidth = false)
                             ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(16.dp)
+                                Surface(
+                                    modifier = Modifier.fillMaxSize(),
+                                    shape = MaterialTheme.shapes.medium,
+                                    color = Color(0xFFF3F4F6)
                                 ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(16.dp)
                                     ) {
-                                        Surface(color = Color.White,
-                                            modifier = Modifier
-                                                .size(24.dp)
-                                                .clip(CircleShape)
-                                                .clickable {
-                                                    showDialog = false
-                                                }) {
-                                            Image(
-                                                painter = painterResource(R.drawable.close),
-                                                contentDescription = "",
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Surface(color = Color.White,
                                                 modifier = Modifier
-                                                    .padding(5.dp)
-                                                    .size(8.dp)
+                                                    .size(24.dp)
+                                                    .clip(CircleShape)
+                                                    .clickable {
+                                                        showDialog = false
+                                                    }) {
+                                                Image(
+                                                    painter = painterResource(R.drawable.close),
+                                                    contentDescription = "",
+                                                    modifier = Modifier
+                                                        .padding(5.dp)
+                                                        .size(8.dp)
+                                                )
+                                            }
+
+                                            Text(
+                                                "${input.length}/$maxLength", style = TextStyle(
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.W400,
+                                                    color = Color(0xff979797)
+                                                )
                                             )
                                         }
-
-                                        Text(
-                                            "${input.length}/$maxLength", style = TextStyle(
-                                                fontSize = 12.sp,
-                                                fontWeight = FontWeight.W400,
-                                                color = Color(0xff979797)
-                                            )
-                                        )
-                                    }
-                                    Spacer(Modifier.height(8.dp))
-                                    BasicTextField(
-                                        value = input, onValueChange = { newValue ->
-                                            if (newValue.length <= maxLength) {
-                                                viewModel.onMessageChange(newValue)
-                                            }
-                                        }, modifier = Modifier.fillMaxSize(), textStyle = TextStyle(
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.W400,
-                                            color = Color.Black,
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    println("动态 TextField --->> isExpanded: $isExpanded")
-                    BasicTextField(
-                        value = input,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 180.dp),
-                        onValueChange = { newValue ->
-                            if (newValue.length <= maxLength) {
-                                viewModel.onMessageChange(newValue)
-                            }
-                        },
-                        maxLines = 5,
-                        onTextLayout = { textLayoutResult ->
-                            lineCount = textLayoutResult.lineCount
-                            println("动态 TextField --->> lineCount: $lineCount")
-                            isExpanded = lineCount > 4
-
-                            if (!isExpanded) {
-                                if (lineCount < 2) {
-                                    textFieldHeight = 42.dp
-                                } else {
-                                    val calculatedHeightPx = textLayoutResult.size.height
-                                    textFieldHeight = with(density) {
-                                        calculatedHeightPx.toDp().plus(23.dp).coerceAtMost(203.dp)
-                                    }
-                                }
-                            }
-                        },
-                        decorationBox = { innerTextField ->
-                            Surface(
-                                color = Color.White,
-                                modifier = Modifier
-                                    .heightIn(min = 42.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(
-                                            start = 12.dp, end = 12.dp, top = 9.dp, bottom = 11.dp
-                                        ),
-                                    verticalAlignment = Alignment.Bottom,
-                                ) {
-                                    Box(Modifier.weight(1f)) {
-                                        if (input.isEmpty()) Text(
-                                            "请输入你想咨询的问题", style = TextStyle(
-                                                color = Color(0xffEBEBEB),
+                                        Spacer(Modifier.height(8.dp))
+                                        BasicTextField(
+                                            value = input,
+                                            onValueChange = { newValue ->
+                                                if (newValue.length <= maxLength) {
+                                                    viewModel.onMessageChange(newValue)
+                                                }
+                                            },
+                                            modifier = Modifier.fillMaxSize(),
+                                            textStyle = TextStyle(
                                                 fontSize = 14.sp,
                                                 fontWeight = FontWeight.W400,
+                                                color = Color.Black,
                                             )
                                         )
-                                        innerTextField()
                                     }
-
-                                    Image(painter = painterResource(R.drawable.send),
-                                        contentDescription = "Send Button",
-                                        modifier = Modifier
-                                            .size(18.dp)
-                                            .clickable {
-                                                viewModel.sendMessageFromTextInput(messageSent = {
-                                                    currentFocus.clearFocus()
-                                                })
-                                            })
                                 }
                             }
-                        },
-                    )
+                        }
+
+                        println("动态 TextField --->> isExpanded: $isExpanded")
+                        BasicTextField(
+                            value = input,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 180.dp),
+                            onValueChange = { newValue ->
+                                if (newValue.length <= maxLength) {
+                                    viewModel.onMessageChange(newValue)
+                                }
+                            },
+                            maxLines = 5,
+                            onTextLayout = { textLayoutResult ->
+                                lineCount = textLayoutResult.lineCount
+                                isExpanded = lineCount > 4
+
+                                if (!isExpanded) {
+                                    if (lineCount < 2) {
+                                        textFieldHeight = 42.dp
+                                    } else {
+                                        val calculatedHeightPx = textLayoutResult.size.height
+                                        textFieldHeight = with(density) {
+                                            calculatedHeightPx.toDp().plus(23.dp)
+                                                .coerceAtMost(203.dp)
+                                        }
+                                    }
+                                }
+                            },
+                            decorationBox = { innerTextField ->
+                                Surface(
+                                    color = Color.White,
+                                    modifier = Modifier
+                                        .heightIn(min = 42.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(
+                                                start = 12.dp,
+                                                end = 12.dp,
+                                                top = 9.dp,
+                                                bottom = 11.dp
+                                            ),
+                                        verticalAlignment = Alignment.Bottom,
+                                    ) {
+                                        Box(Modifier.weight(1f)) {
+                                            if (input.isEmpty()) Text(
+                                                "请输入你想咨询的问题", style = TextStyle(
+                                                    color = Color(0xffEBEBEB),
+                                                    fontSize = 14.sp,
+                                                    fontWeight = FontWeight.W400,
+                                                )
+                                            )
+                                            innerTextField()
+                                        }
+
+                                        Image(painter = painterResource(R.drawable.send),
+                                            contentDescription = "Send Button",
+                                            modifier = Modifier
+                                                .size(18.dp)
+                                                .clickable {
+                                                    viewModel.sendMessageFromTextInput(messageSent = {
+                                                        currentFocus.clearFocus()
+                                                    })
+                                                })
+                                    }
+                                }
+                            },
+                        )
+                    }
                 }
-
-            }
-        }
-
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(bottom = 59.dp)
-            ) {
-                timeoutTips(viewModel = viewModel)
             }
         }
 
@@ -572,7 +604,6 @@ fun timeoutTips(viewModel: ChatScreenViewModel) {
                     .fillMaxWidth()
                     .padding(start = 12.dp)
             ) {
-                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     "您已超过${viewModel.timeOut}分钟未回复",
                     style = TextStyle(
@@ -679,13 +710,10 @@ fun RecievFromCs(
     var sameCurrentDay = false
     if (currentIndex != 0) {
         val prev = messages[currentIndex - 1]
-//        Log.d("History time", "currentIndex: $currentIndex, sendTime: ${message.sendTime}, ${message.clientMsgID};  prev sendTime: ${prev.sendTime}")
         val diff = (message.sendTime - prev.sendTime) / 1000
         sameCurrentDay = TimeUtils.isSameDay(Date(), Date(message.sendTime))
-//        Log.d("History time", "index: $currentIndex, 距离上条消息时间: $diff s")
         if (diff > 60 * 3) {
             needShowTime = true
-//            Log.d("History time", "currentIndex: $currentIndex, 超过3分钟显示")
         }
     }
 
