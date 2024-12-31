@@ -67,6 +67,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -99,7 +100,6 @@ import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel
 import com.lbe.imsdk.ui.presentation.viewmodel.ConnectionStatus
 import com.lbe.imsdk.utils.FileUtils
 import com.lbe.imsdk.utils.TimeUtils
-import kotlinx.coroutines.flow.distinctUntilChanged
 import java.io.File
 import java.util.Date
 
@@ -198,46 +198,19 @@ fun ChatScreen(
 
     val isConnected by viewModel.isConnected.observeAsState(initial = true)
 
-    val showToBottomButton by remember {
-        derivedStateOf {
-            println("滚动 --->>> firstVisibleItemIndex: ${lazyListState.firstVisibleItemIndex}, firstVisibleItemScrollOffset: ${lazyListState.firstVisibleItemScrollOffset}, uiState.messages.size: ${uiState.messages.size}, 终止条件: ${uiState.messages.size - 8}")
-            lazyListState.firstVisibleItemIndex < uiState.messages.size - 8
-        }
-    }
-
-//    val screenHeightPx =
-//        with(LocalDensity.current) { (configuration.screenHeightDp.dp - 100.dp).toPx() }
-//    var accumulatedScroll by remember { mutableFloatStateOf(0f) }
-//    var previousScrollOffset by remember { mutableIntStateOf(0) }
-//    var showToBottomButton by remember { mutableStateOf(false) }
-
-//    LaunchedEffect(lazyListState) {
-//        snapshotFlow { lazyListState.layoutInfo }
-//            .collect { layoutInfo ->
-//                val lastIndex = layoutInfo.totalItemsCount - 1
-//                val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull()
-//
-//                if (lastVisibleItem == null) {
-//                    // 列表暂无数据
-//                    showToBottomButton = false
-//                    return@collect
-//                }
-//
-//                // 如果连最后一条都没出现，说明用户还能继续往下滚
-//                // （已经远离底部了）
-//                if (lastVisibleItem.index < lastIndex) {
-//                    // 最后一条已经出现了 => 判断“距离底部”是否超过 600px
-//                    // offset + size = 当前Item底部在列表顶部的像素位置
-//                    // viewportEndOffset = 可视区域底部在列表顶部的像素位置
-//                    val itemBottom = lastVisibleItem.offset + lastVisibleItem.size
-//                    val distanceFromBottom = (layoutInfo.viewportEndOffset - itemBottom) * -1
-//                    // distanceFromBottom > 0 => 说明最后消息底部在可视区域之下(上滑了)
-//                    // 所以当 distanceFromBottom > 600 => 显示按钮
-//                    println("滚动 --->>> distanceFromBottom: $distanceFromBottom")
-//                    showToBottomButton = distanceFromBottom > 600
-//                }
-//            }
+//    val showToBottomButton by remember {
+//        derivedStateOf {
+//            println("滚动 --->>> firstVisibleItemIndex: ${lazyListState.firstVisibleItemIndex}, firstVisibleItemScrollOffset: ${lazyListState.firstVisibleItemScrollOffset}, uiState.messages.size: ${uiState.messages.size}, 终止条件: ${uiState.messages.size - 8}")
+//            lazyListState.firstVisibleItemIndex < uiState.messages.size - 8
+//        }
 //    }
+
+    val screenHeightPx =
+        with(LocalDensity.current) { (configuration.screenHeightDp.dp - 140.dp).toPx() }
+    var showToBottomButton by remember { mutableStateOf(false) }
+    var scrollOffset by remember { mutableFloatStateOf(0f) }
+
+    println("消息列表 预测size --->> $screenHeightPx")
 
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
@@ -252,44 +225,15 @@ fun ChatScreen(
         })
     }
 
-//    LaunchedEffect(lazyListState) {
-//        var previousIndex = 0
-//        snapshotFlow {
-//            Pair(
-//                lazyListState.firstVisibleItemIndex, lazyListState.firstVisibleItemScrollOffset
-//            )
-//        }.distinctUntilChanged().collect { (currentIndex, currentScrollOffset) ->
-//            val deltaIndex = currentIndex - previousIndex
-//            val deltaOffset = currentScrollOffset - previousScrollOffset
-//
-//            // Assuming average item height; adjust as needed
-//            val averageItemHeightPx = if (lazyListState.layoutInfo.visibleItemsInfo.isNotEmpty()) {
-//                lazyListState.layoutInfo.visibleItemsInfo.last().size.toFloat()
-//            } else {
-//                0f
-//            }
-//
-//            val deltaPx = deltaIndex * averageItemHeightPx + deltaOffset
-//
-//            // Positive deltaPx means scrolling down, negative means scrolling up
-//            accumulatedScroll -= deltaPx
-//
-//            // Clamp accumulatedScroll to not go below 0
-//            if (accumulatedScroll < 0f) accumulatedScroll = 0f
-//
-//            // Update previous values
-//            previousIndex = currentIndex
-//            previousScrollOffset = currentScrollOffset
-//
-//            // Determine if accumulatedScroll exceeds screen height
-//            if (accumulatedScroll > screenHeightPx) {
-//                showToBottomButton = true
-//            } else {
-//                showToBottomButton = false
-//            }
-//            println("Accumulated Scroll: $accumulatedScroll, Show Button: $showToBottomButton")
-//        }
-//    }
+    LaunchedEffect(lazyListState) {
+        snapshotFlow { lazyListState.layoutInfo }.collect { layoutInfo ->
+            val totalItems = layoutInfo.totalItemsCount
+            val lastVisibleItemIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+            if (totalItems > 0 && lastVisibleItemIndex == totalItems - 1) {
+                scrollOffset = 0f
+            }
+        }
+    }
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = { Appbar() }) { innerPadding ->
         Surface(color = Color(0xFFF3F4F6), modifier = Modifier
@@ -341,8 +285,7 @@ fun ChatScreen(
                     )
                 }
 
-                LightPullToRefreshList(
-                    modifier = Modifier.weight(1f),
+                LightPullToRefreshList(modifier = Modifier.weight(1f),
                     listState = lazyListState,
                     onRefresh = {
                         if (ChatScreenViewModel.currentPage > 1) {
@@ -353,17 +296,13 @@ fun ChatScreen(
                         }
                     },
                     lazyColumn = {
-                        LaunchedEffect(lazyListState.isScrollInProgress) {
-                            if (lazyListState.isScrollInProgress) {
-                                currentFocus.clearFocus()
-                                keyboardController?.hide()
-                            }
-                        }
-
                         LazyColumn(
                             modifier = Modifier
                                 .padding(start = 16.dp, end = 16.dp)
-                                .fillMaxSize(),
+                                .fillMaxSize()
+                                .onSizeChanged { size ->
+                                    println("消息列表 size --->> $size")
+                                },
                             verticalArrangement = Arrangement.spacedBy(4.dp),
                             contentPadding = PaddingValues(top = 20.dp),
                             state = lazyListState
@@ -397,7 +336,14 @@ fun ChatScreen(
                             }
                         }
                     },
-                )
+                    onScroll = { offset ->
+                        if (offset != 0f) {
+                            currentFocus.clearFocus()
+                            keyboardController?.hide()
+                        }
+                        scrollOffset = (scrollOffset + offset).coerceAtLeast(0f)
+                        showToBottomButton = scrollOffset > screenHeightPx
+                    })
 
                 var isExpanded by remember { mutableStateOf(false) }
                 var lineCount by remember { mutableIntStateOf(1) }
@@ -661,9 +607,8 @@ fun ChatScreen(
             ToBottom(viewModel = viewModel, goToTop = {
                 viewModel.scrollToBottom()
                 viewModel.resetRecivCount()
-//                accumulatedScroll = 0f
-//                previousScrollOffset = 0
-//                showToBottomButton = false
+                showToBottomButton = false
+                scrollOffset = 0f
             })
         }
     }

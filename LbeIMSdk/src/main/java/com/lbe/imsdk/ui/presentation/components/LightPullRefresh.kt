@@ -33,6 +33,7 @@ fun LightPullToRefreshList(
     listState: LazyListState,
     onRefresh: suspend () -> Unit,
     lazyColumn: @Composable ColumnScope.() -> Unit,
+    onScroll: (Float) -> Unit,
 ) {
     var refreshing by remember { mutableStateOf(false) }
     var offsetY by remember { mutableFloatStateOf(0f) }
@@ -55,7 +56,7 @@ fun LightPullToRefreshList(
 
     // 处理释放或快速滑动后的逻辑
     fun handleFlingOrRelease() {
-        println("手势回收 ---->>> isDragging: $isDragging, refreshing: $refreshing, offsetY: $offsetY")
+//        println("手势回收 ---->>> isDragging: $isDragging, refreshing: $refreshing, offsetY: $offsetY")
         if (!isDragging && !refreshing) {
             if (offsetY >= maxOffset) {
                 // 触发刷新
@@ -81,6 +82,8 @@ fun LightPullToRefreshList(
                     isDragging = true
                     return Offset(available.x, available.y)
                 }
+                // 非下拉刷新逻辑，传递滚动偏移量给外部
+                onScroll(available.y)
                 return Offset.Zero
             }
 
@@ -90,11 +93,12 @@ fun LightPullToRefreshList(
                 if (!refreshing && available.y < 0) {
                     offsetY = (offsetY + available.y).coerceAtLeast(0f)
                 }
+                onScroll(available.y) // 传递滚动偏移量给外部
                 return Offset.Zero
             }
 
             override suspend fun onPreFling(available: Velocity): Velocity {
-                println("手势 onPreFling --->>> offsetY: $offsetY, refreshing: $refreshing")
+//                println("手势 onPreFling --->>> offsetY: $offsetY, refreshing: $refreshing")
                 isDragging = false
                 handleFlingOrRelease()
                 return Velocity.Zero
@@ -115,14 +119,12 @@ fun LightPullToRefreshList(
             .nestedScroll(nestedScrollConnection)
     ) {
 
-        // 列表内容
         Column(modifier = modifier
             .fillMaxHeight()
             .offset { IntOffset(0, animatedOffsetY.roundToInt()) }) {
             lazyColumn()
         }
 
-        // 刷新指示器
         Box(
             modifier = Modifier
                 .fillMaxWidth()
