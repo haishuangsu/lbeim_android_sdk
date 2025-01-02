@@ -28,7 +28,7 @@ object LbeSdk {
             language = language,
             device = device,
             source = "",
-//                        extraInfo = mutableMapOf(),
+            extraInfo = mutableMapOf(),
         )
         val intent = Intent(context, LbeChatActivity::class.java).putExtra(
             "initArgs", Gson().toJson(initArgs)

@@ -102,6 +102,7 @@ import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel
 import com.lbe.imsdk.ui.presentation.viewmodel.ConnectionStatus
 import com.lbe.imsdk.utils.FileUtils
 import com.lbe.imsdk.utils.TimeUtils
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -169,7 +170,6 @@ fun ChatScreen(
     var showDialog by remember { mutableStateOf(false) }
 
     val currentFocus = LocalFocusManager.current
-//    val keyboardController = LocalSoftwareKeyboardController.current
     val coroutineScope = rememberCoroutineScope()
 
     val lazyListState = rememberLazyListState()
@@ -223,6 +223,9 @@ fun ChatScreen(
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (event == Lifecycle.Event.ON_RESUME) {
                     println("LbeChat Lifecycle --->> ChatScreen ON_RESUME")
+                    if (ChatScreenViewModel.sdkInit) {
+                        viewModel.checkNeedSyncRemote()
+                    }
                 }
                 if (event == Lifecycle.Event.ON_DESTROY) {
                     println("LbeChat Lifecycle --->> ChatScreen ON_DESTROY")
@@ -529,7 +532,7 @@ fun ChatScreen(
                                             keyboardOptions = KeyboardOptions(
                                                 keyboardType = KeyboardType.Text,
                                                 imeAction = ImeAction.None,
-                                            )
+                                            ),
                                         )
                                     }
                                 }

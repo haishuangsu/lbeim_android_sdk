@@ -11,5 +11,5 @@ data class InitArgs(
     val language: String,
     val device: String,
     val source: String,
-//    val extraInfo: MutableMap<String, *>?,
+    val extraInfo: MutableMap<String, Any>,
 )
