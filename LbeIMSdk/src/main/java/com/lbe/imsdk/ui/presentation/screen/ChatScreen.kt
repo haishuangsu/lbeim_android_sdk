@@ -38,6 +38,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -51,13 +52,13 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -72,10 +73,11 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -100,6 +102,8 @@ import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel
 import com.lbe.imsdk.ui.presentation.viewmodel.ConnectionStatus
 import com.lbe.imsdk.utils.FileUtils
 import com.lbe.imsdk.utils.TimeUtils
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Date
 
@@ -165,8 +169,8 @@ fun ChatScreen(
     var showDialog by remember { mutableStateOf(false) }
 
     val currentFocus = LocalFocusManager.current
-    val keyboardController = LocalSoftwareKeyboardController.current
-//    val coroutineScope = rememberCoroutineScope()
+//    val keyboardController = LocalSoftwareKeyboardController.current
+    val coroutineScope = rememberCoroutineScope()
 
     val lazyListState = rememberLazyListState()
     viewModel.lazyListState = lazyListState
@@ -194,8 +198,6 @@ fun ChatScreen(
         )
     }
 
-    val hasMediaPermission = mediaPermissionState.allPermissionsGranted
-
     val isConnected by viewModel.isConnected.observeAsState(initial = true)
 
 //    val showToBottomButton by remember {
@@ -206,11 +208,15 @@ fun ChatScreen(
 //    }
 
     val screenHeightPx =
-        with(LocalDensity.current) { (configuration.screenHeightDp.dp - 140.dp).toPx() }
+        with(LocalDensity.current) { (configuration.screenHeightDp.dp - 155.dp).toPx() }
     var showToBottomButton by remember { mutableStateOf(false) }
     var scrollOffset by remember { mutableFloatStateOf(0f) }
+    val toBottomEvent by viewModel.toBottom.collectAsState("")
+    val recivedEvent by viewModel.recived.collectAsState("")
 
-    println("消息列表 预测size --->> $screenHeightPx")
+//    LaunchedEffect(key1 = true) {
+//        mediaPermissionState.launchMultiplePermissionRequest()
+//    }
 
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
@@ -339,7 +345,6 @@ fun ChatScreen(
                     onScroll = { offset ->
                         if (offset != 0f) {
                             currentFocus.clearFocus()
-                            keyboardController?.hide()
                         }
                         scrollOffset = (scrollOffset + offset).coerceAtLeast(0f)
                         showToBottomButton = scrollOffset > screenHeightPx
@@ -383,7 +388,7 @@ fun ChatScreen(
                                     .clip(CircleShape)
                                     .align(Alignment.BottomStart)
                                     .clickable {
-                                        if (!hasMediaPermission) {
+                                        if (!mediaPermissionState.allPermissionsGranted) {
                                             mediaPermissionState.launchMultiplePermissionRequest()
                                         } else {
                                             launcher.launch(PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo))
@@ -402,7 +407,7 @@ fun ChatScreen(
                                     if (pickFilesResult.value.isNotEmpty()) {
                                         val uris = pickFilesResult.value
                                         Log.d(
-                                            ChatScreenViewModel.FILESELECT,
+                                            ChatScreenViewModel.FILE_SELECT,
                                             "${pickFilesResult.value}"
                                         )
                                         for (uri in uris) {
@@ -447,7 +452,7 @@ fun ChatScreen(
                                                     }
                                                     viewModel.preInsertUpload(mediaMessage)
                                                     Log.d(
-                                                        ChatScreenViewModel.FILESELECT,
+                                                        ChatScreenViewModel.FILE_SELECT,
                                                         "found file --->> ${file.name}, ${file.path}, ${file.length()}, ${file.absolutePath}, mimeType: $mime, Is image file: ${
                                                             FileUtils.isImage(
                                                                 mime
@@ -463,7 +468,6 @@ fun ChatScreen(
                         }
 
                         Spacer(modifier = Modifier.width(12.dp))
-
                         val maxLength = 500
                         if (showDialog) {
                             Dialog(
@@ -521,6 +525,10 @@ fun ChatScreen(
                                                 fontSize = 14.sp,
                                                 fontWeight = FontWeight.W400,
                                                 color = Color.Black,
+                                            ),
+                                            keyboardOptions = KeyboardOptions(
+                                                keyboardType = KeyboardType.Text,
+                                                imeAction = ImeAction.None,
                                             )
                                         )
                                     }
@@ -531,6 +539,10 @@ fun ChatScreen(
                         println("动态 TextField --->> isExpanded: $isExpanded")
                         BasicTextField(
                             value = input,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.None,
+                            ),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .heightIn(max = 180.dp),
@@ -605,11 +617,43 @@ fun ChatScreen(
 
         AnimatedVisibility(visible = showToBottomButton, enter = fadeIn(), exit = fadeOut()) {
             ToBottom(viewModel = viewModel, goToTop = {
-                viewModel.scrollToBottom()
-                viewModel.resetRecivCount()
-                showToBottomButton = false
-                scrollOffset = 0f
+                coroutineScope.launch {
+                    delay(59)
+                    viewModel.scrollToBottom()
+                    viewModel.resetRecivCount()
+                    showToBottomButton = false
+                    scrollOffset = 0f
+                }
             })
+        }
+
+        LaunchedEffect(toBottomEvent) {
+            if (toBottomEvent.isNotEmpty()) {
+                coroutineScope.launch {
+                    showToBottomButton = false
+                    scrollOffset = 0f
+                    delay(59)
+                    if (uiState.messages.isNotEmpty()) {
+                        lazyListState.requestScrollToItem(uiState.messages.size - 1)
+                    }
+                }
+            }
+        }
+
+        LaunchedEffect(recivedEvent) {
+            if (recivedEvent.isNotEmpty()) {
+                if (!showToBottomButton) {
+                    coroutineScope.launch {
+                        delay(100)
+                        if (uiState.messages.isNotEmpty()) {
+                            lazyListState.requestScrollToItem(uiState.messages.size - 1)
+                        }
+                        showToBottomButton = false
+                        scrollOffset = 0f
+                    }
+                    viewModel.resetRecivCount()
+                }
+            }
         }
     }
 }

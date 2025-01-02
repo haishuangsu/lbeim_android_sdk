@@ -4,9 +4,14 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
-    // sit env： www.im-sit-dreaminglife.cn
+
+    // uat
+//    private const val BASE_URL = "https://mob.imsz.online/"
+
+    // sit
     private const val BASE_URL = "http://www.im-sit-dreaminglife.cn/"
-    // dev env： www.im-dreaminglife.cn
+
+    // dev
 //     private const val BASE_URL = "http://www.im-dreaminglife.cn/"
 
     var IM_URL = ""

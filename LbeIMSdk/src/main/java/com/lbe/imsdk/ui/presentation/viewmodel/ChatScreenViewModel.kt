@@ -98,11 +98,12 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         private const val TAG = "IM Websocket"
         const val REALM = "RealmTAG"
         const val UPLOAD = "IM UPLOAD"
-        const val FILESELECT = "File Select"
-        const val IMAGEENCRYPTION = "Image Encryption"
+        const val FILE_SELECT = "File Select"
+        const val IMAGE_ENCRYPTION = "Image Encryption"
         const val CONTINUE_UPLOAD = "CONTINUE_UPLOAD"
+        const val RETROFIT = "Lbe Retrofit"
         var lbeSign = ""
-        var uid = "c-43ro83fgre8a"
+        var uid = ""
         var wssHost = ""
         var lbeToken = ""
         var lbeSession = ""
@@ -116,7 +117,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         var remoteLastMsgType = -1
         var nickId: String = ""
         var nickName: String = ""
-        var lbeIdentity: String = "" // 42nz10y3hhah
+        var lbeIdentity: String = ""
         var progressList: MutableMap<String, MutableStateFlow<Float>> = mutableMapOf()
         val tempUploadInfos: MutableMap<String, TempUploadInfo> = mutableMapOf()
     }
@@ -131,9 +132,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     private var allMessageSize = 0
 
     var isTimeOut = MutableStateFlow(false)
-
     var recivCount = MutableStateFlow(0)
-
+    var toBottom = MutableStateFlow("")
+    var recived = MutableStateFlow("")
     var lastCsMessage: MessageEntity? = null
     var timer: Timer? = null
     var timeOut: Long = 1
@@ -243,11 +244,12 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             LbeConfigRepository.fetchConfig(lbeSign, lbeIdentity, ConfigBody(0, 1))
         }
         result.onSuccess { config ->
+            Log.d(RETROFIT, "获取配置: $config")
             wssHost = config.data.ws[0]
             RetrofitInstance.IM_URL = config.data.rest[0]
             RetrofitInstance.UPLOAD_BASE_URL = config.data.oss[0]
         }.onFailure { err ->
-            println("网络异常 ---> Fetch config error: $err")
+            Log.d(RETROFIT, "获取配置异常: $err")
         }
     }
 
@@ -274,6 +276,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             )
         }
         result.onSuccess { session ->
+            Log.d(RETROFIT, "创建会话: $session")
             lbeToken = session.data.token
             lbeSession = session.data.sessionId
             uid = session.data.uid
@@ -282,7 +285,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                 sharedPreferences.edit().putBoolean("needSaveNickId", false).apply()
             }
         }.onFailure { error ->
-            println("网络异常 --->>>  Create session error: $error")
+            Log.d(RETROFIT, "创建会话异常: $error")
         }
     }
 
@@ -300,6 +303,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             )
         }
         result.onSuccess { sessionListRep ->
+            Log.d(RETROFIT, "会话列表: $sessionListRep")
             sessionList.addAll(sessionListRep.data.sessionList)
             currentSession = sessionList[currentSessionIndex]
             seq = currentSession?.latestMsg?.msgSeq ?: 0
@@ -310,7 +314,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             scrollToBottom()
             syncPendingJobs()
         }.onFailure { err ->
-            println("网络异常 ---> Fetch session list error: $err")
+            Log.d(RETROFIT, "会话列表异常: $err")
         }
     }
 
@@ -426,21 +430,23 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun scrollToBottom() {
-        viewModelScope.launch(Dispatchers.Main) {
-            scrollTo(allMessageSize)
-        }
+        toBottom.value += ","
+//        viewModelScope.launch(Dispatchers.Main) {
+//            scrollTo(allMessageSize)
+//        }
     }
+
+//    private fun scrollTo(index: Int) {
+//        Log.d(REALM, "scrollToEnd： $index")
+//        lazyListState?.requestScrollToItem(index)
+//        toBottom.value += ","
+//    }
 
     fun resetRecivCount() {
         viewModelScope.launch(Dispatchers.IO) {
-            delay(300)
+            delay(99)
             recivCount.update { 0 }
         }
-    }
-
-    private fun scrollTo(index: Int) {
-        Log.d(REALM, "scrollToEnd： $index")
-        lazyListState?.requestScrollToItem(index)
     }
 
     private suspend fun fetchTimeoutConfig() {
@@ -535,6 +541,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             )
         }
         result.onSuccess { history ->
+            Log.d(RETROFIT, "会话历史: ${history.data.content.size}")
             Log.d(REALM, "History sync")
             if (history.data.content.isNotEmpty()) {
                 seq = history.data.content.last().msgSeq
@@ -556,7 +563,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             }
             syncPageInfo(currentSession)
         }.onFailure { err ->
-            println("网络异常 --->> Fetch history error: $err")
+            Log.d(RETROFIT, "会话历史异常: $err")
         }
     }
 
@@ -633,6 +640,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                         }
                         seq = receivedReq
                         recivCount.value += 1
+                        recived.value += ","
                     }
 
                     Log.d(
@@ -685,7 +693,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun scheduleTimeoutJob() {
-        val period = 1000 * 5 * timeOut
+        val period = 1000 * 60 * timeOut
         if (timer == null) {
             Log.d("TimeOut", "超时提醒，period: $period")
             timer = Timer()
@@ -934,9 +942,11 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         if (localFile != null) {
             entity.localFile = localFile
         }
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             IMLocalRepository.insertMessage(entity)
-            syncPageInfo(sessionList[0])
+            if (sessionList.isNotEmpty()) {
+                syncPageInfo(sessionList[0])
+            }
             if (updateUI) {
                 afterSendUpdateList()
                 scrollToBottom()

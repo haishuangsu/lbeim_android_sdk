@@ -46,12 +46,12 @@ class DecryptedDecoder(
         ): Decoder {
             var newResult = result
             Log.d(
-                ChatScreenViewModel.IMAGEENCRYPTION,
+                ChatScreenViewModel.IMAGE_ENCRYPTION,
                 "Decrypted image ---->>> url: $url ,key: $key, \noptions: $options"
             )
             if (key.isNotEmpty()) {
                 Log.d(
-                    ChatScreenViewModel.IMAGEENCRYPTION,
+                    ChatScreenViewModel.IMAGE_ENCRYPTION,
                     "Decrypted image ---->>> url: $url ,key: $key, 执行解密"
                 )
                 val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
@@ -61,10 +61,10 @@ class DecryptedDecoder(
 
                 val source = result.source
                 val respData = source.source().readByteArray()
-                Log.d(ChatScreenViewModel.IMAGEENCRYPTION, "repData --->>> ${respData.size}")
+                Log.d(ChatScreenViewModel.IMAGE_ENCRYPTION, "repData --->>> ${respData.size}")
                 val decryptedData = cipher.doFinal(Base64.getDecoder().decode(respData))
                 Log.d(
-                    ChatScreenViewModel.IMAGEENCRYPTION,
+                    ChatScreenViewModel.IMAGE_ENCRYPTION,
                     "decryptedData size: ${decryptedData.size},  decryptedData: $decryptedData"
                 )
                 val buffer = Buffer().apply {

@@ -22,6 +22,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 import com.lbe.imsdk.LbeSdk
+import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.lbeIdentity
+import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.lbeSign
 import info.hermiths.lbesdk.ui.theme.ChatAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -53,8 +55,8 @@ class MainActivity : ComponentActivity() {
 fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String, lbeSign: String, phone: String, email: String, language: String, device: String) -> Unit) {
     // HermitK15
     // HermitK1, sit
-    var nickId by remember { mutableStateOf("HermitK1") }
-    var nickName by remember { mutableStateOf("HermitK1") }
+    var nickId by remember { mutableStateOf("HermitK2") }
+    var nickName by remember { mutableStateOf("HermitK2") }
 
     // dev: 42nz10y3hhah; faq: 43hw3seddn2i
 //    var lbeIdentity by remember { mutableStateOf("43hw3seddn2i") }
@@ -62,7 +64,10 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
     // sit: my: 441zy52mn2yy
     var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
 
+//    var lbeIdentity by remember { mutableStateOf("") }
+
     var lbeSign by remember { mutableStateOf("b184b8e64c5b0004c58b5a3c9af6f3868d63018737e68e2a1ccc61580afbc8f112119431511175252d169f0c64d9995e5de2339fdae5cbddda93b65ce305217700") }
+//    var lbeSign by remember { mutableStateOf("") }
 
     var phone by remember { mutableStateOf("") }
 
@@ -82,36 +87,54 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            OutlinedTextField(value = lbeSign,
+            OutlinedTextField(
+                value = lbeSign,
                 onValueChange = { lbeSign = it },
-                label = { Text(text = "lbeSign") })
+                label = { Text(text = "lbeSign") },
+                readOnly = false,
+            )
 
-            OutlinedTextField(value = lbeIdentity,
+            OutlinedTextField(
+                value = lbeIdentity,
                 onValueChange = { lbeIdentity = it },
-                label = { Text(text = "LbeIdentity") })
+                label = { Text(text = "LbeIdentity") }, readOnly = false,
+            )
 
-            OutlinedTextField(value = nickId,
+            OutlinedTextField(
+                value = nickId,
                 onValueChange = { nickId = it },
-                label = { Text(text = "NickId") })
+                label = { Text(text = "NickId") }, readOnly = false,
+            )
 
-            OutlinedTextField(value = nickName,
+            OutlinedTextField(
+                value = nickName,
                 onValueChange = { nickName = it },
-                label = { Text(text = "NickName") })
+                label = { Text(text = "NickName") }, readOnly = false,
+            )
 
-            OutlinedTextField(value = phone,
+            OutlinedTextField(
+                value = phone,
                 onValueChange = { phone = it },
-                label = { Text(text = "phone") })
-            OutlinedTextField(value = email,
+                label = { Text(text = "phone") }, readOnly = false,
+            )
+
+            OutlinedTextField(
+                value = email,
                 onValueChange = { email = it },
-                label = { Text(text = "email") })
+                label = { Text(text = "email") }, readOnly = false,
+            )
 
-            OutlinedTextField(value = language,
+            OutlinedTextField(
+                value = language,
                 onValueChange = { language = it },
-                label = { Text(text = "language") })
+                label = { Text(text = "language") }, readOnly = false,
+            )
 
-            OutlinedTextField(value = device,
+            OutlinedTextField(
+                value = device,
                 onValueChange = { device = it },
-                label = { Text(text = "device") })
+                label = { Text(text = "device") }, readOnly = false,
+            )
 //                item {
 //                    OutlinedTextField(value = source,
 //                        onValueChange = { source = it },
