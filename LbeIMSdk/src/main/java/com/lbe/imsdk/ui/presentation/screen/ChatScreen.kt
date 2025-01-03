@@ -222,9 +222,11 @@ fun ChatScreen(
         lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (event == Lifecycle.Event.ON_RESUME) {
-                    println("LbeChat Lifecycle --->> ChatScreen ON_RESUME")
+                    println("LbeChat Lifecycle --->> ChatScreen ON_RESUME: ${ChatScreenViewModel.sdkInit}")
                     if (ChatScreenViewModel.sdkInit) {
-                        viewModel.checkNeedSyncRemote()
+                        coroutineScope.launch {
+                            viewModel.checkNeedSyncRemote()
+                        }
                     }
                 }
                 if (event == Lifecycle.Event.ON_DESTROY) {
@@ -391,6 +393,7 @@ fun ChatScreen(
                                     .clip(CircleShape)
                                     .align(Alignment.BottomStart)
                                     .clickable {
+                                        // 点击选择图片或视频
                                         if (!mediaPermissionState.allPermissionsGranted) {
                                             mediaPermissionState.launchMultiplePermissionRequest()
                                         } else {
@@ -419,15 +422,21 @@ fun ChatScreen(
                                                 uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
                                             )
                                             val projection = arrayOf(
-                                                MediaStore.MediaColumns.DATA,
+                                                MediaStore.MediaColumns.DISPLAY_NAME,
                                                 MediaStore.MediaColumns.MIME_TYPE,
+                                                MediaStore.MediaColumns.DATA,
                                             )
                                             val metaCursor =
                                                 cr.query(uri, projection, null, null, null)
                                             metaCursor?.use { mCursor ->
                                                 if (mCursor.moveToFirst()) {
-                                                    val path = mCursor.getString(0)
+                                                    val fName = mCursor.getString(0)
                                                     val mime = mCursor.getString(1)
+                                                    val path = mCursor.getString(2)
+                                                    Log.d(
+                                                        ChatScreenViewModel.FILE_SELECT,
+                                                        "查询 --->>> fileName: $fName, mime: $mime, \npath: $path"
+                                                    )
                                                     val file = File(path)
                                                     val mediaMessage = MediaMessage(
                                                         width = 1080,
@@ -873,7 +882,7 @@ fun UserInput(
                     .padding(8.dp),
             ) {
                 Text(
-                    text = message.senderUid,
+                    text = ChatScreenViewModel.nickName,
                     modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
                     style = TextStyle(
                         fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)
@@ -885,7 +894,7 @@ fun UserInput(
 
             // avatar
             AsyncImage(
-                model = "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg",
+                model = ChatScreenViewModel.userAvatar,
                 contentDescription = "Yo",
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier

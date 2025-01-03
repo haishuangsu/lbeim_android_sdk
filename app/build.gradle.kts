@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "info.hermiths.chatapp"
-        minSdk = 29
+        minSdk = 28
         versionCode = 9
         versionName = "0.0.9"
 

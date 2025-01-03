@@ -3,6 +3,7 @@ package com.lbe.imsdk.utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -33,6 +34,22 @@ public class UploadBigFileUtils {
         }
         blocks.put(file.hashCode(), buffers);
         fileInputStream.close();
+    }
+
+    // 使用 InputStream 分块的重载方法
+    public static void splitFile(InputStream inputStream, long chunkSize) throws IOException {
+        // 使用 ByteBuffer 来存储每个分块
+        ArrayList<ByteBuffer> buffers = new ArrayList<>();
+        byte[] buffer = new byte[(int) chunkSize];
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            ByteBuffer byteBuffer = ByteBuffer.allocate(bytesRead);
+            byteBuffer.put(buffer, 0, bytesRead);
+            byteBuffer.flip(); // 准备好读取
+            buffers.add(byteBuffer); // 保存分块
+        }
+        // 以文件的哈希值为 key 来存储块数据
+        blocks.put(inputStream.hashCode(), buffers);
     }
 
     public static void releaseMemory(int hashCode) {

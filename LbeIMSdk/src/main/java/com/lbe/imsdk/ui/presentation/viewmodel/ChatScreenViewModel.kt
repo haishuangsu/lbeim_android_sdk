@@ -117,6 +117,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         var remoteLastMsgType = -1
         var nickId: String = ""
         var nickName: String = ""
+        var userAvatar: String = ""
         var lbeIdentity: String = ""
         var progressList: MutableMap<String, MutableStateFlow<Float>> = mutableMapOf()
         val tempUploadInfos: MutableMap<String, TempUploadInfo> = mutableMapOf()
@@ -173,13 +174,16 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     override fun onCleared() {
         networkMonitor.stopMonitoring()
         disConnectionSdk()
+        println("LbeChat Lifecycle --->> ChatScreenViewModel onCleared")
         super.onCleared()
     }
 
     private fun disConnectionSdk() {
-        sdkInit = false
-        jobs["sdkJob"]?.cancel()
-        pingTimer.cancel()
+        if (sdkInit) {
+            sdkInit = false
+            jobs["sdkJob"]?.cancel()
+            pingTimer.cancel()
+        }
     }
 
     private fun testOfflineTakeByCache() {
@@ -199,6 +203,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             sharedPreferences.getString("anonymousNickId", "").toString()
         }
         nickName = args.nickName
+        userAvatar =
+            args.headerIcon.ifEmpty { "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg" }
         lbeIdentity = args.lbeIdentity
         initArgs = args
         realInitSdk()
@@ -362,7 +368,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    fun checkNeedSyncRemote() {
+    suspend fun checkNeedSyncRemote() {
         val cacheMessages = IMLocalRepository.filterMessages(currentSession?.sessionId ?: "")
         Log.d(
             REALM,
@@ -536,50 +542,48 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    private fun fetchHistoryAndSync(currentSession: SessionEntry?) {
+    private suspend fun fetchHistoryAndSync(currentSession: SessionEntry?) {
         if (!networkAvailable()) {
             return
         }
 
-        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
-            val result = safeApiCall {
-                LbeImRepository.fetchHistory(
-                    lbeSign = lbeSign,
-                    lbeToken = lbeToken,
-                    lbeIdentity = lbeIdentity,
-                    body = HistoryBody(
-                        sessionId = currentSession?.sessionId ?: "", seqCondition = SeqCondition(
-                            startSeq = 0, endSeq = currentSession?.latestMsg?.msgSeq ?: 0
-                        )
+        val result = safeApiCall {
+            LbeImRepository.fetchHistory(
+                lbeSign = lbeSign,
+                lbeToken = lbeToken,
+                lbeIdentity = lbeIdentity,
+                body = HistoryBody(
+                    sessionId = currentSession?.sessionId ?: "", seqCondition = SeqCondition(
+                        startSeq = 0, endSeq = currentSession?.latestMsg?.msgSeq ?: 0
                     )
                 )
-            }
+            )
+        }
 
-            result.onSuccess { history ->
-                Log.d(RETROFIT, "会话历史: ${history.data.content.size}")
-                Log.d(REALM, "History sync")
-                if (history.data.content.isNotEmpty()) {
-                    seq = history.data.content.last().msgSeq
-                    for (content in history.data.content) {
-                        if (content.msgType == 1 || content.msgType == 2 || content.msgType == 3 || content.msgType == 8 || content.msgType == 9 || content.msgType == 10) {
-                            val entity = MessageEntity().apply {
-                                sessionId = content.sessionId
-                                senderUid = content.senderUid
-                                msgBody = content.msgBody
-                                clientMsgID = content.clientMsgID
-                                msgType = content.msgType
-                                sendTime = content.sendTime.toLong()
-                                msgSeq = content.msgSeq
-                                readed = (content.status == 1)
-                            }
-                            IMLocalRepository.insertMessage(entity)
+        result.onSuccess { history ->
+            Log.d(RETROFIT, "会话历史: ${history.data.content.size}")
+            Log.d(REALM, "History sync")
+            if (history.data.content.isNotEmpty()) {
+                seq = history.data.content.last().msgSeq
+                for (content in history.data.content) {
+                    if (content.msgType == 1 || content.msgType == 2 || content.msgType == 3 || content.msgType == 8 || content.msgType == 9 || content.msgType == 10) {
+                        val entity = MessageEntity().apply {
+                            sessionId = content.sessionId
+                            senderUid = content.senderUid
+                            msgBody = content.msgBody
+                            clientMsgID = content.clientMsgID
+                            msgType = content.msgType
+                            sendTime = content.sendTime.toLong()
+                            msgSeq = content.msgSeq
+                            readed = (content.status == 1)
                         }
+                        IMLocalRepository.insertMessage(entity)
                     }
                 }
-                syncPageInfo(currentSession)
-            }.onFailure { err ->
-                Log.d(RETROFIT, "会话历史异常: $err")
             }
+            syncPageInfo(currentSession)
+        }.onFailure { err ->
+            Log.d(RETROFIT, "会话历史异常: $err")
         }
     }
 
@@ -775,7 +779,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun send(messageSent: () -> Unit, preSend: () -> Unit, msgBody: MsgBody) {
-        if (!endSession) {
+        if (endSession) {
             realInitSdk()
         }
 
@@ -1298,7 +1302,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         val job = jobs[clientMsgId]
         job?.cancel()
         progress?.let {
-            viewModelScope.launch(Dispatchers.IO) {
+            viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
                 Log.d(CONTINUE_UPLOAD, "暂停上传进度: ${it.value}")
                 val mergeReq = mergeMultiUploadReqQueue[clientMsgId]
                 val uploadTask = uploadTasks[clientMsgId]
