@@ -5168,6 +5168,46 @@ public final class IMMsg {
      */
     com.google.protobuf.ByteString
         getTitleBytes();
+
+    /**
+     * <pre>
+     * 发送人昵称
+     * </pre>
+     *
+     * <code>string senderNickname = 13;</code>
+     * @return The senderNickname.
+     */
+    java.lang.String getSenderNickname();
+    /**
+     * <pre>
+     * 发送人昵称
+     * </pre>
+     *
+     * <code>string senderNickname = 13;</code>
+     * @return The bytes for senderNickname.
+     */
+    com.google.protobuf.ByteString
+        getSenderNicknameBytes();
+
+    /**
+     * <pre>
+     * 发送人头像
+     * </pre>
+     *
+     * <code>string senderFaceURL = 14;</code>
+     * @return The senderFaceURL.
+     */
+    java.lang.String getSenderFaceURL();
+    /**
+     * <pre>
+     * 发送人头像
+     * </pre>
+     *
+     * <code>string senderFaceURL = 14;</code>
+     * @return The bytes for senderFaceURL.
+     */
+    com.google.protobuf.ByteString
+        getSenderFaceURLBytes();
   }
   /**
    * Protobuf type {@code MsgBody}
@@ -5200,6 +5240,8 @@ public final class IMMsg {
       sessionId_ = "";
       sendTime_ = "";
       title_ = "";
+      senderNickname_ = "";
+      senderFaceURL_ = "";
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
@@ -5662,6 +5704,100 @@ public final class IMMsg {
       }
     }
 
+    public static final int SENDERNICKNAME_FIELD_NUMBER = 13;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object senderNickname_ = "";
+    /**
+     * <pre>
+     * 发送人昵称
+     * </pre>
+     *
+     * <code>string senderNickname = 13;</code>
+     * @return The senderNickname.
+     */
+    @java.lang.Override
+    public java.lang.String getSenderNickname() {
+      java.lang.Object ref = senderNickname_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        senderNickname_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * 发送人昵称
+     * </pre>
+     *
+     * <code>string senderNickname = 13;</code>
+     * @return The bytes for senderNickname.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getSenderNicknameBytes() {
+      java.lang.Object ref = senderNickname_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        senderNickname_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int SENDERFACEURL_FIELD_NUMBER = 14;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object senderFaceURL_ = "";
+    /**
+     * <pre>
+     * 发送人头像
+     * </pre>
+     *
+     * <code>string senderFaceURL = 14;</code>
+     * @return The senderFaceURL.
+     */
+    @java.lang.Override
+    public java.lang.String getSenderFaceURL() {
+      java.lang.Object ref = senderFaceURL_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        senderFaceURL_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * 发送人头像
+     * </pre>
+     *
+     * <code>string senderFaceURL = 14;</code>
+     * @return The bytes for senderFaceURL.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getSenderFaceURLBytes() {
+      java.lang.Object ref = senderFaceURL_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        senderFaceURL_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -5712,6 +5848,12 @@ public final class IMMsg {
       if (!com.google.protobuf.GeneratedMessage.isStringEmpty(title_)) {
         com.google.protobuf.GeneratedMessage.writeString(output, 12, title_);
       }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(senderNickname_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 13, senderNickname_);
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(senderFaceURL_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 14, senderFaceURL_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -5761,6 +5903,12 @@ public final class IMMsg {
       if (!com.google.protobuf.GeneratedMessage.isStringEmpty(title_)) {
         size += com.google.protobuf.GeneratedMessage.computeStringSize(12, title_);
       }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(senderNickname_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(13, senderNickname_);
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(senderFaceURL_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(14, senderFaceURL_);
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -5799,6 +5947,10 @@ public final class IMMsg {
           .equals(other.getSendTime())) return false;
       if (!getTitle()
           .equals(other.getTitle())) return false;
+      if (!getSenderNickname()
+          .equals(other.getSenderNickname())) return false;
+      if (!getSenderFaceURL()
+          .equals(other.getSenderFaceURL())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -5835,6 +5987,10 @@ public final class IMMsg {
       hash = (53 * hash) + getSendTime().hashCode();
       hash = (37 * hash) + TITLE_FIELD_NUMBER;
       hash = (53 * hash) + getTitle().hashCode();
+      hash = (37 * hash) + SENDERNICKNAME_FIELD_NUMBER;
+      hash = (53 * hash) + getSenderNickname().hashCode();
+      hash = (37 * hash) + SENDERFACEURL_FIELD_NUMBER;
+      hash = (53 * hash) + getSenderFaceURL().hashCode();
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -5978,6 +6134,8 @@ public final class IMMsg {
         sessionId_ = "";
         sendTime_ = "";
         title_ = "";
+        senderNickname_ = "";
+        senderFaceURL_ = "";
         return this;
       }
 
@@ -6047,6 +6205,12 @@ public final class IMMsg {
         if (((from_bitField0_ & 0x00000800) != 0)) {
           result.title_ = title_;
         }
+        if (((from_bitField0_ & 0x00001000) != 0)) {
+          result.senderNickname_ = senderNickname_;
+        }
+        if (((from_bitField0_ & 0x00002000) != 0)) {
+          result.senderFaceURL_ = senderFaceURL_;
+        }
       }
 
       @java.lang.Override
@@ -6111,6 +6275,16 @@ public final class IMMsg {
         if (!other.getTitle().isEmpty()) {
           title_ = other.title_;
           bitField0_ |= 0x00000800;
+          onChanged();
+        }
+        if (!other.getSenderNickname().isEmpty()) {
+          senderNickname_ = other.senderNickname_;
+          bitField0_ |= 0x00001000;
+          onChanged();
+        }
+        if (!other.getSenderFaceURL().isEmpty()) {
+          senderFaceURL_ = other.senderFaceURL_;
+          bitField0_ |= 0x00002000;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -6199,6 +6373,16 @@ public final class IMMsg {
                 bitField0_ |= 0x00000800;
                 break;
               } // case 98
+              case 106: {
+                senderNickname_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00001000;
+                break;
+              } // case 106
+              case 114: {
+                senderFaceURL_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00002000;
+                break;
+              } // case 114
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -7153,6 +7337,190 @@ public final class IMMsg {
         checkByteStringIsUtf8(value);
         title_ = value;
         bitField0_ |= 0x00000800;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object senderNickname_ = "";
+      /**
+       * <pre>
+       * 发送人昵称
+       * </pre>
+       *
+       * <code>string senderNickname = 13;</code>
+       * @return The senderNickname.
+       */
+      public java.lang.String getSenderNickname() {
+        java.lang.Object ref = senderNickname_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          senderNickname_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 发送人昵称
+       * </pre>
+       *
+       * <code>string senderNickname = 13;</code>
+       * @return The bytes for senderNickname.
+       */
+      public com.google.protobuf.ByteString
+          getSenderNicknameBytes() {
+        java.lang.Object ref = senderNickname_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          senderNickname_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 发送人昵称
+       * </pre>
+       *
+       * <code>string senderNickname = 13;</code>
+       * @param value The senderNickname to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSenderNickname(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        senderNickname_ = value;
+        bitField0_ |= 0x00001000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 发送人昵称
+       * </pre>
+       *
+       * <code>string senderNickname = 13;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearSenderNickname() {
+        senderNickname_ = getDefaultInstance().getSenderNickname();
+        bitField0_ = (bitField0_ & ~0x00001000);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 发送人昵称
+       * </pre>
+       *
+       * <code>string senderNickname = 13;</code>
+       * @param value The bytes for senderNickname to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSenderNicknameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        senderNickname_ = value;
+        bitField0_ |= 0x00001000;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object senderFaceURL_ = "";
+      /**
+       * <pre>
+       * 发送人头像
+       * </pre>
+       *
+       * <code>string senderFaceURL = 14;</code>
+       * @return The senderFaceURL.
+       */
+      public java.lang.String getSenderFaceURL() {
+        java.lang.Object ref = senderFaceURL_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          senderFaceURL_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 发送人头像
+       * </pre>
+       *
+       * <code>string senderFaceURL = 14;</code>
+       * @return The bytes for senderFaceURL.
+       */
+      public com.google.protobuf.ByteString
+          getSenderFaceURLBytes() {
+        java.lang.Object ref = senderFaceURL_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          senderFaceURL_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 发送人头像
+       * </pre>
+       *
+       * <code>string senderFaceURL = 14;</code>
+       * @param value The senderFaceURL to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSenderFaceURL(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        senderFaceURL_ = value;
+        bitField0_ |= 0x00002000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 发送人头像
+       * </pre>
+       *
+       * <code>string senderFaceURL = 14;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearSenderFaceURL() {
+        senderFaceURL_ = getDefaultInstance().getSenderFaceURL();
+        bitField0_ = (bitField0_ & ~0x00002000);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 发送人头像
+       * </pre>
+       *
+       * <code>string senderFaceURL = 14;</code>
+       * @param value The bytes for senderFaceURL to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSenderFaceURLBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        senderFaceURL_ = value;
+        bitField0_ |= 0x00002000;
         onChanged();
         return this;
       }
@@ -12472,31 +12840,32 @@ public final class IMMsg {
       "(\0132\016.EndSessionMsg\"5\n\004Join\022\013\n\003uid\030\001 \001(\t\022" +
       "\021\n\tsessionId\030\002 \001(\t\022\r\n\005token\030\003 \001(\t\"/\n\010Joi" +
       "nResp\022\021\n\tsessionId\030\001 \001(\t\022\020\n\010serverId\030\002 \001" +
-      "(\t\"\352\001\n\007MsgBody\022\021\n\tsenderUid\030\001 \001(\t\022\023\n\013rec" +
+      "(\t\"\231\002\n\007MsgBody\022\021\n\tsenderUid\030\001 \001(\t\022\023\n\013rec" +
       "eiverUid\030\002 \001(\t\022\031\n\007msgType\030\003 \001(\0162\010.MsgTyp" +
       "e\022\016\n\006msgSeq\030\004 \001(\005\022\016\n\006encKey\030\005 \001(\t\022\017\n\007msg" +
       "Body\030\006 \001(\t\022\016\n\006status\030\007 \001(\005\022\022\n\ncreateTime" +
       "\030\010 \001(\003\022\023\n\013clientMsgID\030\t \001(\t\022\021\n\tsessionId" +
-      "\030\n \001(\t\022\020\n\010sendTime\030\013 \001(\t\022\r\n\005title\030\014 \001(\t\"" +
-      "\303\001\n\014SessionBasic\022\021\n\tsessionId\030\001 \001(\t\022\020\n\010h" +
-      "eadIcon\030\002 \001(\t\022\013\n\003uid\030\003 \001(\t\022\016\n\006source\030\004 \001" +
-      "(\t\022\020\n\010nickName\030\005 \001(\t\022\r\n\005devNo\030\006 \001(\t\022\022\n\nc" +
-      "reateTime\030\007 \001(\003\022\020\n\010language\030\010 \001(\t\022\r\n\005ext" +
-      "ra\030\t \001(\t\022\033\n\tlatestMsg\030\n \001(\0132\010.MsgBody\"7\n" +
-      "\020CreateSessionMsg\022#\n\014sessionBasic\030\001 \001(\0132" +
-      "\r.SessionBasic\"+\n\027AgentUserJoinSessionMs" +
-      "g\022\020\n\010username\030\001 \001(\t\";\n\021HasReadReceiptMsg" +
-      "\022\021\n\tsessionID\030\001 \001(\t\022\023\n\013hasReadSeqs\030\002 \003(\003" +
-      "\"4\n\016KickOffLineMsg\022\016\n\006userID\030\001 \001(\t\022\022\n\nid" +
-      "entityID\030\002 \001(\t\"\"\n\rEndSessionMsg\022\021\n\tsessi" +
-      "onID\030\001 \001(\t*\230\002\n\007MsgType\022\016\n\nJoinServer\020\000\022\017" +
-      "\n\013TextMsgType\020\001\022\016\n\nImgMsgType\020\002\022\020\n\014Video" +
-      "MsgType\020\003\022\030\n\024CreateSessionMsgType\020\004\022\037\n\033A" +
-      "gentUserJoinSessionMsgType\020\005\022\031\n\025HasReadR" +
-      "eceiptMsgType\020\006\022\026\n\022KickOffLineMsgType\020\007\022" +
-      "\016\n\nFaqMsgType\020\010\022\031\n\025KnowledgePointMsgType" +
-      "\020\t\022\032\n\026KnowledgeAnswerMsgType\020\n\022\025\n\021EndSes" +
-      "sionMsgType\020\013B\tB\005IMMsgP\000b\006proto3"
+      "\030\n \001(\t\022\020\n\010sendTime\030\013 \001(\t\022\r\n\005title\030\014 \001(\t\022" +
+      "\026\n\016senderNickname\030\r \001(\t\022\025\n\rsenderFaceURL" +
+      "\030\016 \001(\t\"\303\001\n\014SessionBasic\022\021\n\tsessionId\030\001 \001" +
+      "(\t\022\020\n\010headIcon\030\002 \001(\t\022\013\n\003uid\030\003 \001(\t\022\016\n\006sou" +
+      "rce\030\004 \001(\t\022\020\n\010nickName\030\005 \001(\t\022\r\n\005devNo\030\006 \001" +
+      "(\t\022\022\n\ncreateTime\030\007 \001(\003\022\020\n\010language\030\010 \001(\t" +
+      "\022\r\n\005extra\030\t \001(\t\022\033\n\tlatestMsg\030\n \001(\0132\010.Msg" +
+      "Body\"7\n\020CreateSessionMsg\022#\n\014sessionBasic" +
+      "\030\001 \001(\0132\r.SessionBasic\"+\n\027AgentUserJoinSe" +
+      "ssionMsg\022\020\n\010username\030\001 \001(\t\";\n\021HasReadRec" +
+      "eiptMsg\022\021\n\tsessionID\030\001 \001(\t\022\023\n\013hasReadSeq" +
+      "s\030\002 \003(\003\"4\n\016KickOffLineMsg\022\016\n\006userID\030\001 \001(" +
+      "\t\022\022\n\nidentityID\030\002 \001(\t\"\"\n\rEndSessionMsg\022\021" +
+      "\n\tsessionID\030\001 \001(\t*\230\002\n\007MsgType\022\016\n\nJoinSer" +
+      "ver\020\000\022\017\n\013TextMsgType\020\001\022\016\n\nImgMsgType\020\002\022\020" +
+      "\n\014VideoMsgType\020\003\022\030\n\024CreateSessionMsgType" +
+      "\020\004\022\037\n\033AgentUserJoinSessionMsgType\020\005\022\031\n\025H" +
+      "asReadReceiptMsgType\020\006\022\026\n\022KickOffLineMsg" +
+      "Type\020\007\022\016\n\nFaqMsgType\020\010\022\031\n\025KnowledgePoint" +
+      "MsgType\020\t\022\032\n\026KnowledgeAnswerMsgType\020\n\022\025\n" +
+      "\021EndSessionMsgType\020\013B\tB\005IMMsgP\000b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -12537,7 +12906,7 @@ public final class IMMsg {
     internal_static_MsgBody_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_MsgBody_descriptor,
-        new java.lang.String[] { "SenderUid", "ReceiverUid", "MsgType", "MsgSeq", "EncKey", "MsgBody", "Status", "CreateTime", "ClientMsgID", "SessionId", "SendTime", "Title", });
+        new java.lang.String[] { "SenderUid", "ReceiverUid", "MsgType", "MsgSeq", "EncKey", "MsgBody", "Status", "CreateTime", "ClientMsgID", "SessionId", "SendTime", "Title", "SenderNickname", "SenderFaceURL", });
     internal_static_SessionBasic_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_SessionBasic_fieldAccessorTable = new

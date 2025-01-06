@@ -102,7 +102,6 @@ import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel
 import com.lbe.imsdk.ui.presentation.viewmodel.ConnectionStatus
 import com.lbe.imsdk.utils.FileUtils
 import com.lbe.imsdk.utils.TimeUtils
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -120,7 +119,7 @@ enum class MessagePosition {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Appbar() {
+fun Appbar(viewModel: ChatScreenViewModel) {
     val ctx = LocalContext.current
 
     CenterAlignedTopAppBar(
@@ -147,6 +146,17 @@ fun Appbar() {
                 )
             }
         },
+        actions = {
+            IconButton(onClick = {
+                viewModel.turnCustomerService()
+            }) {
+                Image(
+                    painter = painterResource(R.drawable.cs),
+                    contentDescription = "Localized description",
+                    modifier = Modifier.size(width = 24.dp, height = 24.dp)
+                )
+            }
+        }
     )
 }
 
@@ -246,7 +256,7 @@ fun ChatScreen(
         }
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { Appbar() }) { innerPadding ->
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { Appbar(viewModel) }) { innerPadding ->
         Surface(color = Color(0xFFF3F4F6), modifier = Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
@@ -751,7 +761,7 @@ fun MessageItem(
         contentAlignment = if (messagePosition == MessagePosition.LEFT) Alignment.TopStart else Alignment.BottomEnd
     ) {
         if (messagePosition == MessagePosition.LEFT) {
-            RecievFromCs(
+            RecievedFromCustomerService(
                 messages,
                 message,
                 messagePosition,
@@ -773,7 +783,7 @@ fun MessageItem(
 }
 
 @Composable
-fun RecievFromCs(
+fun RecievedFromCustomerService(
     messages: List<MessageEntity>,
     message: MessageEntity,
     messagePosition: MessagePosition,
@@ -812,17 +822,29 @@ fun RecievFromCs(
         }
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-            Image(
-                painter = painterResource(id = R.drawable.cs_avatar),
-                contentDescription = "",
-                modifier = Modifier.size(32.dp)
-            )
+            if (message.customerServiceAvatar.isNotEmpty()) {
+                AsyncImage(
+                    model = message.customerServiceAvatar,
+                    contentDescription = "Yo",
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape),
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.cs_avatar),
+                    contentDescription = "",
+                    modifier = Modifier.size(32.dp)
+                )
+            }
 
             Column(
                 modifier = Modifier.padding(8.dp)
             ) {
                 Text(
                     text = message.senderUid.ifEmpty { "客服机器人" },
+//                    text = message.customerServiceNickname,
                     modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
                     style = TextStyle(
                         fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)

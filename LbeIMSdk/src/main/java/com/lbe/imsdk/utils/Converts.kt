@@ -44,6 +44,8 @@ object Converts {
             clientMsgID = proto.clientMsgID.ifEmpty { "${uuidGen()}_${timeStampGen()}" }
             sendTime = proto.clientMsgID.split("-").last().toLong()
             faqListTile = proto.title
+            customerServiceNickname = proto.senderNickname
+            customerServiceAvatar = proto.senderFaceURL
         }
         Log.d("Convert protoToEntity", entity.toString())
         return entity

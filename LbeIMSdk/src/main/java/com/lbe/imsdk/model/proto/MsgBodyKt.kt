@@ -335,6 +335,56 @@ public object MsgBodyKt {
     public fun clearTitle() {
       _builder.clearTitle()
     }
+
+    /**
+     * ```
+     * 发送人昵称
+     * ```
+     *
+     * `string senderNickname = 13;`
+     */
+    public var senderNickname: kotlin.String
+      @JvmName("getSenderNickname")
+      get() = _builder.senderNickname
+      @JvmName("setSenderNickname")
+      set(value) {
+        _builder.senderNickname = value
+      }
+    /**
+     * ```
+     * 发送人昵称
+     * ```
+     *
+     * `string senderNickname = 13;`
+     */
+    public fun clearSenderNickname() {
+      _builder.clearSenderNickname()
+    }
+
+    /**
+     * ```
+     * 发送人头像
+     * ```
+     *
+     * `string senderFaceURL = 14;`
+     */
+    public var senderFaceURL: kotlin.String
+      @JvmName("getSenderFaceURL")
+      get() = _builder.senderFaceURL
+      @JvmName("setSenderFaceURL")
+      set(value) {
+        _builder.senderFaceURL = value
+      }
+    /**
+     * ```
+     * 发送人头像
+     * ```
+     *
+     * `string senderFaceURL = 14;`
+     */
+    public fun clearSenderFaceURL() {
+      _builder.clearSenderFaceURL()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic

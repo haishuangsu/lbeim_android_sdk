@@ -39,6 +39,7 @@ fun ExoPlayerView(url: String) {
 
     DisposableEffect(Unit) {
         onDispose {
+            exoPlayer.stop()
             exoPlayer.release()
         }
     }
@@ -53,7 +54,7 @@ fun ExoPlayerView(url: String) {
                     player = exoPlayer
                     useController = true
                     resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
-                    logChildViewIds(this)
+//                    logChildViewIds(this)
                     findViewById<View>(ExoPlayerUiR.id.exo_prev)?.visibility = View.GONE
                     findViewById<View>(ExoPlayerUiR.id.exo_next)?.visibility = View.GONE
                     findViewById<View>(ExoPlayerUiR.id.exo_rew_with_amount)?.visibility = View.GONE

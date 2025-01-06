@@ -34,6 +34,9 @@ class MessageEntity : RealmObject {
 
     var uploadTask: UploadTask? = null
 
+    var customerServiceNickname: String = ""
+    var customerServiceAvatar: String = ""
+
     var timestamp: RealmInstant = RealmInstant.now()
 
     companion object {

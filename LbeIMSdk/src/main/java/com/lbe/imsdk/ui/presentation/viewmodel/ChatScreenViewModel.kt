@@ -164,7 +164,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         println("coroutineExceptionHandler --->> Unhandled exception: ${throwable.message}")
     }
 
-    private val pingTimer = Timer()
+    private var pingTimer: Timer? = null
 
     init {
         networkMonitor.startMonitoring()
@@ -182,7 +182,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         if (sdkInit) {
             sdkInit = false
             jobs["sdkJob"]?.cancel()
-            pingTimer.cancel()
+            pingTimer?.cancel()
+            pingTimer = null
         }
     }
 
@@ -288,7 +289,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     device = initArgs.device,
                     source = initArgs.source,
                     extraInfo = "",
-                    headIcon = "",
+                    headIcon = initArgs.headerIcon,
                     uid = "",
                 )
             )
@@ -527,8 +528,10 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun turnCustomerService() {
-        viewModelScope.launch(Dispatchers.IO) {
-            delay(500)
+        if (!sdkInit) {
+            return
+        }
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             try {
                 val turnCSResp = LbeImRepository.turnCustomerService(
                     lbeSign = lbeSign,
@@ -537,7 +540,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     lbeSession = lbeSession,
                 )
             } catch (e: Exception) {
-                println("Fetch turnCSResp  error --->>>  $e")
+                Log.d(RETROFIT, "Fetch turnCSResp  error: $e")
             }
         }
     }
@@ -660,7 +663,6 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                         }
                         seq = receivedReq
                         recivCount.value += 1
-                        recived.value += ","
                     }
 
                     Log.d(
@@ -675,6 +677,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                         IMLocalRepository.insertMessage(entity)
                         if (entity.senderUid != uid) {
                             addSingleMsgToUI(entity)
+                            recived.value += ","
                         }
                     }
                 }
@@ -708,7 +711,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         val period = 1000 * 15L
         val toServer = IMMsg.MsgEntityToServer.newBuilder().setMsgType(IMMsg.MsgType.TextMsgType)
             .setMsgBody(IMMsg.MsgBody.newBuilder().setMsgBody("ping").build()).build()
-        pingTimer.schedule(object : TimerTask() {
+        if (pingTimer == null) pingTimer = Timer()
+        pingTimer?.schedule(object : TimerTask() {
             override fun run() {
                 Log.d("Ping Job", toServer.toString())
                 chatService?.sendMessage(toServer.toByteArray())

@@ -334,7 +334,10 @@ fun MsgTypeContent(
                 val faqDetailList = Gson().fromJson<MutableList<FaqDetail>>(
                     message.msgBody, faqDetailListType
                 )
-                Log.d("Faq", "Topic detail list --->>> $faqDetailList")
+                Log.d(
+                    "Faq",
+                    "Topic detail list | msgType: ${message.msgType} | --->>> 序列化前:${message.msgBody}, \n序列化后: $faqDetailList\n\n"
+                )
                 Surface(
                     color = Color.White, modifier = Modifier.clip(
                         RoundedCornerShape(
@@ -355,15 +358,18 @@ fun MsgTypeContent(
                         )
 
                         for (detail in faqDetailList) {
-                            Text(detail.knowledgePointName, style = TextStyle(
-                                color = Color(0xff0054FC),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.W500,
-                            ), modifier = Modifier
-                                .padding(top = 8.dp)
-                                .clickable {
-                                    viewModel.faq(FaqReqBody(faqType = 2, id = detail.id))
-                                })
+                            Text(detail.knowledgePointName,
+//                                if (detail.knowledgePointName == null) "" else detail.knowledgePointName,
+                                style = TextStyle(
+                                    color = Color(0xff0054FC),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.W500,
+                                ),
+                                modifier = Modifier
+                                    .padding(top = 8.dp)
+                                    .clickable {
+                                        viewModel.faq(FaqReqBody(faqType = 2, id = detail.id))
+                                    })
                         }
                     }
                 }
