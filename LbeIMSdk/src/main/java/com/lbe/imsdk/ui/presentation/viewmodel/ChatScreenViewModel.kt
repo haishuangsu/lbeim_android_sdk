@@ -208,10 +208,10 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             args.headerIcon.ifEmpty { "https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg" }
         lbeIdentity = args.lbeIdentity
         initArgs = args
-        realInitSdk()
+        realInitSdk(sendJob = {})
     }
 
-    private fun realInitSdk() {
+    private fun realInitSdk(sendJob: () -> Unit) {
         val sdkJob = viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             try {
                 println("NetworkMonitor [prepare]---->>> ${networkMonitor.isNetworkAvailable()}")
@@ -224,9 +224,11 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                 viewModelScope.launch(Dispatchers.IO) {
                     fetchSessionList()
                     observerConnection()
+                    sendJob()
                     fetchTimeoutConfig()
                     faq(faqReqBody = FaqReqBody(faqType = 0, id = ""))
                     sdkInit = true
+                    endSession = false
                     schedulePingJob()
                 }
             } catch (e: Exception) {
@@ -768,6 +770,23 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
     fun sendMessageFromTextInput(messageSent: () -> Unit) {
         if ((_inputMsg.value ?: "").isEmpty()) return
+
+        if (endSession) {
+            sessionList.clear()
+            currentSessionIndex = 0
+            realInitSdk(sendJob = {
+                val sendBody = genMsgBody(type = 1, msgBody = _inputMsg.value ?: "")
+                send(
+                    messageSent = messageSent,
+                    preSend = {
+                        insertCacheMaybeUpdateUI(sendBody, localFile = null, updateUI = false)
+                    },
+                    sendBody,
+                )
+            })
+            return
+        }
+
         val sendBody = genMsgBody(type = 1, msgBody = _inputMsg.value ?: "")
         send(
             messageSent = messageSent,
@@ -779,14 +798,20 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun senMessageFromMedia(msgBody: MsgBody, preSend: () -> Unit) {
+        if (endSession) {
+            sessionList.clear()
+            currentSessionIndex = 0
+            realInitSdk(sendJob = {
+                send(messageSent = {}, preSend = preSend, msgBody = msgBody)
+
+            })
+            return
+        }
+
         send(messageSent = {}, preSend = preSend, msgBody = msgBody)
     }
 
     private fun send(messageSent: () -> Unit, preSend: () -> Unit, msgBody: MsgBody) {
-        if (endSession) {
-            realInitSdk()
-        }
-
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             preSend()
             try {

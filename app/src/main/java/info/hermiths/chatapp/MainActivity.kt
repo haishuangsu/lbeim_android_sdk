@@ -53,18 +53,25 @@ class MainActivity : ComponentActivity() {
 fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String, lbeSign: String, phone: String, email: String, language: String, device: String) -> Unit) {
     // HermitK15
     // HermitK1, sit
-    var nickId by remember { mutableStateOf("android004") }
-    var nickName by remember { mutableStateOf("android004") }
+    var nickId by remember { mutableStateOf("android005") }
+    var nickName by remember { mutableStateOf("android005") }
 
     // dev: 42nz10y3hhah; faq: 43hw3seddn2i
 //    var lbeIdentity by remember { mutableStateOf("43hw3seddn2i") }
 
     // sit: my: 441zy52mn2yy
-    var lbeIdentity by remember { mutableStateOf("43qf47gjuimi") }
-//    var lbeIdentity by remember { mutableStateOf("") }
+    // uat: 45rbasttz8nt
+    var lbeIdentity by remember { mutableStateOf("45vhxodzxswp") }
 
-    var lbeSign by remember { mutableStateOf("b184b8e64c5b0004c58b5a3c9af6f3868d63018737e68e2a1ccc61580afbc8f112119431511175252d169f0c64d9995e5de2339fdae5cbddda93b65ce305217700") }
-//    var lbeSign by remember { mutableStateOf("") }
+    // sit
+//    var lbeSign by remember { mutableStateOf("b184b8e64c5b0004c58b5a3c9af6f3868d63018737e68e2a1ccc61580afbc8f112119431511175252d169f0c64d9995e5de2339fdae5cbddda93b65ce305217700") }
+
+    // test
+//    var lbeSign by remember { mutableStateOf("0xad1701e4fd5456c87541a6bb5ccd41ae626d2a0bd52b6ff7fa78b7276632b5ff47386d2ed0cafa53ffb7364880c7e30a7e3688b6efc59a1ba9cda2f4216d2e9c1b") }
+
+    // uat
+    // me: 0xc3620a07c69a191b3b2fb431bd26c8417413f4998e6fc2fc2c570bd1145ac004780d13db14290687a94d9b30804b1a8a2edb8b7828c6c45a55fc8d1e78f98dec1c
+    var lbeSign by remember { mutableStateOf("0xc3620a07c69a191b3b2fb431bd26c8417413f4998e6fc2fc2c570bd1145ac004780d13db14290687a94d9b30804b1a8a2edb8b7828c6c45a55fc8d1e78f98dec1c") }
 
     var phone by remember { mutableStateOf("") }
 
