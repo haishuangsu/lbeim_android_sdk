@@ -93,11 +93,14 @@ import coil3.compose.AsyncImage
 
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.gson.Gson
 import com.lbe.imsdk.R
 import com.lbe.imsdk.model.MediaMessage
 import com.lbe.imsdk.model.MessageEntity
+import com.lbe.imsdk.model.resp.IconUrl
 
 import com.lbe.imsdk.ui.presentation.components.MsgTypeContent
+import com.lbe.imsdk.ui.presentation.components.NormalDecryptedOrNotImageView
 import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel
 import com.lbe.imsdk.ui.presentation.viewmodel.ConnectionStatus
 import com.lbe.imsdk.utils.FileUtils
@@ -122,42 +125,37 @@ enum class MessagePosition {
 fun Appbar(viewModel: ChatScreenViewModel) {
     val ctx = LocalContext.current
 
-    CenterAlignedTopAppBar(
-        title = {
-            Text(
-                "在线客服", style = TextStyle(
-                    color = Color(0xff18243E), fontSize = 18.sp, fontWeight = FontWeight.W500
-                )
+    CenterAlignedTopAppBar(title = {
+        Text(
+            "在线客服", style = TextStyle(
+                color = Color(0xff18243E), fontSize = 18.sp, fontWeight = FontWeight.W500
             )
-        },
-        colors = topAppBarColors(
-            containerColor = Color(0xFFF3F4F6), titleContentColor = Color.Black
-        ),
-        navigationIcon = {
-            IconButton(onClick = {
-                if (ctx is Activity) {
-                    ctx.finish()
-                }
-            }) {
-                Image(
-                    painter = painterResource(R.drawable.back),
-                    contentDescription = "Localized description",
-                    modifier = Modifier.size(width = 24.dp, height = 24.dp)
-                )
+        )
+    }, colors = topAppBarColors(
+        containerColor = Color(0xFFF3F4F6), titleContentColor = Color.Black
+    ), navigationIcon = {
+        IconButton(onClick = {
+            if (ctx is Activity) {
+                ctx.finish()
             }
-        },
-        actions = {
-            IconButton(onClick = {
-                viewModel.turnCustomerService()
-            }) {
-                Image(
-                    painter = painterResource(R.drawable.cs),
-                    contentDescription = "Localized description",
-                    modifier = Modifier.size(width = 24.dp, height = 24.dp)
-                )
-            }
+        }) {
+            Image(
+                painter = painterResource(R.drawable.back),
+                contentDescription = "Localized description",
+                modifier = Modifier.size(width = 24.dp, height = 24.dp)
+            )
         }
-    )
+    }, actions = {
+        IconButton(onClick = {
+            viewModel.turnCustomerService()
+        }) {
+            Image(
+                painter = painterResource(R.drawable.cs),
+                contentDescription = "Localized description",
+                modifier = Modifier.size(width = 24.dp, height = 24.dp)
+            )
+        }
+    })
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -823,13 +821,15 @@ fun RecievedFromCustomerService(
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
             if (message.customerServiceAvatar.isNotEmpty()) {
-                AsyncImage(
-                    model = message.customerServiceAvatar,
-                    contentDescription = "Yo",
-                    contentScale = ContentScale.FillBounds,
+                val iconUrl =
+                    Gson().fromJson(message.customerServiceAvatar, IconUrl::class.java)
+                NormalDecryptedOrNotImageView(
+                    key = iconUrl.key,
+                    url = iconUrl.url,
                     modifier = Modifier
                         .size(32.dp)
                         .clip(CircleShape),
+                    imageLoader
                 )
             } else {
                 Image(
@@ -843,8 +843,8 @@ fun RecievedFromCustomerService(
                 modifier = Modifier.padding(8.dp)
             ) {
                 Text(
-                    text = message.senderUid.ifEmpty { "客服机器人" },
-//                    text = message.customerServiceNickname,
+//                    text = message.senderUid.ifEmpty { "客服机器人" },
+                    text = message.customerServiceNickname,
                     modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
                     style = TextStyle(
                         fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)
