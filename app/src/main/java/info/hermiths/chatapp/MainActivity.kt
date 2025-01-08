@@ -22,6 +22,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 import com.lbe.imsdk.LbeSdk
+import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.lbeIdentity
+import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.lbeSign
 import info.hermiths.lbesdk.ui.theme.ChatAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -52,12 +54,12 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String, lbeSign: String, phone: String, email: String, language: String, device: String) -> Unit) {
     // HermitK1
-    var nickId by remember { mutableStateOf("HermitK3") }
-    var nickName by remember { mutableStateOf("HermitK3") }
+    var nickId by remember { mutableStateOf("android015") }
+    var nickName by remember { mutableStateOf("android015") }
 
     // dev
-    var lbeSign by remember { mutableStateOf("0xaee7b220061d450ef94406f819edec6f9402a1a41205e75e394519c02a527e3d1527e166ea6c868075b094d3bddbb1b274ccef66dd247ebec6930276f361088b1b") }
-    var lbeIdentity by remember { mutableStateOf("441z9t7ucki1") }
+//    var lbeSign by remember { mutableStateOf("0xaee7b220061d450ef94406f819edec6f9402a1a41205e75e394519c02a527e3d1527e166ea6c868075b094d3bddbb1b274ccef66dd247ebec6930276f361088b1b") }
+//    var lbeIdentity by remember { mutableStateOf("441z9t7ucki1") }
 
     // sit
 //    var lbeSign by remember { mutableStateOf("0x9d63fcec00dffa1e7bbebfa4f0afa80f5f26614613b29357d580b69b708d2d893b6eef2d013828830f9c52f647edcd9ebc5ec73900d178b4c1a27732fb24cefe1b") }
@@ -68,8 +70,8 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
     // var lbeIdentity by remember { mutableStateOf("45vhxodzxswp") }
 
     // test
-//    var lbeSign by remember { mutableStateOf("0xad1701e4fd5456c87541a6bb5ccd41ae626d2a0bd52b6ff7fa78b7276632b5ff47386d2ed0cafa53ffb7364880c7e30a7e3688b6efc59a1ba9cda2f4216d2e9c1b") }
-//    var lbeIdentity by remember { mutableStateOf("43qf47gjuimi") }
+    var lbeSign by remember { mutableStateOf("0xad1701e4fd5456c87541a6bb5ccd41ae626d2a0bd52b6ff7fa78b7276632b5ff47386d2ed0cafa53ffb7364880c7e30a7e3688b6efc59a1ba9cda2f4216d2e9c1b") }
+    var lbeIdentity by remember { mutableStateOf("43qf47gjuimi") }
 //    android015
 
     var phone by remember { mutableStateOf("") }

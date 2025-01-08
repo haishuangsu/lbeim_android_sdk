@@ -78,13 +78,13 @@ fun ThumbDecryptedOrNotImageView(
                 if (fullUrl.isNotEmpty()) {
                     navController.navigate("${NavRoute.MEDIA_VIEWER}/${message.clientMsgID}")
                 } else {
-                    if (message.localFile?.isBigFile == true) {
-                        if (!message.pendingUpload) {
-                            Log.d(
-                                CONTINUE_UPLOAD,
-                                "断点暂停, 缓存的进度： ${message.uploadTask?.progress}"
-                            )
-                            viewModel?.cancelJob(message.clientMsgID, progress = progress)
+                    Log.d(
+                        CONTINUE_UPLOAD,
+                        "断点暂停 --->>> canPending: ${message.canPending}, progress： ${message.uploadTask?.progress}"
+                    )
+                    if (message.localFile?.isBigFile == true && message.canPending) {
+                        if (!message.pendingUpload && (message.uploadTask?.progress != 1.0f)) {
+                            viewModel?.pendingUpload(message.clientMsgID, progress = progress)
                         } else {
                             Log.d(CONTINUE_UPLOAD, "续传 ---->>>> ${message.uploadTask}")
                             Log.d(

@@ -72,6 +72,18 @@ object IMLocalRepository {
         }
     }
 
+    suspend fun findMediaMsgUpdateCanPending(clientMsgID: String) {
+        Log.d(
+            ChatScreenViewModel.REALM, "发送 Media 消息 --- $clientMsgID ---->>> 大文件上传续传"
+        )
+        realm.write {
+            val msg = query<MessageEntity>(
+                query = "clientMsgID == $0", clientMsgID
+            ).first().find()
+            msg?.canPending = true
+        }
+    }
+
     suspend fun findMsgAndSetStatus(clientMsgID: String, success: Boolean) {
         Log.d(ChatScreenViewModel.REALM, "发送消息 --- $clientMsgID 更新状态： $success")
         realm.write {

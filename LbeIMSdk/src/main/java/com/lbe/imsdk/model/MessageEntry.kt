@@ -30,6 +30,8 @@ class MessageEntity : RealmObject {
 
     var pendingUpload: Boolean = false
 
+    var canPending: Boolean = false
+
     var localFile: LocalMediaFile? = null
 
     var uploadTask: UploadTask? = null
@@ -55,6 +57,7 @@ class MessageEntity : RealmObject {
             message.pendingUpload = source.pendingUpload
             message.localFile = source.localFile
             message.uploadTask = source.uploadTask
+            message.canPending = source.canPending
             return message
         }
     }

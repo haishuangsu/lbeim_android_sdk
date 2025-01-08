@@ -1092,6 +1092,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
                     if (buffers != null) {
                         var deltaSize = 0L
+                        var firstBlockComplete = false
                         for (buffer in buffers) {
                             val md5 = MessageDigest.getInstance("MD5")
                             val sign = md5.digest(buffer.array())
@@ -1108,7 +1109,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                                 ), listener = { bytesWritten, contentLength ->
                                     val totalProgress =
                                         (1.0 * (deltaSize + bytesWritten)) / it.mediaMessage.file.length()
-                                    val progress = (1.0 * bytesWritten) / contentLength
+                                    val currentBlockProgress = (1.0 * bytesWritten) / contentLength
 
 //                                Log.d(
 //                                    UPLOAD, "Split Upload progress ${
@@ -1117,12 +1118,12 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 //                                        )].url
 //                                    } ---->>>  split trunk bytesWritten: $bytesWritten, $contentLength, split trunk progress: $progress || Total progress: $totalProgress"
 //                                )
+
                                     val emitProgress = progressList[message.clientMsgID]
                                     if (emitProgress != null) {
                                         viewModelScope.launch(Dispatchers.Main) {
                                             emitProgress.value = totalProgress.toFloat()
                                         }
-
 
                                         if (emitProgress.value == 1.0f) {
                                             uploadTask.progress = 1.0f
@@ -1147,6 +1148,13 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                             )
                             uploadTasks[message.clientMsgID]?.executeIndex = executeIndex
                             deltaSize += buffer.array().size
+                            if (!firstBlockComplete) {
+                                firstBlockComplete = true
+                                IMLocalRepository.findMediaMsgUpdateCanPending(message.clientMsgID)
+                                updateSingleMessage(source = message) { m ->
+                                    m.canPending = true
+                                }
+                            }
                             executeIndex++
                         }
                     }
@@ -1327,7 +1335,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         jobs[message.clientMsgID] = job
     }
 
-    fun cancelJob(clientMsgId: String, progress: State<Float>?) {
+    fun pendingUpload(clientMsgId: String, progress: State<Float>?) {
         val job = jobs[clientMsgId]
         job?.cancel()
         progress?.let {
