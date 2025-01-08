@@ -83,14 +83,15 @@ fun MsgTypeContent(
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(Modifier.width(8.dp))
-                        } else {
-                            Image(
-                                painter = painterResource(R.drawable.no_read),
-                                contentDescription = "unread",
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(Modifier.width(8.dp))
                         }
+//                        else {
+//                            Image(
+//                                painter = painterResource(R.drawable.no_read),
+//                                contentDescription = "unread",
+//                                modifier = Modifier.size(16.dp)
+//                            )
+//                            Spacer(Modifier.width(8.dp))
+//                        }
                     }
 
                     Surface(
@@ -153,14 +154,15 @@ fun MsgTypeContent(
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(Modifier.width(8.dp))
-                            } else {
-                                Image(
-                                    painter = painterResource(R.drawable.no_read),
-                                    contentDescription = "unread",
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(Modifier.width(8.dp))
                             }
+//                            else {
+//                                Image(
+//                                    painter = painterResource(R.drawable.no_read),
+//                                    contentDescription = "unread",
+//                                    modifier = Modifier.size(16.dp)
+//                                )
+//                                Spacer(Modifier.width(8.dp))
+//                            }
                         }
 
                         ThumbDecryptedOrNotImageView(
@@ -202,14 +204,15 @@ fun MsgTypeContent(
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(Modifier.width(8.dp))
-                            } else {
-                                Image(
-                                    painter = painterResource(R.drawable.no_read),
-                                    contentDescription = "unread",
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(Modifier.width(8.dp))
                             }
+//                            else {
+//                                Image(
+//                                    painter = painterResource(R.drawable.no_read),
+//                                    contentDescription = "unread",
+//                                    modifier = Modifier.size(16.dp)
+//                                )
+//                                Spacer(Modifier.width(8.dp))
+//                            }
                         }
 
                         ThumbDecryptedOrNotImageView(

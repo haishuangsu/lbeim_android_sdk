@@ -823,14 +823,22 @@ fun RecievedFromCustomerService(
             if (message.customerServiceAvatar.isNotEmpty()) {
                 val iconUrl =
                     Gson().fromJson(message.customerServiceAvatar, IconUrl::class.java)
-                NormalDecryptedOrNotImageView(
-                    key = iconUrl.key,
-                    url = iconUrl.url,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape),
-                    imageLoader
-                )
+                if (iconUrl.url.isNotEmpty()) {
+                    NormalDecryptedOrNotImageView(
+                        key = iconUrl.key,
+                        url = iconUrl.url,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape),
+                        imageLoader
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.cs_avatar),
+                        contentDescription = "",
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
             } else {
                 Image(
                     painter = painterResource(id = R.drawable.cs_avatar),
@@ -844,7 +852,7 @@ fun RecievedFromCustomerService(
             ) {
                 Text(
 //                    text = message.senderUid.ifEmpty { "客服机器人" },
-                    text = message.customerServiceNickname,
+                    text = message.customerServiceNickname.ifEmpty { "客服昵称为空，websocket 没推过来" },
                     modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
                     style = TextStyle(
                         fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)
