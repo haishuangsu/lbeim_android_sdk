@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.State
 import androidx.lifecycle.AndroidViewModel
@@ -768,8 +769,13 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         _inputMsg.postValue(message)
     }
 
-    fun sendMessageFromTextInput(messageSent: () -> Unit) {
-        if ((_inputMsg.value ?: "").isEmpty()) return
+    fun sendMessageFromTextInput(messageSent: () -> Unit, trimToast: () -> Unit) {
+        if ((_inputMsg.value?.trim() ?: "").isEmpty()) {
+            _inputMsg.postValue("")
+            trimToast()
+            messageSent()
+            return
+        }
 
         if (endSession) {
             sessionList.clear()
@@ -1027,7 +1033,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             val thumbWidth = thumbBitmap.width
             val thumbHeight = thumbBitmap.height
             tempUploadInfo?.let { it ->
-                var executeIndex = 1
+                var executeIndex = 0
                 val uploadTask = UploadTask()
                 uploadTask.executeIndex = executeIndex
                 uploadTasks[message.clientMsgID] = uploadTask
@@ -1062,6 +1068,12 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                         )
                     )
                     Log.d(UPLOAD, "init multi upload --->>> $initRep")
+
+                    IMLocalRepository.findMediaMsgUpdateCanPending(message.clientMsgID)
+                    updateSingleMessage(source = message) { m ->
+                        m.canPending = true
+                    }
+
                     uploadTask.initTrunksRepJson = Gson().toJson(initRep)
                     val start = System.currentTimeMillis()
                     Log.d(
@@ -1092,7 +1104,6 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
                     if (buffers != null) {
                         var deltaSize = 0L
-                        var firstBlockComplete = false
                         for (buffer in buffers) {
                             val md5 = MessageDigest.getInstance("MD5")
                             val sign = md5.digest(buffer.array())
@@ -1110,14 +1121,6 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                                     val totalProgress =
                                         (1.0 * (deltaSize + bytesWritten)) / it.mediaMessage.file.length()
                                     val currentBlockProgress = (1.0 * bytesWritten) / contentLength
-
-//                                Log.d(
-//                                    UPLOAD, "Split Upload progress ${
-//                                        initRep.data.node[buffers.indexOf(
-//                                            buffer
-//                                        )].url
-//                                    } ---->>>  split trunk bytesWritten: $bytesWritten, $contentLength, split trunk progress: $progress || Total progress: $totalProgress"
-//                                )
 
                                     val emitProgress = progressList[message.clientMsgID]
                                     if (emitProgress != null) {
@@ -1143,18 +1146,11 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
                             mergeMultiUploadReqQueue[message.clientMsgID]?.part?.add(
                                 Part(
-                                    partNumber = executeIndex, etag = hexString
+                                    partNumber = executeIndex + 1, etag = hexString
                                 )
                             )
                             uploadTasks[message.clientMsgID]?.executeIndex = executeIndex
                             deltaSize += buffer.array().size
-                            if (!firstBlockComplete) {
-                                firstBlockComplete = true
-                                IMLocalRepository.findMediaMsgUpdateCanPending(message.clientMsgID)
-                                updateSingleMessage(source = message) { m ->
-                                    m.canPending = true
-                                }
-                            }
                             executeIndex++
                         }
                     }
@@ -1217,7 +1213,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             mergeMultiUploadReqQueue[message.clientMsgID] =
                 Gson().fromJson(newTask.reqBodyJson, CompleteMultiPartUploadReq::class.java)
 
-            var executeIndex = newTask.executeIndex + 1
+            var executeIndex = mergeMultiUploadReqQueue[message.clientMsgID]?.part?.size
+                ?: 0 //newTask.executeIndex + 1
 
             val initRep = Gson().fromJson(
                 newTask.initTrunksRepJson, InitMultiPartUploadRep::class.java
@@ -1235,16 +1232,23 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
             if (buffers != null) {
                 var deltaSize = 0L
-                var tempIndex = 1
+                var tempIndex = executeIndex
                 for (buffer in buffers) {
-                    if (tempIndex != -1 && tempIndex < executeIndex) {
-                        Log.d(CONTINUE_UPLOAD, "tempIndex: $tempIndex, executeIndex: $executeIndex")
+                    if (tempIndex != 0) {
+                        Log.d(CONTINUE_UPLOAD, "jump tempIndex: $tempIndex")
                         deltaSize += buffer.array().size
-                        tempIndex++
+                        tempIndex--
                         continue
-                    } else {
-                        tempIndex = -1
                     }
+
+//                    if (tempIndex != -1 && tempIndex < executeIndex) {
+//                        Log.d(CONTINUE_UPLOAD, "tempIndex: $tempIndex, executeIndex: $executeIndex")
+//                        deltaSize += buffer.array().size
+//                        tempIndex++
+//                        continue
+//                    } else {
+//                        tempIndex = -1
+//                    }
 
                     val md5 = MessageDigest.getInstance("MD5")
                     val sign = md5.digest(buffer.array())
@@ -1289,7 +1293,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     Log.d(CONTINUE_UPLOAD, "合 part executeIndex --->>> $executeIndex")
                     mergeMultiUploadReqQueue[message.clientMsgID]?.part?.add(
                         Part(
-                            partNumber = executeIndex, etag = hexString
+                            partNumber = executeIndex + 1, etag = hexString
                         )
                     )
                     uploadTasks[message.clientMsgID]?.executeIndex = executeIndex

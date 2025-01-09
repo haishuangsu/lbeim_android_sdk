@@ -622,9 +622,20 @@ fun ChatScreen(
                                             modifier = Modifier
                                                 .size(18.dp)
                                                 .clickable {
-                                                    viewModel.sendMessageFromTextInput(messageSent = {
-                                                        currentFocus.clearFocus()
-                                                    })
+                                                    viewModel.sendMessageFromTextInput(
+                                                        messageSent = {
+                                                            currentFocus.clearFocus()
+                                                        },
+                                                        trimToast = {
+                                                            Toast
+                                                                .makeText(
+                                                                    context,
+                                                                    "不能发送空白消息",
+                                                                    Toast.LENGTH_SHORT
+                                                                )
+                                                                .show()
+                                                        }
+                                                    )
                                                 })
                                     }
                                 }
