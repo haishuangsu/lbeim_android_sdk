@@ -15,7 +15,8 @@ object LbeSdk {
         phone: String,
         email: String,
         language: String,
-        device: String
+        device: String,
+        headerIcon: String
     ) {
         val initArgs = InitArgs(
             lbeSign = lbeSign,
@@ -24,7 +25,7 @@ object LbeSdk {
             nickName = nickName,
             phone = phone,
             email = email,
-            headerIcon = "",
+            headerIcon = headerIcon,
             language = language,
             device = device,
             source = "",

@@ -38,6 +38,7 @@ object Converts {
                 IMMsg.MsgType.FaqMsgType -> 8
                 IMMsg.MsgType.KnowledgePointMsgType -> 9
                 IMMsg.MsgType.KnowledgeAnswerMsgType -> 10
+                IMMsg.MsgType.SystemTextMsgType -> 12
                 else -> 15
             }
             msgSeq = proto.msgSeq

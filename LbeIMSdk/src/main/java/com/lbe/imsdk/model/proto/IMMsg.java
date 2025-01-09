@@ -105,6 +105,14 @@ public final class IMMsg {
      * <code>EndSessionMsgType = 11;</code>
      */
     EndSessionMsgType(11),
+    /**
+     * <pre>
+     * 系统文本消息(欢迎语、引导语等系统发送的文本消息)
+     * </pre>
+     *
+     * <code>SystemTextMsgType = 12;</code>
+     */
+    SystemTextMsgType(12),
     UNRECOGNIZED(-1),
     ;
 
@@ -193,6 +201,14 @@ public final class IMMsg {
      * <code>EndSessionMsgType = 11;</code>
      */
     public static final int EndSessionMsgType_VALUE = 11;
+    /**
+     * <pre>
+     * 系统文本消息(欢迎语、引导语等系统发送的文本消息)
+     * </pre>
+     *
+     * <code>SystemTextMsgType = 12;</code>
+     */
+    public static final int SystemTextMsgType_VALUE = 12;
 
 
     public final int getNumber() {
@@ -231,6 +247,7 @@ public final class IMMsg {
         case 9: return KnowledgePointMsgType;
         case 10: return KnowledgeAnswerMsgType;
         case 11: return EndSessionMsgType;
+        case 12: return SystemTextMsgType;
         default: return null;
       }
     }
@@ -12858,14 +12875,15 @@ public final class IMMsg {
       "eiptMsg\022\021\n\tsessionID\030\001 \001(\t\022\023\n\013hasReadSeq" +
       "s\030\002 \003(\003\"4\n\016KickOffLineMsg\022\016\n\006userID\030\001 \001(" +
       "\t\022\022\n\nidentityID\030\002 \001(\t\"\"\n\rEndSessionMsg\022\021" +
-      "\n\tsessionID\030\001 \001(\t*\230\002\n\007MsgType\022\016\n\nJoinSer" +
+      "\n\tsessionID\030\001 \001(\t*\257\002\n\007MsgType\022\016\n\nJoinSer" +
       "ver\020\000\022\017\n\013TextMsgType\020\001\022\016\n\nImgMsgType\020\002\022\020" +
       "\n\014VideoMsgType\020\003\022\030\n\024CreateSessionMsgType" +
       "\020\004\022\037\n\033AgentUserJoinSessionMsgType\020\005\022\031\n\025H" +
       "asReadReceiptMsgType\020\006\022\026\n\022KickOffLineMsg" +
       "Type\020\007\022\016\n\nFaqMsgType\020\010\022\031\n\025KnowledgePoint" +
       "MsgType\020\t\022\032\n\026KnowledgeAnswerMsgType\020\n\022\025\n" +
-      "\021EndSessionMsgType\020\013B\tB\005IMMsgP\000b\006proto3"
+      "\021EndSessionMsgType\020\013\022\025\n\021SystemTextMsgTyp" +
+      "e\020\014B\tB\005IMMsgP\000b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

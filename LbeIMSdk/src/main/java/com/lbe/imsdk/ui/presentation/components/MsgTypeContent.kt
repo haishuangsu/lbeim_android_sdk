@@ -481,6 +481,30 @@ fun MsgTypeContent(
             }
         }
 
+        12 -> {
+            if (!fromUser) {
+                Surface(
+                    color = Color.White, modifier = Modifier.clip(
+                        RoundedCornerShape(
+                            topEnd = 12.dp,
+                            bottomStart = 12.dp,
+                            bottomEnd = 12.dp,
+                        )
+                    )
+                ) {
+                    Text(
+                        text = message.msgBody,
+                        modifier = Modifier.padding(12.dp),
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.W400,
+                            color = Color(0xff000000)
+                        )
+                    )
+                }
+            }
+        }
+
         else -> {
             Text("Not implement yet. --->>> { ${message.msgType} }")
         }
