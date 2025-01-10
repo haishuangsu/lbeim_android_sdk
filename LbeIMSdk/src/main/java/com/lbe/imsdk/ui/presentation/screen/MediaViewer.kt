@@ -1,7 +1,14 @@
 package com.lbe.imsdk.ui.presentation.screen
 
 import ExoPlayerController
+import android.content.ContentResolver
+import android.content.ContentValues
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.os.Build
+import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -18,13 +25,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,8 +44,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil3.ImageLoader
 import com.google.gson.Gson
@@ -50,6 +63,12 @@ import com.lbe.imsdk.model.resp.Thumbnail
 import com.lbe.imsdk.ui.presentation.components.ExoPlayerView
 import com.lbe.imsdk.ui.presentation.components.NormalDecryptedOrNotImageView
 import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.IOException
+import java.io.InputStream
+import java.net.URL
 
 @Composable
 fun MediaViewer(
@@ -58,6 +77,8 @@ fun MediaViewer(
     msgClientId: String,
     imageLoader: ImageLoader
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
     println("NavTo, args: $msgClientId, viewModel msg size: ${viewModel.uiState.value?.messages?.size}")
     val cache = viewModel.uiState.value?.messages?.toMutableList()
     val messages: MutableList<MessageEntity> = mutableListOf()
@@ -118,9 +139,11 @@ fun MediaViewer(
         val pagerState = rememberPagerState(initialPage = currentIndex, pageCount = {
             msgFilterSet.size
         })
+        val ctx = LocalContext.current
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
+
             HorizontalPager(state = pagerState) { page ->
                 println("HorizontalPager ---> $page")
                 MediaView(msgFilterSet[page], imageLoader)
@@ -132,18 +155,73 @@ fun MediaViewer(
                     .padding(start = 16.dp, end = 16.dp, bottom = 39.dp)
                     .align(Alignment.BottomCenter), horizontalArrangement = Arrangement.SpaceBetween
             ) {
-//                Surface(color = Color(0xff979797).copy(alpha = 0.4f),
-//                    modifier = Modifier
-//                        .clip(RoundedCornerShape(90.dp))
-//                        .clickable {
-//
-//                        }) {
-//                    Text(
-//                        "保存", style = TextStyle(
-//                            fontSize = 12.sp, fontWeight = FontWeight.W400, color = Color.White
-//                        ), modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.5.dp)
-//                    )
-//                }
+                Surface(
+                    color = Color(0xff979797).copy(alpha = 0.4f),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(90.dp))
+                        .clickable {
+                            val msg = msgFilterSet[pagerState.currentPage]
+                            var fullUrl = ""
+                            var fullKey = ""
+                            try {
+                                val media = Gson().fromJson(msg.msgBody, MediaSource::class.java)
+                                fullUrl = media.resource.url
+                                fullKey = media.resource.key
+                            } catch (e: Exception) {
+                                println("DecryptedOrNotImageView Json parse error -->> ${msg.msgBody}")
+                            }
+                            if (msg.msgType == 2) {
+                                coroutineScope.launch {
+                                    val success = saveImageToGallery(
+                                        ctx.contentResolver,
+                                        "$fullUrl?sign=$fullKey",
+                                        msg.localFile?.fileName ?: "test.jpg"
+                                    )
+                                    if (success) {
+                                        Toast
+                                            .makeText(ctx, "Image saved!", Toast.LENGTH_SHORT)
+                                            .show()
+                                    } else {
+                                        Toast
+                                            .makeText(
+                                                ctx,
+                                                "Failed to save image.",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                            .show()
+                                    }
+                                }
+                            } else if (msg.msgType == 3) {
+                                coroutineScope.launch {
+                                    val success = saveVideoToGallery(
+                                        ctx.contentResolver,
+                                        fullUrl,
+                                        msg.localFile?.fileName ?: "test.mp4"
+                                    )
+                                    if (success) {
+                                        Toast
+                                            .makeText(ctx, "Video saved!", Toast.LENGTH_SHORT)
+                                            .show()
+                                    } else {
+                                        Toast
+                                            .makeText(
+                                                ctx,
+                                                "Failed to save video.",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                            .show()
+                                    }
+                                }
+                            }
+
+                        },
+                ) {
+                    Text(
+                        "保存", style = TextStyle(
+                            fontSize = 12.sp, fontWeight = FontWeight.W400, color = Color.White
+                        ), modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.5.dp)
+                    )
+                }
                 Box(modifier = Modifier.size(32.dp))
 
                 Surface(color = Color(0xff979797).copy(alpha = 0.4f),
@@ -271,6 +349,107 @@ fun MediaView(msgEntity: MessageEntity, imageLoader: ImageLoader) {
         }
     }
 }
+
+
+suspend fun saveImageToGallery(
+    contentResolver: ContentResolver,
+    imageUrl: String,
+    fileName: String
+): Boolean {
+    val bitmap = downloadBitmapFromUrl(imageUrl) ?: return false
+
+    val imageCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+    } else {
+        MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+    }
+
+    val contentValues = ContentValues().apply {
+        put(MediaStore.Images.Media.DISPLAY_NAME, "$fileName.jpg")
+        put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/MyApp")
+            put(MediaStore.Images.Media.IS_PENDING, 1)
+        }
+    }
+
+    val uri = contentResolver.insert(imageCollection, contentValues) ?: return false
+
+    return try {
+        contentResolver.openOutputStream(uri)?.use { outputStream ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            contentValues.clear()
+            contentValues.put(MediaStore.Images.Media.IS_PENDING, 0)
+            contentResolver.update(uri, contentValues, null, null)
+        }
+        true
+    } catch (e: IOException) {
+        Log.e("SaveImage", "Error saving image", e)
+        false
+    }
+}
+
+suspend fun downloadBitmapFromUrl(imageUrl: String): Bitmap? {
+    return withContext(Dispatchers.IO) {
+        try {
+            val url = URL(imageUrl)
+            BitmapFactory.decodeStream(url.openStream())
+        } catch (e: IOException) {
+            Log.e("DownloadBitmap", "Error downloading image", e)
+            null
+        }
+    }
+}
+
+suspend fun saveVideoToGallery(
+    contentResolver: ContentResolver,
+    videoUrl: String,
+    fileName: String
+): Boolean {
+    return withContext(Dispatchers.IO) {
+        val inputStream = try {
+            URL(videoUrl).openStream()
+        } catch (e: IOException) {
+            Log.e("DownloadVideo", "Error opening video stream", e)
+            return@withContext false
+        }
+
+        val videoCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        } else {
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+        }
+
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Video.Media.DISPLAY_NAME, "$fileName.mp4")
+            put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/MyApp")
+                put(MediaStore.Video.Media.IS_PENDING, 1)
+            }
+        }
+
+        val uri = contentResolver.insert(videoCollection, contentValues) ?: return@withContext false
+
+        return@withContext try {
+            contentResolver.openOutputStream(uri)?.use { outputStream ->
+                inputStream.use { it.copyTo(outputStream) }
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                contentValues.clear()
+                contentValues.put(MediaStore.Video.Media.IS_PENDING, 0)
+                contentResolver.update(uri, contentValues, null, null)
+            }
+            true
+        } catch (e: IOException) {
+            Log.e("SaveVideo", "Error saving video", e)
+            false
+        }
+    }
+}
+
 
 @Composable
 fun BufferedProgressBar(
