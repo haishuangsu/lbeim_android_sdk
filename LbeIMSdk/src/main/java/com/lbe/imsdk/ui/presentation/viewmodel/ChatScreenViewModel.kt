@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.State
 import androidx.lifecycle.AndroidViewModel
@@ -1214,7 +1213,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                 Gson().fromJson(newTask.reqBodyJson, CompleteMultiPartUploadReq::class.java)
 
             var executeIndex = mergeMultiUploadReqQueue[message.clientMsgID]?.part?.size
-                ?: 0 //newTask.executeIndex + 1
+                ?: 0
 
             val initRep = Gson().fromJson(
                 newTask.initTrunksRepJson, InitMultiPartUploadRep::class.java
@@ -1240,15 +1239,6 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                         tempIndex--
                         continue
                     }
-
-//                    if (tempIndex != -1 && tempIndex < executeIndex) {
-//                        Log.d(CONTINUE_UPLOAD, "tempIndex: $tempIndex, executeIndex: $executeIndex")
-//                        deltaSize += buffer.array().size
-//                        tempIndex++
-//                        continue
-//                    } else {
-//                        tempIndex = -1
-//                    }
 
                     val md5 = MessageDigest.getInstance("MD5")
                     val sign = md5.digest(buffer.array())
@@ -1391,7 +1381,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         val thumbnailResp = UploadRepository.singleUpload(
             file = MultipartBody.Part.createFormData(
                 "file", "lbe_${uuidGen()}_${timeStampGen()}.jpg", buffer.toRequestBody()
-            ), signType = 2
+            ), signType = 1
         )
         withContext(Dispatchers.IO) {
             bao.close()

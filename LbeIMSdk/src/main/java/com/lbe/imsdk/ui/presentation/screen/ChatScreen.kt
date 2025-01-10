@@ -183,6 +183,8 @@ fun ChatScreen(
     val lazyListState = rememberLazyListState()
     viewModel.lazyListState = lazyListState
 
+    var pickFileEvent by remember { mutableStateOf("") }
+
     val pickFilesResult = remember { mutableStateOf<List<Uri>>(emptyList()) }
 
     val launcher =
@@ -190,6 +192,7 @@ fun ChatScreen(
             9
         ), onResult = { uris: List<Uri> ->
             pickFilesResult.value = uris
+            pickFileEvent = pickFileEvent.plus(",")
         })
 
     val mediaPermissionState = rememberMultiplePermissionsState(
@@ -208,23 +211,12 @@ fun ChatScreen(
 
     val isConnected by viewModel.isConnected.observeAsState(initial = true)
 
-//    val showToBottomButton by remember {
-//        derivedStateOf {
-//            println("滚动 --->>> firstVisibleItemIndex: ${lazyListState.firstVisibleItemIndex}, firstVisibleItemScrollOffset: ${lazyListState.firstVisibleItemScrollOffset}, uiState.messages.size: ${uiState.messages.size}, 终止条件: ${uiState.messages.size - 8}")
-//            lazyListState.firstVisibleItemIndex < uiState.messages.size - 8
-//        }
-//    }
-
     val screenHeightPx =
         with(LocalDensity.current) { (configuration.screenHeightDp.dp - 155.dp).toPx() }
     var showToBottomButton by remember { mutableStateOf(false) }
     var scrollOffset by remember { mutableFloatStateOf(0f) }
     val toBottomEvent by viewModel.toBottom.collectAsState("")
     val recivedEvent by viewModel.recived.collectAsState("")
-
-//    LaunchedEffect(key1 = true) {
-//        mediaPermissionState.launchMultiplePermissionRequest()
-//    }
 
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
@@ -416,7 +408,7 @@ fun ChatScreen(
                                         .size(21.dp, 16.dp)
                                 )
                                 LaunchedEffect(
-                                    pickFilesResult.value
+                                    pickFileEvent
                                 ) {
                                     if (pickFilesResult.value.isNotEmpty()) {
                                         val uris = pickFilesResult.value
@@ -447,8 +439,8 @@ fun ChatScreen(
                                                     )
                                                     val file = File(path)
                                                     val mediaMessage = MediaMessage(
-                                                        width = 1080,
-                                                        height = 1920,
+                                                        width = 0,
+                                                        height = 0,
                                                         file = file,
                                                         path = uri.toString(),
                                                         mime = mime,

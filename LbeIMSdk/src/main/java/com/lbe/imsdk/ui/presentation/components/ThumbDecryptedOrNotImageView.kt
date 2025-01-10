@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -54,25 +55,36 @@ fun ThumbDecryptedOrNotImageView(
     var thumbKey = ""
     var fullUrl = ""
     var fullKey = ""
+    var width = 1080
+    var height = 1920
     try {
         val media = Gson().fromJson(message.msgBody, MediaSource::class.java)
         fullUrl = media.resource.url
         fullKey = media.resource.key
         thumbUrl = media.thumbnail.url
         thumbKey = media.thumbnail.key
+        width = media.width
+        height = media.height
     } catch (e: Exception) {
         println("DecryptedOrNotImageView Json parse error -->> ${message.msgBody}")
     }
 
+    println("Thumb 缩略图 --->> width: $width, height: $height, thumbUrl: $thumbUrl")
     val rememberProgress = remember { ChatScreenViewModel.progressList[message.clientMsgID] }
     val progress = rememberProgress?.collectAsState()
     val isGif = FileUtils.isGif(message.localFile?.mimeType ?: "") || FileUtils.isGif(fullUrl)
 
     Box(contentAlignment = Alignment.Center) {
         val ctx = LocalPlatformContext.current
+        val culHeight = if (width > height) {
+            110.dp
+        } else {
+            200.dp
+        }
+
         val modifier = Modifier
             .fillMaxWidth(0.5f)
-            .height(180.dp)
+            .height(culHeight)
             .clip(RoundedCornerShape(16.dp))
             .clickable {
                 if (fullUrl.isNotEmpty()) {

@@ -22,6 +22,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 import com.lbe.imsdk.LbeSdk
+import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.lbeIdentity
+import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.lbeSign
 import info.hermiths.lbesdk.ui.theme.ChatAppTheme
 
 class MainActivity : ComponentActivity() {
