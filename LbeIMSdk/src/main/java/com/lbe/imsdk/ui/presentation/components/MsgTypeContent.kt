@@ -1,8 +1,10 @@
 package com.lbe.imsdk.ui.presentation.components
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +28,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -60,6 +66,8 @@ fun MsgTypeContent(
     fromUser: Boolean,
     imageLoader: ImageLoader,
 ) {
+    val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
     when (message.msgType) {
         1 -> {
             if (fromUser) {
@@ -103,7 +111,25 @@ fun MsgTypeContent(
                     ) {
                         Text(
                             text = message.msgBody,
-                            modifier = Modifier.padding(12.dp),
+                            modifier = Modifier
+                                .padding(12.dp)
+                                .pointerInput(Unit) {
+                                    detectTapGestures(onLongPress = {
+                                        clipboardManager.setText(AnnotatedString(message.msgBody))
+                                        Toast
+                                            .makeText(
+                                                context, "复制成功", Toast.LENGTH_SHORT
+                                            )
+                                            .show()
+                                    }, onTap = {
+                                        clipboardManager.setText(AnnotatedString(message.msgBody))
+                                        Toast
+                                            .makeText(
+                                                context, "复制成功", Toast.LENGTH_SHORT
+                                            )
+                                            .show()
+                                    })
+                                },
                             style = TextStyle(
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.W400,
@@ -124,7 +150,25 @@ fun MsgTypeContent(
                 ) {
                     Text(
                         text = message.msgBody,
-                        modifier = Modifier.padding(12.dp),
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .pointerInput(Unit) {
+                                detectTapGestures(onLongPress = {
+                                    clipboardManager.setText(AnnotatedString(message.msgBody))
+                                    Toast
+                                        .makeText(
+                                            context, "复制成功", Toast.LENGTH_SHORT
+                                        )
+                                        .show()
+                                }, onTap = {
+                                    clipboardManager.setText(AnnotatedString(message.msgBody))
+                                    Toast
+                                        .makeText(
+                                            context, "复制成功", Toast.LENGTH_SHORT
+                                        )
+                                        .show()
+                                })
+                            },
                         style = TextStyle(
                             fontSize = 14.sp,
                             fontWeight = FontWeight.W400,
@@ -367,8 +411,7 @@ fun MsgTypeContent(
                                     color = Color(0xff0054FC),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.W500,
-                                ),
-                                modifier = Modifier
+                                ), modifier = Modifier
                                     .padding(top = 8.dp)
                                     .clickable {
                                         viewModel.faq(FaqReqBody(faqType = 2, id = detail.id))

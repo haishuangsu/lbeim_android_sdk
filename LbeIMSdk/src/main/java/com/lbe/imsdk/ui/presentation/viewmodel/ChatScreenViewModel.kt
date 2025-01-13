@@ -134,13 +134,16 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     val uiState: LiveData<ChatScreenUiState> = _uiState
     private var allMessageSize = 0
 
-    var isTimeOut = MutableStateFlow(false)
     var recivCount = MutableStateFlow(0)
     var toBottom = MutableStateFlow("")
     var recived = MutableStateFlow("")
     var lastCsMessage: MessageEntity? = null
-    var timer: Timer? = null
-    var timeOut: Long = 1
+
+    var isTimeOut = MutableStateFlow(false)
+    var timeOutConfigOpen = MutableStateFlow(false)
+    var timeOutTimer: Timer? = null
+    var timeOut: Long = 5
+
 
     private lateinit var initArgs: InitArgs
 
@@ -268,12 +271,11 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             Log.d(RETROFIT, "获取配置: $config")
             wssHost = config.data.ws[0]
             RetrofitInstance.IM_URL = config.data.rest[0]
-            RetrofitInstance.UPLOAD_BASE_URL = config.data.oss[0]
+            RetrofitInstance.UPLOAD_BASE_URL = config.data.oss[1]
         }.onFailure { err ->
             Log.d(RETROFIT, "获取配置异常: $err")
         }
     }
-
 
     private suspend fun createSession() {
         if (!networkAvailable()) {
@@ -483,6 +485,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         }
         result.onSuccess { timeoutConfig ->
             timeOut = timeoutConfig.data.timeout
+            timeOutConfigOpen.update { timeoutConfig.data.isOpen }
             Log.d(REALM, "FetchTimeoutConfig ---->>> $timeoutConfig, timeOut: $timeOut")
         }.onFailure { err ->
             println("网络异常 --->>> FetchTimeoutConfig error --->>>  $err")
@@ -673,8 +676,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     val entity = protoToEntity(msgEntity.msgBody)
 
                     lastCsMessage = entity
-                    scheduleTimeoutJob()
-
+                    if (timeOutConfigOpen.value) {
+                        scheduleTimeoutJob()
+                    }
                     viewModelScope.launch {
                         IMLocalRepository.insertMessage(entity)
                         if (entity.senderUid != uid) {
@@ -724,25 +728,25 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
     private fun scheduleTimeoutJob() {
         val period = 1000 * 60 * timeOut
-        if (timer == null) {
+        if (timeOutTimer == null) {
             Log.d("TimeOut", "超时提醒，period: $period")
-            timer = Timer()
-            timer?.schedule(object : TimerTask() {
+            timeOutTimer = Timer()
+            timeOutTimer?.schedule(object : TimerTask() {
                 override fun run() {
                     Log.d("TimeOut", "超时提醒， seq: $seq, last: ${lastCsMessage?.msgSeq}")
                     if (lastCsMessage?.msgSeq!! <= seq) {
                         Log.d("TimeOut", "超时提醒，用户没回复")
                         isTimeOut.update { _ -> true }
-                        timer?.cancel()
-                        timer = null
+                        timeOutTimer?.cancel()
+                        timeOutTimer = null
                     }
                 }
             }, period)
         } else {
-            timer?.cancel()
-            timer = null
-            timer = Timer()
-            timer?.schedule(object : TimerTask() {
+            timeOutTimer?.cancel()
+            timeOutTimer = null
+            timeOutTimer = Timer()
+            timeOutTimer?.schedule(object : TimerTask() {
                 override fun run() {
                     if (lastCsMessage?.msgSeq!! <= seq) {
                         Log.d(
@@ -750,8 +754,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                             "客服回复重启，用户没回复， seq: $seq, last: ${lastCsMessage?.msgSeq}"
                         )
                         isTimeOut.update { _ -> true }
-                        timer?.cancel()
-                        timer = null
+                        timeOutTimer?.cancel()
+                        timeOutTimer = null
                     }
                 }
             }, period)
@@ -759,6 +763,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun updateConnectionStatus(connectionStatus: ConnectionStatus) {
+        Log.d(TAG, connectionStatus.name)
         viewModelScope.launch(Dispatchers.Main) {
             _uiState.postValue(_uiState.value?.copy(connectionStatus = connectionStatus))
         }
@@ -831,8 +836,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     Log.d("TimeOut", "seq: $seq, lastCsSeq: ${lastCsMessage!!.msgSeq}")
                     if (seq > (lastCsMessage?.msgSeq ?: 0)) {
                         isTimeOut.update { false }
-                        timer?.cancel()
-                        timer = null
+                        timeOutTimer?.cancel()
+                        timeOutTimer = null
                     }
                 }
                 remoteLastMsgType = msgBody.msgType
@@ -1212,8 +1217,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             mergeMultiUploadReqQueue[message.clientMsgID] =
                 Gson().fromJson(newTask.reqBodyJson, CompleteMultiPartUploadReq::class.java)
 
-            var executeIndex = mergeMultiUploadReqQueue[message.clientMsgID]?.part?.size
-                ?: 0
+            var executeIndex = mergeMultiUploadReqQueue[message.clientMsgID]?.part?.size ?: 0
 
             val initRep = Gson().fromJson(
                 newTask.initTrunksRepJson, InitMultiPartUploadRep::class.java

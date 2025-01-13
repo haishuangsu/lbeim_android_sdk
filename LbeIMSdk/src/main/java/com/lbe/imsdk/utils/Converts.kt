@@ -19,7 +19,7 @@ object Converts {
             msgBody = body.msgBody
             msgType = body.msgType
             clientMsgID = body.clientMsgId
-            sendTime = body.clientMsgId.split("-").last().toLong()
+            sendTime = body.sendTime.toLong()
             msgSeq = seq
         }
         Log.d("Convert sendToEntity", entity.toString())
@@ -42,8 +42,8 @@ object Converts {
                 else -> 15
             }
             msgSeq = proto.msgSeq
-            clientMsgID = proto.clientMsgID.ifEmpty { "${uuidGen()}_${timeStampGen()}" }
-            sendTime = proto.clientMsgID.split("-").last().toLong()
+            clientMsgID = proto.clientMsgID
+            sendTime = proto.sendTime.toLong()
             faqListTile = proto.title
             customerServiceNickname = proto.senderNickname
             customerServiceAvatar = proto.senderFaceURL
@@ -69,7 +69,7 @@ object Converts {
             msgSeq = entity.msgSeq,
             msgType = entity.msgType,
             clientMsgId = entity.clientMsgID,
-            sendTime = entity.clientMsgID.split("-").last(),
+            sendTime = entity.sendTime.toString(),
             source = 100
         )
     }

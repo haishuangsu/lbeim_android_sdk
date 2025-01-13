@@ -69,6 +69,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -78,6 +79,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -176,6 +178,7 @@ fun ChatScreen(
 
     val input by viewModel.inputMsg.observeAsState("init")
     var showDialog by remember { mutableStateOf(false) }
+    val clipboardManager = LocalClipboardManager.current
 
     val currentFocus = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
@@ -202,12 +205,20 @@ fun ChatScreen(
         ) else listOf(
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE,
-        )
-    ) {
-        launcher.launch(
-            PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo)
-        )
-    }
+        ),
+        onPermissionsResult = { permits ->
+            println("授权回调--->>> $permits")
+            var allPermitted = false
+            for (permit in permits.values) {
+                allPermitted = permit
+            }
+            if (allPermitted) {
+                launcher.launch(
+                    PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+                )
+            }
+        },
+    )
 
     val isConnected by viewModel.isConnected.observeAsState(initial = true)
 
@@ -395,6 +406,7 @@ fun ChatScreen(
                                     .clickable {
                                         // 点击选择图片或视频
                                         if (!mediaPermissionState.allPermissionsGranted) {
+                                            println("授权检查--->>> ${mediaPermissionState.permissions.map { e -> "${e.permission}, ${e.status}" }} ||||| ${mediaPermissionState.allPermissionsGranted}")
                                             mediaPermissionState.launchMultiplePermissionRequest()
                                         } else {
                                             launcher.launch(PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo))
@@ -532,7 +544,20 @@ fun ChatScreen(
                                                     viewModel.onMessageChange(newValue)
                                                 }
                                             },
-                                            modifier = Modifier.fillMaxSize(),
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .pointerInput(Unit) {
+                                                    detectTapGestures(onLongPress = {
+                                                        clipboardManager
+                                                            .getText()
+                                                            ?.let { clipboardText ->
+                                                                viewModel.onMessageChange(
+                                                                    clipboardText.text
+                                                                )
+                                                            }
+                                                    })
+                                                },
+                                            readOnly = false,
                                             textStyle = TextStyle(
                                                 fontSize = 14.sp,
                                                 fontWeight = FontWeight.W400,
@@ -555,9 +580,23 @@ fun ChatScreen(
                                 keyboardType = KeyboardType.Text,
                                 imeAction = ImeAction.None,
                             ),
+                            readOnly = false,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .heightIn(max = 180.dp),
+                                .heightIn(max = 180.dp)
+                                .pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onLongPress = {
+                                            clipboardManager
+                                                .getText()
+                                                ?.let { clipboardText ->
+                                                    viewModel.onMessageChange(
+                                                        clipboardText.text
+                                                    )
+                                                }
+                                        },
+                                    )
+                                },
                             onValueChange = { newValue ->
                                 if (newValue.length <= maxLength) {
                                     viewModel.onMessageChange(newValue)
@@ -614,20 +653,17 @@ fun ChatScreen(
                                             modifier = Modifier
                                                 .size(18.dp)
                                                 .clickable {
-                                                    viewModel.sendMessageFromTextInput(
-                                                        messageSent = {
-                                                            currentFocus.clearFocus()
-                                                        },
-                                                        trimToast = {
-                                                            Toast
-                                                                .makeText(
-                                                                    context,
-                                                                    "不能发送空白消息",
-                                                                    Toast.LENGTH_SHORT
-                                                                )
-                                                                .show()
-                                                        }
-                                                    )
+                                                    viewModel.sendMessageFromTextInput(messageSent = {
+                                                        currentFocus.clearFocus()
+                                                    }, trimToast = {
+                                                        Toast
+                                                            .makeText(
+                                                                context,
+                                                                "不能发送空白消息",
+                                                                Toast.LENGTH_SHORT
+                                                            )
+                                                            .show()
+                                                    })
                                                 })
                                     }
                                 }
@@ -684,7 +720,8 @@ fun ChatScreen(
 @Composable
 fun timeoutTips(viewModel: ChatScreenViewModel) {
     val timeoutVisibility by viewModel.isTimeOut.collectAsState()
-    AnimatedVisibility(visible = timeoutVisibility) {
+    val timeOutConfigOpen by viewModel.timeOutConfigOpen.collectAsState()
+    AnimatedVisibility(visible = timeOutConfigOpen && timeoutVisibility) {
         Log.d("TimeOut", "timeoutVisibility --->>> $timeoutVisibility")
         Column {
             Surface(
@@ -824,8 +861,7 @@ fun RecievedFromCustomerService(
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
             if (message.customerServiceAvatar.isNotEmpty()) {
-                val iconUrl =
-                    Gson().fromJson(message.customerServiceAvatar, IconUrl::class.java)
+                val iconUrl = Gson().fromJson(message.customerServiceAvatar, IconUrl::class.java)
                 if (iconUrl.url.isNotEmpty()) {
                     NormalDecryptedOrNotImageView(
                         key = iconUrl.key,

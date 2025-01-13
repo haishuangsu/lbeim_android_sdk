@@ -9,16 +9,14 @@ import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.Canvas
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 
@@ -27,8 +25,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,10 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -67,7 +61,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
-import java.io.InputStream
+import java.io.OutputStream
 import java.net.URL
 
 @Composable
@@ -171,49 +165,40 @@ fun MediaViewer(
                                 println("DecryptedOrNotImageView Json parse error -->> ${msg.msgBody}")
                             }
                             if (msg.msgType == 2) {
+                                val saveUrl = "$fullUrl?sign=$fullKey"
+                                val extraFileName = extractFileName(saveUrl)
+                                println("正则提取 --->>> $extraFileName")
                                 coroutineScope.launch {
                                     val success = saveImageToGallery(
-                                        ctx.contentResolver,
-                                        "$fullUrl?sign=$fullKey",
-                                        msg.localFile?.fileName ?: "test.jpg"
+                                        ctx.contentResolver, saveUrl, extraFileName ?: "test.jpg"
                                     )
                                     if (success) {
+                                        println("保存本地 图片成功 --->> $saveUrl")
                                         Toast
-                                            .makeText(ctx, "Image saved!", Toast.LENGTH_SHORT)
+                                            .makeText(ctx, "保存成功", Toast.LENGTH_SHORT)
                                             .show()
                                     } else {
-                                        Toast
-                                            .makeText(
-                                                ctx,
-                                                "Failed to save image.",
-                                                Toast.LENGTH_SHORT
-                                            )
-                                            .show()
+                                        println("保存本地 图片失败 --->> $saveUrl")
                                     }
                                 }
                             } else if (msg.msgType == 3) {
+                                val saveUrl = "$fullUrl?sign=$fullKey"
+                                val extraFileName = extractFileName(saveUrl)
+                                println("正则提取 --->>> $extraFileName")
                                 coroutineScope.launch {
                                     val success = saveVideoToGallery(
-                                        ctx.contentResolver,
-                                        fullUrl,
-                                        msg.localFile?.fileName ?: "test.mp4"
+                                        ctx.contentResolver, fullUrl, extraFileName ?: "test.mp4"
                                     )
                                     if (success) {
+                                        println("保存本地 视频成功 --->> $saveUrl")
                                         Toast
-                                            .makeText(ctx, "Video saved!", Toast.LENGTH_SHORT)
+                                            .makeText(ctx, "保存成功", Toast.LENGTH_SHORT)
                                             .show()
                                     } else {
-                                        Toast
-                                            .makeText(
-                                                ctx,
-                                                "Failed to save video.",
-                                                Toast.LENGTH_SHORT
-                                            )
-                                            .show()
+                                        println("保存本地 视频失败 --->> $saveUrl")
                                     }
                                 }
                             }
-
                         },
                 ) {
                     Text(
@@ -283,80 +268,33 @@ fun MediaView(msgEntity: MessageEntity, imageLoader: ImageLoader) {
         ) {
             Surface(color = Color.Black, modifier = Modifier.fillMaxSize()) { }
 
-//            NewExoPlayerView(playerController)
-//
-//            if (!playerController.isPlaying) {
-//                Image(
-//                    painterResource(R.drawable.play),
-//                    contentDescription = "",
-//                    modifier = Modifier
-//                        .size(53.dp)
-//                        .align(Alignment.Center),
-//                )
-//            }
-//
-//            CustomProgressBar(
-//                progress = if (playerController.durationInSeconds > 0)
-//                    playerController.currentSecond.toFloat() / playerController.durationInSeconds
-//                else 0f,
-//                bufferedProgress = if (playerController.durationInSeconds > 0)
-//                    playerController.bufferedPositionInSeconds.toFloat() / playerController.durationInSeconds
-//                else 0f,
-//                modifier = Modifier
-//                    .align(Alignment.BottomCenter)
-//                    .padding(start = 20.dp, end = 20.dp, bottom = 59.dp)
-//                    .fillMaxWidth()
-//                    .height(32.dp),
-//                onValueChange = { value ->
-//                    val newPosition = (value * playerController.durationInSeconds).toInt()
-//                    playerController.seekTo(newPosition)
-//                }
-//            )
-//
-////            BufferedProgressBar(progress = if (playerController.durationInSeconds > 0) playerController.currentSecond.toFloat() / playerController.durationInSeconds
-////            else 0f,
-////                bufferedProgress = if (playerController.durationInSeconds > 0) playerController.bufferedPositionInSeconds.toFloat() / playerController.durationInSeconds
-////                else 0f,
-////                modifier = Modifier
-////                    .align(Alignment.BottomCenter)
-////                    .padding(bottom = 59.dp)
-////                    .fillMaxWidth()
-////                    .height(19.dp),
-////                onValueChange = { value ->
-////                    val newPosition = (value * playerController.durationInSeconds).toInt()
-////                    playerController.seekTo(newPosition)
-////                })
-//
-//            Row(
-//                modifier = Modifier
-//                    .align(Alignment.BottomCenter)
-//                    .padding(bottom = 99.dp),
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                listOf(0.5f, 1.0f, 1.5f, 2.0f).forEach { speed ->
-//                    Button(
-//                        onClick = { playerController.changePlaybackSpeed(speed) },
-//                        modifier = Modifier
-//                            .weight(1f)
-//                            .padding(horizontal = 4.dp)
-//                    ) {
-//                        Text("${speed}x")
-//                    }
-//                }
-//            }
-
             ExoPlayerView(fullUrl)
         }
     }
 }
 
+fun extractFileName(url: String): String? {
+    val regex = """[^/]+(?:\.(?:jpg|jpeg|png|gif|mp4|avi|mov|webm|mkv|flv|bmp|tiff))""".toRegex()
+    val matchResult = regex.find(url)
+    return matchResult?.value
+}
+
 
 suspend fun saveImageToGallery(
-    contentResolver: ContentResolver,
-    imageUrl: String,
-    fileName: String
+    contentResolver: ContentResolver, imageUrl: String, fileName: String
 ): Boolean {
-    val bitmap = downloadBitmapFromUrl(imageUrl) ?: return false
+    val formatMap = mapOf(
+        "jpg" to Pair("image/jpeg", Bitmap.CompressFormat.JPEG),
+        "jpeg" to Pair("image/jpeg", Bitmap.CompressFormat.JPEG),
+        "png" to Pair("image/png", Bitmap.CompressFormat.PNG),
+        "webp" to Pair("image/webp", Bitmap.CompressFormat.WEBP),
+        "gif" to Pair("image/gif", null) // GIF 不支持 Bitmap.CompressFormat
+    )
+
+    val fileExtension = fileName.substringAfterLast('.', "").lowercase()
+    val formatInfo = formatMap[fileExtension] ?: return false
+
+    val (mimeType, compressFormat) = formatInfo
 
     val imageCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
@@ -365,10 +303,10 @@ suspend fun saveImageToGallery(
     }
 
     val contentValues = ContentValues().apply {
-        put(MediaStore.Images.Media.DISPLAY_NAME, "$fileName.jpg")
-        put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+        put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
+        put(MediaStore.Images.Media.MIME_TYPE, mimeType)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/MyApp")
+            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/")
             put(MediaStore.Images.Media.IS_PENDING, 1)
         }
     }
@@ -377,7 +315,14 @@ suspend fun saveImageToGallery(
 
     return try {
         contentResolver.openOutputStream(uri)?.use { outputStream ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            if (compressFormat != null) {
+                // 压缩并保存支持 Bitmap 的格式
+                val bitmap = downloadBitmapFromUrl(imageUrl) ?: return false
+                bitmap.compress(compressFormat, 100, outputStream)
+            } else {
+                // 直接保存 GIF 数据流
+                saveRawImageStream(imageUrl, outputStream)
+            }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             contentValues.clear()
@@ -388,6 +333,22 @@ suspend fun saveImageToGallery(
     } catch (e: IOException) {
         Log.e("SaveImage", "Error saving image", e)
         false
+    }
+}
+
+// 保存原始图像流（适用于 GIF 等格式）
+suspend fun saveRawImageStream(imageUrl: String, outputStream: OutputStream): Boolean {
+    return withContext(Dispatchers.IO) {
+        try {
+            val url = URL(imageUrl)
+            url.openStream().use { inputStream ->
+                inputStream.copyTo(outputStream)
+            }
+            true
+        } catch (e: IOException) {
+            Log.e("SaveRawImageStream", "Error saving raw image stream", e)
+            false
+        }
     }
 }
 
@@ -404,162 +365,70 @@ suspend fun downloadBitmapFromUrl(imageUrl: String): Bitmap? {
 }
 
 suspend fun saveVideoToGallery(
-    contentResolver: ContentResolver,
-    videoUrl: String,
-    fileName: String
+    contentResolver: ContentResolver, videoUrl: String, fileName: String
 ): Boolean {
+    val formatMap = mapOf(
+        "mp4" to "video/mp4",
+        "mkv" to "video/x-matroska",
+        "webm" to "video/webm",
+        "avi" to "video/x-msvideo",
+        "mov" to "video/quicktime",
+        "flv" to "video/x-flv",
+        "wmv" to "video/x-ms-wmv"
+    )
+
+    val fileExtension = fileName.substringAfterLast('.', "").lowercase()
+    val mimeType = formatMap[fileExtension] ?: "video/*"
+    println("保存本地 视频 mimeType --->>> $mimeType")
+
     return withContext(Dispatchers.IO) {
-        val inputStream = try {
-            URL(videoUrl).openStream()
+        try {
+            val urlConnection = URL(videoUrl).openConnection()
+            urlConnection.connectTimeout = 10_000 // 10秒超时
+            urlConnection.readTimeout = 30_000 // 30秒超时
+            val inputStream = urlConnection.getInputStream()
+
+            val videoCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+            } else {
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+            }
+
+            val contentValues = ContentValues().apply {
+                put(MediaStore.Video.Media.DISPLAY_NAME, fileName)
+                put(MediaStore.Video.Media.MIME_TYPE, mimeType)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/")
+                    put(MediaStore.Video.Media.IS_PENDING, 1)
+                }
+            }
+
+            val uri =
+                contentResolver.insert(videoCollection, contentValues) ?: return@withContext false
+
+            return@withContext try {
+                contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    inputStream.use { it.copyTo(outputStream) }
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    contentValues.clear()
+                    contentValues.put(MediaStore.Video.Media.IS_PENDING, 0)
+                    contentResolver.update(uri, contentValues, null, null)
+                }
+                true
+            } catch (e: IOException) {
+                Log.e("SaveVideo", "Error saving video to gallery", e)
+                false
+            } finally {
+                inputStream.close()
+            }
         } catch (e: IOException) {
-            Log.e("DownloadVideo", "Error opening video stream", e)
-            return@withContext false
-        }
-
-        val videoCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-        } else {
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-        }
-
-        val contentValues = ContentValues().apply {
-            put(MediaStore.Video.Media.DISPLAY_NAME, "$fileName.mp4")
-            put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/MyApp")
-                put(MediaStore.Video.Media.IS_PENDING, 1)
-            }
-        }
-
-        val uri = contentResolver.insert(videoCollection, contentValues) ?: return@withContext false
-
-        return@withContext try {
-            contentResolver.openOutputStream(uri)?.use { outputStream ->
-                inputStream.use { it.copyTo(outputStream) }
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                contentValues.clear()
-                contentValues.put(MediaStore.Video.Media.IS_PENDING, 0)
-                contentResolver.update(uri, contentValues, null, null)
-            }
-            true
-        } catch (e: IOException) {
-            Log.e("SaveVideo", "Error saving video", e)
+            Log.e("SaveVideo", "Error downloading video", e)
             false
         }
     }
 }
 
 
-@Composable
-fun BufferedProgressBar(
-    progress: Float, // 播放进度 (0f..1f)
-    bufferedProgress: Float, // 缓冲进度 (0f..1f)
-    modifier: Modifier, onValueChange: (Float) -> Unit
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(8.dp)
-            .padding(vertical = 8.dp)
-    ) {
-        // 缓冲进度条
-        Canvas(modifier = Modifier.matchParentSize()) {
-            val width = size.width
-            val height = size.height
 
-            // 缓冲进度条背景
-            drawRect(
-                color = androidx.compose.ui.graphics.Color.LightGray,
-                size = androidx.compose.ui.geometry.Size(width, height)
-            )
-
-            // 缓冲进度
-            drawRect(
-                color = androidx.compose.ui.graphics.Color.Gray,
-                size = androidx.compose.ui.geometry.Size(width * bufferedProgress, height)
-            )
-
-            // 播放进度
-            drawRect(
-                color = androidx.compose.ui.graphics.Color.White,
-                size = androidx.compose.ui.geometry.Size(width * progress, height)
-            )
-        }
-
-        // 拖动条
-        Slider(
-            value = progress,
-            onValueChange = onValueChange,
-            valueRange = 0f..1f,
-            modifier = Modifier.matchParentSize(),
-            colors = SliderDefaults.colors(
-                thumbColor = androidx.compose.ui.graphics.Color.White,
-                activeTrackColor = androidx.compose.ui.graphics.Color.Transparent,
-                inactiveTrackColor = androidx.compose.ui.graphics.Color.Transparent
-            )
-        )
-    }
-}
-
-
-@Composable
-fun CustomProgressBar(
-    progress: Float, // 当前播放进度 (0f..1f)
-    bufferedProgress: Float, // 缓冲进度 (0f..1f)
-    modifier: Modifier = Modifier, onValueChange: (Float) -> Unit
-) {
-    // 获取当前 Density
-    val density = LocalDensity.current
-    val thumbRadius = with(density) { 12.dp.toPx() } // 圆点半径
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(32.dp)
-    ) {
-        Canvas(modifier = Modifier
-            .matchParentSize()
-            .pointerInput(Unit) {
-                detectDragGestures { change, _ ->
-                    val x = change.position.x
-                    val newValue = (x / size.width).coerceIn(0f, 1f)
-                    onValueChange(newValue)
-                }
-            }) {
-            val width = size.width
-            val height = size.height
-            val progressX = width * progress
-            val bufferedX = width * bufferedProgress
-
-            // 绘制缓冲背景
-            drawRect(
-                color = androidx.compose.ui.graphics.Color.LightGray,
-                size = androidx.compose.ui.geometry.Size(width, height / 4),
-                topLeft = androidx.compose.ui.geometry.Offset(0f, height / 2 - height / 8)
-            )
-
-            // 绘制缓冲区域
-            drawRect(
-                color = androidx.compose.ui.graphics.Color.Gray,
-                size = androidx.compose.ui.geometry.Size(bufferedX, height / 4),
-                topLeft = androidx.compose.ui.geometry.Offset(0f, height / 2 - height / 8)
-            )
-
-            // 绘制播放区域
-            drawRect(
-                color = androidx.compose.ui.graphics.Color.Blue,
-                size = androidx.compose.ui.geometry.Size(progressX, height / 4),
-                topLeft = androidx.compose.ui.geometry.Offset(0f, height / 2 - height / 8)
-            )
-
-            // 绘制圆点（thumb）
-            drawCircle(
-                color = androidx.compose.ui.graphics.Color.Blue,
-                radius = thumbRadius,
-                center = androidx.compose.ui.geometry.Offset(progressX, height / 2)
-            )
-        }
-    }
-}
 
