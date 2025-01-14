@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.OutlinedTextField
@@ -20,10 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-
 import com.lbe.imsdk.LbeSdk
-import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.lbeIdentity
-import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.lbeSign
 import info.hermiths.lbesdk.ui.theme.ChatAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -32,7 +30,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
             ChatAppTheme {
-                NickIdPrompt { nickId, nickName, lbeIdentity, lbeSign, phone, email, language, device ->
+                NickIdPrompt { nickId, nickName, lbeIdentity, lbeSign, phone, email, language, device, headerIcon ->
                     LbeSdk.init(
                         context = context,
                         lbeSign = lbeSign,
@@ -43,7 +41,7 @@ class MainActivity : ComponentActivity() {
                         email = email,
                         language = language,
                         device = device,
-                        headerIcon = "http://10.40.92.203:9910/openimttt/lbe_65f8d397953b979b4be0d098e8d4f5.jpg"
+                        headerIcon = headerIcon
                     )
                     finish()
                 }
@@ -53,10 +51,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String, lbeSign: String, phone: String, email: String, language: String, device: String) -> Unit) {
+fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String, lbeSign: String, phone: String, email: String, language: String, device: String, headerIcon: String) -> Unit) {
     // HermitK1
-    var nickId by remember { mutableStateOf("android015") }
-    var nickName by remember { mutableStateOf("android015") }
+    var nickId by remember { mutableStateOf("android995") }
+    var nickName by remember { mutableStateOf("android995") }
 
     // dev
 //    var lbeSign by remember { mutableStateOf("0xaee7b220061d450ef94406f819edec6f9402a1a41205e75e394519c02a527e3d1527e166ea6c868075b094d3bddbb1b274ccef66dd247ebec6930276f361088b1b") }
@@ -83,85 +81,107 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
 
     var device by remember { mutableStateOf("") }
 
+//    var headerIcon by remember { mutableStateOf("https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg") }
+    var headerIcon by remember { mutableStateOf("http://10.40.92.203:9910/openimttt/lbe_65f8d397953b979b4be0d098e8d4f5.jpg") }
+
 //    var source by remember { mutableStateOf("Android") }
 
     Card {
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(8.dp)
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            OutlinedTextField(
-                value = lbeSign,
-                onValueChange = { lbeSign = it },
-                label = { Text(text = "lbeSign") },
-                readOnly = false,
-            )
-
-            OutlinedTextField(
-                value = lbeIdentity,
-                onValueChange = { lbeIdentity = it },
-                label = { Text(text = "LbeIdentity") }, readOnly = false,
-            )
-
-            OutlinedTextField(
-                value = nickId,
-                onValueChange = { nickId = it },
-                label = { Text(text = "NickId") }, readOnly = false,
-            )
-
-            OutlinedTextField(
-                value = nickName,
-                onValueChange = { nickName = it },
-                label = { Text(text = "NickName") }, readOnly = false,
-            )
-
-            OutlinedTextField(
-                value = phone,
-                onValueChange = { phone = it },
-                label = { Text(text = "phone") }, readOnly = false,
-            )
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text(text = "email") }, readOnly = false,
-            )
-
-            OutlinedTextField(
-                value = language,
-                onValueChange = { language = it },
-                label = { Text(text = "language") }, readOnly = false,
-            )
-
-            OutlinedTextField(
-                value = device,
-                onValueChange = { device = it },
-                label = { Text(text = "device") }, readOnly = false,
-            )
-//                item {
-//                    OutlinedTextField(value = source,
-//                        onValueChange = { source = it },
-//                        label = { Text(text = "source") })
-//                }
-            Button(onClick = {
-                onStart(
-                    nickId,
-                    nickName,
-                    lbeIdentity,
-                    lbeSign,
-                    phone,
-                    email,
-                    language,
-                    device,
-//                            source
+            item {
+                OutlinedTextField(
+                    value = lbeSign,
+                    onValueChange = { lbeSign = it },
+                    label = { Text(text = "lbeSign") },
+                    readOnly = false,
                 )
-            }) {
-                Text(text = "Connect")
             }
 
+            item {
+                OutlinedTextField(
+                    value = lbeIdentity,
+                    onValueChange = { lbeIdentity = it },
+                    label = { Text(text = "LbeIdentity") }, readOnly = false,
+                )
+            }
+
+            item {
+                OutlinedTextField(
+                    value = nickId,
+                    onValueChange = { nickId = it },
+                    label = { Text(text = "NickId") }, readOnly = false,
+                )
+            }
+
+            item {
+                OutlinedTextField(
+                    value = nickName,
+                    onValueChange = { nickName = it },
+                    label = { Text(text = "NickName") }, readOnly = false,
+                )
+            }
+
+            item {
+                OutlinedTextField(
+                    value = phone,
+                    onValueChange = { phone = it },
+                    label = { Text(text = "phone") }, readOnly = false,
+                )
+            }
+
+            item {
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text(text = "email") }, readOnly = false,
+                )
+            }
+
+            item {
+                OutlinedTextField(
+                    value = language,
+                    onValueChange = { language = it },
+                    label = { Text(text = "language") }, readOnly = false,
+                )
+            }
+            item {
+                OutlinedTextField(
+                    value = device,
+                    onValueChange = { device = it },
+                    label = { Text(text = "device") }, readOnly = false,
+                )
+            }
+            item {
+                OutlinedTextField(
+                    value = headerIcon,
+                    onValueChange = { headerIcon = it },
+                    label = { Text(text = "avatar") }, readOnly = false,
+                )
+            }
+
+            item {
+                Button(onClick = {
+                    onStart(
+                        nickId,
+                        nickName,
+                        lbeIdentity,
+                        lbeSign,
+                        phone,
+                        email,
+                        language,
+                        device,
+                        headerIcon
+                    )
+                }) {
+                    Text(text = "Connect")
+                }
+            }
         }
     }
 

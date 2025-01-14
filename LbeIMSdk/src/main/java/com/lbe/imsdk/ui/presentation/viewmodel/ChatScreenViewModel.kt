@@ -399,7 +399,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             _uiState.postValue(messages?.let { _uiState.value?.copy(messages = it) })
             Log.d(
                 REALM,
-                "发送完更新列表 ---->>> messages: ${messages?.size}, allMessageSize: $allMessageSize"
+                "发送完更新列表 ---->>> messages: ${messages?.size}, allMessageSize: $allMessageSize, \n $messages"
             )
         }
     }
@@ -574,7 +574,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             if (history.data.content.isNotEmpty()) {
                 seq = history.data.content.last().msgSeq
                 for (content in history.data.content) {
-                    if (content.msgType == 1 || content.msgType == 2 || content.msgType == 3 || content.msgType == 8 || content.msgType == 9 || content.msgType == 10) {
+                    if (content.msgType == 1 || content.msgType == 2 || content.msgType == 3 || content.msgType == 8 || content.msgType == 9 || content.msgType == 10 || content.msgType == 11 || content.msgType == 12) {
                         val entity = MessageEntity().apply {
                             sessionId = content.sessionId
                             senderUid = content.senderUid
@@ -658,10 +658,15 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                         IMMsg.MsgType.TextMsgType -> 1
                         IMMsg.MsgType.ImgMsgType -> 2
                         IMMsg.MsgType.VideoMsgType -> 3
-                        else -> 15
+                        IMMsg.MsgType.FaqMsgType -> 8
+                        IMMsg.MsgType.KnowledgePointMsgType -> 9
+                        IMMsg.MsgType.KnowledgeAnswerMsgType -> 10
+                        IMMsg.MsgType.SystemTextMsgType -> 12
+                        else -> 19
                     }
 
                     val receivedReq = msgEntity.msgBody.msgSeq
+                    println("接收转人工系统消息 --->> remoteLastMsgType: $remoteLastMsgType ,receivedReq: $receivedReq, seq: $seq")
                     if (remoteLastMsgType == 1 || remoteLastMsgType == 2 || remoteLastMsgType == 3) {
                         if (receivedReq - seq > 2) {
                             fetchHistoryAndSync(sessionList[0])
@@ -669,11 +674,11 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                         seq = receivedReq
                         recivCount.value += 1
                     }
-
                     Log.d(
                         TAG, "收到消息 --->> seq: $seq, remoteLastMsgType: $remoteLastMsgType"
                     )
                     val entity = protoToEntity(msgEntity.msgBody)
+                    println("接收转人工系统消息 --->>> $entity")
 
                     lastCsMessage = entity
                     if (timeOutConfigOpen.value) {

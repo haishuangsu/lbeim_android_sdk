@@ -6,15 +6,16 @@ import com.lbe.imsdk.model.UploadTask
 import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.query.Sort
+import io.realm.kotlin.types.RealmInstant
 import org.mongodb.kbson.ObjectId
 
 object IMLocalRepository {
-    val realm = RealmInstance.realm
+    private val realm = RealmInstance.realm
 
     fun filterMessages(sessionId: String): List<MessageEntity> {
         return realm.query<MessageEntity>(
             query = "sessionId == $0", sessionId
-        ).sort("sendTime", Sort.ASCENDING).find()
+        ).sort("timestamp", Sort.ASCENDING).find()
     }
 
     fun findMsgByClientMsgId(clientMsgID: String): MessageEntity? {
@@ -112,6 +113,7 @@ object IMLocalRepository {
             msg?.msgSeq = msgSeq
             msg?.sendSuccess = true
             msg?.sendTime = newClientMsgId.split("-").last().toLong()
+            msg?.timestamp = RealmInstant.now()
         }
     }
 
@@ -120,7 +122,7 @@ object IMLocalRepository {
             val msgExit = query<MessageEntity>(
                 query = "clientMsgID == $0", msg.clientMsgID,
             ).first().find()
-//            Log.d("RealmTAG", "要插入的 Msg：${msg.msgBody}， 查找到缓存 --->> ${msgExit?.msgBody}")
+            Log.d("RealmTAG", "要插入的 Msg：$msg， 查找到缓存 --->> ${msgExit?.msgBody}")
             if (msgExit == null) {
                 Log.d("RealmTAG", "未查找到缓存，即将插入的 Msg：${msg.msgBody}")
                 copyToRealm(msg)

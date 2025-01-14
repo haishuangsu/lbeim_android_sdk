@@ -7,8 +7,6 @@ import com.lbe.imsdk.model.req.MsgBody
 import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.lbeSession
 import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.seq
 import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.uid
-import com.lbe.imsdk.utils.TimeUtils.timeStampGen
-import com.lbe.imsdk.utils.UUIDUtils.uuidGen
 
 object Converts {
 
@@ -39,7 +37,7 @@ object Converts {
                 IMMsg.MsgType.KnowledgePointMsgType -> 9
                 IMMsg.MsgType.KnowledgeAnswerMsgType -> 10
                 IMMsg.MsgType.SystemTextMsgType -> 12
-                else -> 15
+                else -> 19
             }
             msgSeq = proto.msgSeq
             clientMsgID = proto.clientMsgID
