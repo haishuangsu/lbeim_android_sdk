@@ -11,6 +11,5 @@ interface ChatService {
     fun observeConnection(): Flowable<WebSocket.Event>
 
     @Send
-    fun sendMessage(buffer: ByteArray)
-
+    fun sendMessage(buffer: ByteArray): Boolean
 }

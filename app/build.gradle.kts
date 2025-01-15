@@ -4,14 +4,14 @@ plugins {
 }
 
 android {
-    namespace = "info.hermiths.chatapp"
+    namespace = "com.lbe.chatapp"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "info.hermiths.chatapp"
+        applicationId = "com.lbe.chatapp"
         minSdk = 28
-        versionCode = 13
-        versionName = "0.1.3"
+        versionCode = 15
+        versionName = "0.1.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

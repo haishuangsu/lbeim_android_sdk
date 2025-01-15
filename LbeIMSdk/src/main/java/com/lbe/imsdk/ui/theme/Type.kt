@@ -1,4 +1,4 @@
-package info.hermiths.lbesdk.ui.theme
+package com.lbe.imsdk.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

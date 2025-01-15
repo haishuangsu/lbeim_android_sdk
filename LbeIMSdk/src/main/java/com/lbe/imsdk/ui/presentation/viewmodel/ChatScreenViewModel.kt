@@ -22,7 +22,6 @@ import com.tinder.scarlet.WebSocket.Event.OnConnectionClosing
 import com.tinder.scarlet.WebSocket.Event.OnConnectionFailed
 import com.tinder.scarlet.WebSocket.Event.OnConnectionOpened
 import com.tinder.scarlet.WebSocket.Event.OnMessageReceived
-import com.tinder.scarlet.messageadapter.protobuf.ProtobufMessageAdapter
 import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import com.lbe.imsdk.data.local.IMLocalRepository
@@ -65,6 +64,7 @@ import com.lbe.imsdk.utils.Converts.entityToMediaSendBody
 import com.lbe.imsdk.utils.Converts.entityToSendBody
 import com.lbe.imsdk.utils.Converts.protoToEntity
 import com.lbe.imsdk.utils.Converts.sendBodyToEntity
+import com.lbe.imsdk.utils.FileLogger
 import com.lbe.imsdk.utils.TimeUtils.timeStampGen
 import com.lbe.imsdk.utils.UUIDUtils.uuidGen
 import com.lbe.imsdk.utils.UploadBigFileUtils
@@ -85,6 +85,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.security.MessageDigest
+import java.time.Duration
 import java.util.Timer
 import java.util.TimerTask
 
@@ -95,9 +96,9 @@ enum class ConnectionStatus {
 class ChatScreenViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object {
-        private const val TAG = "IM Websocket"
+        private const val TAG = "LbeIM_Websocket"
         const val REALM = "RealmTAG"
-        const val UPLOAD = "IM UPLOAD"
+        const val UPLOAD = "LbeIM_UPLOAD"
         const val FILE_SELECT = "File Select"
         const val IMAGE_ENCRYPTION = "Image Encryption"
         const val CONTINUE_UPLOAD = "CONTINUE_UPLOAD"
@@ -169,6 +170,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
     private var pingTimer: Timer? = null
 
+    private val fileLogger = FileLogger(application)
+
     init {
         networkMonitor.startMonitoring()
         // testOfflineTakeByCache()
@@ -183,6 +186,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
     private fun disConnectionSdk() {
         if (sdkInit) {
+            Log.d(TAG, "websocket disConnectionSdk")
             sdkInit = false
             jobs["sdkJob"]?.cancel()
             pingTimer?.cancel()
@@ -235,7 +239,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     schedulePingJob()
                 }
             } catch (e: Exception) {
-                println("Prepare error: $e")
+                println("realInitSdk error: $e")
             }
         }
         jobs["sdkJob"] = sdkJob
@@ -611,23 +615,27 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     @SuppressLint("CheckResult")
     private fun observerConnection() {
         chatService = Scarlet.Builder().webSocketFactory(
-            OkHttpClient.Builder().build().newWebSocketFactory(
-                DynamicHeaderUrlRequestFactory(
-                    url = wssHost, lbeToken = lbeToken, lbeSession = lbeSession,
+            OkHttpClient.Builder().connectTimeout(Duration.ofDays(5)).retryOnConnectionFailure(true)
+                .build().newWebSocketFactory(
+                    DynamicHeaderUrlRequestFactory(
+                        url = wssHost, lbeToken = lbeToken, lbeSession = lbeSession,
+                    )
                 )
-            )
-        ).addMessageAdapterFactory(ProtobufMessageAdapter.Factory())
-            .addStreamAdapterFactory(RxJava2StreamAdapterFactory()).build().create<ChatService>()
+        ).addStreamAdapterFactory(RxJava2StreamAdapterFactory()).build().create<ChatService>()
+
         Log.d(TAG, "Observing Connection")
         updateConnectionStatus(ConnectionStatus.CONNECTING)
         chatService?.observeConnection()?.subscribe({ response ->
             onResponseReceived(response)
         }, { error ->
-            error.localizedMessage?.let { Log.e(TAG, it) }
+            error.localizedMessage?.let { Log.e(TAG, "websocket 出错 ---->>> $it") }
         })
     }
 
     private fun onResponseReceived(response: WebSocket.Event) {
+        Log.d(TAG, "webSocket response --->>> $response")
+        fileLogger.log(TAG, "webSocket response --->>> $response")
+
         when (response) {
             is OnConnectionOpened<*> -> updateConnectionStatus(ConnectionStatus.OPENED)
 
@@ -647,6 +655,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             viewModelScope.launch {
                 val msgEntity = IMMsg.MsgEntityToFrontEnd.parseFrom(value)
                 Log.d(TAG, "handleOnMessageReceived protobuf bytes --->>>  $msgEntity")
+                fileLogger.log(TAG, "handleOnMessageReceived protobuf bytes --->>>  $msgEntity")
 
                 if (msgEntity.msgBody.senderUid == "111") {
                     return@launch
@@ -725,8 +734,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         if (pingTimer == null) pingTimer = Timer()
         pingTimer?.schedule(object : TimerTask() {
             override fun run() {
-                Log.d("Ping Job", toServer.toString())
-                chatService?.sendMessage(toServer.toByteArray())
+                val sendStatus = chatService?.sendMessage(toServer.toByteArray())
+                Log.d("Ping Job", "$toServer ---->>> $sendStatus")
+                fileLogger.log("Ping Job", "$toServer ---->>> $sendStatus")
             }
         }, period, period)
     }
@@ -768,10 +778,11 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun updateConnectionStatus(connectionStatus: ConnectionStatus) {
-        Log.d(TAG, connectionStatus.name)
-        viewModelScope.launch(Dispatchers.Main) {
-            _uiState.postValue(_uiState.value?.copy(connectionStatus = connectionStatus))
-        }
+        Log.d(TAG, "websocket update status --->>> ${connectionStatus.name}")
+        fileLogger.log(TAG, "websocket update status --->>> ${connectionStatus.name}")
+//        viewModelScope.launch(Dispatchers.Main) {
+//            _uiState.postValue(_uiState.value?.copy(connectionStatus = connectionStatus))
+//        }
     }
 
     fun onMessageChange(message: String) {

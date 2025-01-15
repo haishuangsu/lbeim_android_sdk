@@ -1,10 +1,9 @@
-package info.hermiths.chatapp
+package com.lbe.chatapp
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.lbe.imsdk.LbeSdk
-import info.hermiths.lbesdk.ui.theme.ChatAppTheme
+import com.lbe.imsdk.ui.theme.ChatAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,24 +52,24 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String, lbeSign: String, phone: String, email: String, language: String, device: String, headerIcon: String) -> Unit) {
     // HermitK1
-    var nickId by remember { mutableStateOf("android995") }
-    var nickName by remember { mutableStateOf("android995") }
+    var nickId by remember { mutableStateOf("HermitK3") }
+    var nickName by remember { mutableStateOf("HermitK3") }
 
     // dev
 //    var lbeSign by remember { mutableStateOf("0xaee7b220061d450ef94406f819edec6f9402a1a41205e75e394519c02a527e3d1527e166ea6c868075b094d3bddbb1b274ccef66dd247ebec6930276f361088b1b") }
 //    var lbeIdentity by remember { mutableStateOf("441z9t7ucki1") }
 
     // sit
-//    var lbeSign by remember { mutableStateOf("0x9d63fcec00dffa1e7bbebfa4f0afa80f5f26614613b29357d580b69b708d2d893b6eef2d013828830f9c52f647edcd9ebc5ec73900d178b4c1a27732fb24cefe1b") }
-//    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
+    var lbeSign by remember { mutableStateOf("0x9d63fcec00dffa1e7bbebfa4f0afa80f5f26614613b29357d580b69b708d2d893b6eef2d013828830f9c52f647edcd9ebc5ec73900d178b4c1a27732fb24cefe1b") }
+    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
 
     // uat
     // var lbeSign by remember { mutableStateOf("0xc3620a07c69a191b3b2fb431bd26c8417413f4998e6fc2fc2c570bd1145ac004780d13db14290687a94d9b30804b1a8a2edb8b7828c6c45a55fc8d1e78f98dec1c") }
     // var lbeIdentity by remember { mutableStateOf("45vhxodzxswp") }
 
     // test
-    var lbeSign by remember { mutableStateOf("0xad1701e4fd5456c87541a6bb5ccd41ae626d2a0bd52b6ff7fa78b7276632b5ff47386d2ed0cafa53ffb7364880c7e30a7e3688b6efc59a1ba9cda2f4216d2e9c1b") }
-    var lbeIdentity by remember { mutableStateOf("43qf47gjuimi") }
+//    var lbeSign by remember { mutableStateOf("0xad1701e4fd5456c87541a6bb5ccd41ae626d2a0bd52b6ff7fa78b7276632b5ff47386d2ed0cafa53ffb7364880c7e30a7e3688b6efc59a1ba9cda2f4216d2e9c1b") }
+//    var lbeIdentity by remember { mutableStateOf("43qf47gjuimi") }
 //    android015
 
     var phone by remember { mutableStateOf("") }

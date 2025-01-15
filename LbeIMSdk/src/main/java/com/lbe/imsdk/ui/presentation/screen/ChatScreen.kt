@@ -890,8 +890,7 @@ fun RecievedFromCustomerService(
                 modifier = Modifier.padding(8.dp)
             ) {
                 Text(
-//                    text = message.senderUid.ifEmpty { "客服机器人" },
-                    text = message.customerServiceNickname.ifEmpty { "客服昵称为空，websocket 没推过来" },
+                    text = message.customerServiceNickname.ifEmpty { "在线客服" },
                     modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
                     style = TextStyle(
                         fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)
@@ -951,7 +950,7 @@ fun UserInput(
                     .padding(8.dp),
             ) {
                 Text(
-                    text = ChatScreenViewModel.nickName,
+                    text = ChatScreenViewModel.nickName.ifEmpty { "游客" },
                     modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
                     style = TextStyle(
                         fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)

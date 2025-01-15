@@ -21,7 +21,7 @@ import com.lbe.imsdk.ui.presentation.components.NavRoute
 import com.lbe.imsdk.ui.presentation.screen.ChatScreen
 import com.lbe.imsdk.ui.presentation.screen.MediaViewer
 import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel
-import info.hermiths.lbesdk.ui.theme.ChatAppTheme
+import com.lbe.imsdk.ui.theme.ChatAppTheme
 
 class LbeChatActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
