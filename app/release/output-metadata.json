@@ -4,15 +4,15 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "info.hermiths.chatapp",
+  "applicationId": "com.lbe.chatapp",
   "variantName": "release",
   "elements": [
     {
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 14,
-      "versionName": "0.1.4",
+      "versionCode": 15,
+      "versionName": "0.1.5",
       "outputFile": "app-release.apk"
     }
   ],

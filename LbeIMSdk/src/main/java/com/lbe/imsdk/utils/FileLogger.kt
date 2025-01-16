@@ -66,13 +66,12 @@ class FileLogger(private val context: Context) {
     }
 
     fun log(tag: String, message: String) {
-        val logFileUri = getLogFileUri()
-        if (logFileUri != null) {
+        fileUri?.let { uri ->
             try {
                 val timeStamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
                 val logMessage = "$timeStamp [$tag]: $message\n\n\n"
 
-                context.contentResolver.openOutputStream(logFileUri, "wa")?.use { fos ->
+                context.contentResolver.openOutputStream(uri, "wa")?.use { fos ->
                     OutputStreamWriter(fos).use { writer ->
                         writer.append(logMessage)
                         writer.flush()

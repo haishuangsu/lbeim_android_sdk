@@ -458,16 +458,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
     fun scrollToBottom() {
         toBottom.value += ","
-//        viewModelScope.launch(Dispatchers.Main) {
-//            scrollTo(allMessageSize)
-//        }
     }
-
-//    private fun scrollTo(index: Int) {
-//        Log.d(REALM, "scrollToEnd： $index")
-//        lazyListState?.requestScrollToItem(index)
-//        toBottom.value += ","
-//    }
 
     fun resetRecivCount() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -634,7 +625,6 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
     private fun onResponseReceived(response: WebSocket.Event) {
         Log.d(TAG, "webSocket response --->>> $response")
-        fileLogger.log(TAG, "webSocket response --->>> $response")
 
         when (response) {
             is OnConnectionOpened<*> -> updateConnectionStatus(ConnectionStatus.OPENED)
@@ -676,7 +666,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
                     val receivedReq = msgEntity.msgBody.msgSeq
                     println("接收转人工系统消息 --->> remoteLastMsgType: $remoteLastMsgType ,receivedReq: $receivedReq, seq: $seq")
-                    if (remoteLastMsgType == 1 || remoteLastMsgType == 2 || remoteLastMsgType == 3) {
+                    if (remoteLastMsgType == 1 || remoteLastMsgType == 2 || remoteLastMsgType == 3 || remoteLastMsgType == 8 || remoteLastMsgType == 9 || remoteLastMsgType == 10 || remoteLastMsgType == 12) {
                         if (receivedReq - seq > 2) {
                             fetchHistoryAndSync(sessionList[0])
                         }
@@ -1401,7 +1391,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         val thumbnailResp = UploadRepository.singleUpload(
             file = MultipartBody.Part.createFormData(
                 "file", "lbe_${uuidGen()}_${timeStampGen()}.jpg", buffer.toRequestBody()
-            ), signType = 1
+            ), signType = 2
         )
         withContext(Dispatchers.IO) {
             bao.close()

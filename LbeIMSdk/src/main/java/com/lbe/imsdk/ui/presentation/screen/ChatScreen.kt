@@ -59,6 +59,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -90,6 +91,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
 
@@ -227,6 +229,7 @@ fun ChatScreen(
     var showToBottomButton by remember { mutableStateOf(false) }
     var scrollOffset by remember { mutableFloatStateOf(0f) }
     val toBottomEvent by viewModel.toBottom.collectAsState("")
+    val previousToBottomEvent = rememberSaveable { mutableStateOf(toBottomEvent) }
     val recivedEvent by viewModel.recived.collectAsState("")
 
     LaunchedEffect(lifecycleOwner) {
@@ -687,7 +690,7 @@ fun ChatScreen(
         }
 
         LaunchedEffect(toBottomEvent) {
-            if (toBottomEvent.isNotEmpty()) {
+            if (toBottomEvent.isNotEmpty() && toBottomEvent != previousToBottomEvent.value) {
                 coroutineScope.launch {
                     showToBottomButton = false
                     scrollOffset = 0f
@@ -695,6 +698,7 @@ fun ChatScreen(
                     if (uiState.messages.isNotEmpty()) {
                         lazyListState.requestScrollToItem(uiState.messages.size - 1)
                     }
+                    previousToBottomEvent.value = toBottomEvent
                 }
             }
         }

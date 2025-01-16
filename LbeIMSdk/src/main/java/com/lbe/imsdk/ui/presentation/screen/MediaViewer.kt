@@ -336,7 +336,6 @@ suspend fun saveImageToGallery(
     }
 }
 
-// 保存原始图像流（适用于 GIF 等格式）
 suspend fun saveRawImageStream(imageUrl: String, outputStream: OutputStream): Boolean {
     return withContext(Dispatchers.IO) {
         try {

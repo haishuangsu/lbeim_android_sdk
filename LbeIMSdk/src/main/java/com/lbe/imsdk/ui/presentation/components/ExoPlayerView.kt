@@ -11,9 +11,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.forEach
+import androidx.core.view.setPadding
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -53,7 +55,7 @@ fun ExoPlayerView(url: String) {
                 PlayerView(ctx).apply {
                     player = exoPlayer
                     useController = true
-                    resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
+                    resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
 //                    logChildViewIds(this)
                     findViewById<View>(ExoPlayerUiR.id.exo_prev)?.visibility = View.GONE
                     findViewById<View>(ExoPlayerUiR.id.exo_next)?.visibility = View.GONE
