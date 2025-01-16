@@ -54,8 +54,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String, lbeSign: String, phone: String, email: String, language: String, device: String, headerIcon: String) -> Unit) {
     // HermitK1
-    var nickId by remember { mutableStateOf("") }
-    var nickName by remember { mutableStateOf("") }
+    var nickId by remember { mutableStateOf("HermitK3") }
+    var nickName by remember { mutableStateOf("HermitK3") }
 
     // dev
 //    var lbeSign by remember { mutableStateOf("0xaee7b220061d450ef94406f819edec6f9402a1a41205e75e394519c02a527e3d1527e166ea6c868075b094d3bddbb1b274ccef66dd247ebec6930276f361088b1b") }

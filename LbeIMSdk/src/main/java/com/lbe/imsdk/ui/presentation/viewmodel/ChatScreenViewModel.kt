@@ -180,12 +180,12 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
     override fun onCleared() {
         networkMonitor.stopMonitoring()
-        disConnectionSdk()
+        disConnection()
         println("LbeChat Lifecycle --->> ChatScreenViewModel onCleared")
         super.onCleared()
     }
 
-    private fun disConnectionSdk() {
+    private fun disConnection() {
         if (sdkInit) {
             Log.d(TAG, "websocket disConnectionSdk")
             sdkInit = false
@@ -216,10 +216,10 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         userAvatar = args.headerIcon
         lbeIdentity = args.lbeIdentity
         initArgs = args
-        realInitSdk(sendJob = {})
+        realInitSdk()
     }
 
-    private fun realInitSdk(sendJob: () -> Unit) {
+    private fun realInitSdk() {
         val sdkJob = viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             try {
                 println("NetworkMonitor [prepare]---->>> ${networkMonitor.isNetworkAvailable()}")
@@ -232,11 +232,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                 viewModelScope.launch(Dispatchers.IO) {
                     fetchSessionList()
                     observerConnection()
-                    sendJob()
                     fetchTimeoutConfig()
                     faq(faqReqBody = FaqReqBody(faqType = 0, id = ""))
                     sdkInit = true
-                    endSession = false
                     schedulePingJob()
                 }
             } catch (e: Exception) {
@@ -313,6 +311,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                 sharedPreferences.edit().putString("anonymousNickId", session.data.nickId).apply()
                 sharedPreferences.edit().putBoolean("needSaveNickId", false).apply()
             }
+            endSession = false
         }.onFailure { error ->
             Log.d(RETROFIT, "创建会话异常: $error")
         }
@@ -710,8 +709,11 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                 }
 
                 if (msgEntity.msgType == IMMsg.MsgType.EndSessionMsgType) {
-                    disConnectionSdk()
                     endSession = true
+                }
+
+                if (msgEntity.msgType == IMMsg.MsgType.KickOffLineMsgType) {
+                    disConnection()
                 }
             }
         } catch (e: Exception) {
@@ -792,7 +794,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         if (endSession) {
             sessionList.clear()
             currentSessionIndex = 0
-            realInitSdk(sendJob = {
+            viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
+                createSession()
+                fetchSessionList()
                 val sendBody = genMsgBody(type = 1, msgBody = _inputMsg.value ?: "")
                 send(
                     messageSent = messageSent,
@@ -801,7 +805,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     },
                     sendBody,
                 )
-            })
+            }
             return
         }
 
@@ -819,10 +823,11 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         if (endSession) {
             sessionList.clear()
             currentSessionIndex = 0
-            realInitSdk(sendJob = {
+            viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
+                createSession()
+                fetchSessionList()
                 send(messageSent = {}, preSend = preSend, msgBody = msgBody)
-
-            })
+            }
             return
         }
 

@@ -20,7 +20,7 @@ fun NormalDecryptedOrNotImageView(
             DecryptedDecoder.Factory(url = url, key = key)
         ).build(),
         contentDescription = "Yo",
-        contentScale = ContentScale.FillWidth,
+        contentScale = ContentScale.Crop,
         modifier = modifier,
         imageLoader = imageLoader,
     )

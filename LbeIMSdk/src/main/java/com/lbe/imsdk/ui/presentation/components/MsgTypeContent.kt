@@ -466,7 +466,7 @@ fun MsgTypeContent(
                                         url = faqEntryUrl.url,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .heightIn(max = 330.dp)
+                                            .height(300.dp)
                                             .clickable {
                                                 navController.navigate(navRoute)
                                             },
