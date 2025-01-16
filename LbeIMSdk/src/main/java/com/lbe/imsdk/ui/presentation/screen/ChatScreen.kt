@@ -877,14 +877,14 @@ fun RecievedFromCustomerService(
                     )
                 } else {
                     Image(
-                        painter = painterResource(id = R.drawable.cs_avatar),
+                        painter = painterResource(id = R.drawable.default_cs_avatar),
                         contentDescription = "",
                         modifier = Modifier.size(32.dp)
                     )
                 }
             } else {
                 Image(
-                    painter = painterResource(id = R.drawable.cs_avatar),
+                    painter = painterResource(id = R.drawable.default_cs_avatar),
                     contentDescription = "",
                     modifier = Modifier.size(32.dp)
                 )
@@ -954,7 +954,7 @@ fun UserInput(
                     .padding(8.dp),
             ) {
                 Text(
-                    text = ChatScreenViewModel.nickName.ifEmpty { "游客" },
+                    text = ChatScreenViewModel.nickName.ifEmpty { if (!ChatScreenViewModel.isAnonymous) "用户 ${ChatScreenViewModel.nickId}" else "游客 ${ChatScreenViewModel.nickId}" },
                     modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
                     style = TextStyle(
                         fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)
@@ -964,15 +964,22 @@ fun UserInput(
                 MsgTypeContent(message, viewModel, navController, true, imageLoader)
             }
 
-            // avatar
-            AsyncImage(
-                model = ChatScreenViewModel.userAvatar,
-                contentDescription = "Yo",
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape),
-            )
+            if (ChatScreenViewModel.userAvatar.isNotEmpty()) {
+                AsyncImage(
+                    model = ChatScreenViewModel.userAvatar,
+                    contentDescription = "Yo",
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape),
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.default_user_avatar),
+                    contentDescription = "",
+                    modifier = Modifier.size(32.dp)
+                )
+            }
         }
     }
 }
