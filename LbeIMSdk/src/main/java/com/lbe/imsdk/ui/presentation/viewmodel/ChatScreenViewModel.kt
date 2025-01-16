@@ -1268,7 +1268,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                             val emitProgress = progressList[message.clientMsgID]
                             if (emitProgress != null) {
                                 viewModelScope.launch(Dispatchers.Main) {
-                                    emitProgress.value = totalProgress.toFloat()
+                                    if (totalProgress.toFloat() >= emitProgress.value) {
+                                        emitProgress.value = totalProgress.toFloat()
+                                    }
                                 }
 
                                 if (emitProgress.value == 1.0f) {
