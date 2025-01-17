@@ -9,6 +9,7 @@ import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.State
+import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -84,6 +85,7 @@ import retrofit2.HttpException
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
 import java.security.MessageDigest
 import java.time.Duration
 import java.util.Timer
@@ -926,7 +928,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         )
 
         val localFile = genLocalFile(mediaMessage)
-        localFile.isBigFile = mediaMessage.file.length() > UploadBigFileUtils.defaultChunkSize
+        localFile.isBigFile = mediaMessage.fileSize > UploadBigFileUtils.defaultChunkSize
 
         val entity = insertCacheMaybeUpdateUI(
             sendBody = sendBody, localFile = localFile
@@ -936,22 +938,32 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun upload(
-        message: MessageEntity, thumbBitmap: Bitmap
+        message: MessageEntity, thumbBitmap: Bitmap, context: Context
     ) {
         Log.d(UPLOAD, "upload file size---->>> ${message.localFile?.size}")
         if (!networkAvailable()) {
             return
         }
         message.localFile?.size?.let {
-            if (it > UploadBigFileUtils.defaultChunkSize) {
-                bigFileUpload(message, thumbBitmap)
-            } else {
-                singleUpload(message, thumbBitmap)
+            val inputStream =
+                context.contentResolver.openInputStream((message.localFile?.path ?: "").toUri())
+            inputStream?.let { stream ->
+                try {
+                    if (it > UploadBigFileUtils.defaultChunkSize) {
+                        bigFileUpload(message, thumbBitmap, stream)
+                    } else {
+                        singleUpload(message, thumbBitmap, stream)
+                    }
+                } catch (e: Exception) {
+                    println("upload error ---> $e")
+                }
             }
         }
     }
 
-    private fun singleUpload(message: MessageEntity, thumbBitmap: Bitmap) {
+    private fun singleUpload(
+        message: MessageEntity, thumbBitmap: Bitmap, inputStream: InputStream
+    ) {
         val tempUploadInfo = tempUploadInfos[message.clientMsgID]
         val thumbWidth = thumbBitmap.width
         val thumbHeight = thumbBitmap.height
@@ -963,13 +975,13 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     val rep = UploadRepository.singleUpload(
                         file = MultipartBody.Part.createFormData(
                             "file",
-                            it.mediaMessage.file.name,
-                            ProgressRequestBody(delegate = it.mediaMessage.file.asRequestBody(),
+                            it.mediaMessage.fileName,
+                            ProgressRequestBody(delegate = inputStream.readBytes().toRequestBody(),
                                 listener = { bytesWritten, contentLength ->
                                     val progress = (1.0 * bytesWritten) / contentLength
                                     Log.d(
                                         UPLOAD,
-                                        "Single upload  ${it.mediaMessage.file.name} ---->>>  bytesWritten: $bytesWritten, $contentLength, progress: $progress"
+                                        "Single upload  ${it.mediaMessage.fileName} ---->>>  bytesWritten: $bytesWritten, $contentLength, progress: $progress"
                                     )
                                     val emitProgress = progressList[message.clientMsgID]
                                     if (emitProgress != null) {
@@ -1007,6 +1019,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                             )
                         }
                     })
+                    inputStream.close()
                 } catch (e: Exception) {
                     Log.d(UPLOAD, "Single upload error --->> $e")
                 }
@@ -1037,16 +1050,18 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
     private fun genLocalFile(mediaMessage: MediaMessage): LocalMediaFile {
         val localFile = LocalMediaFile()
-        localFile.fileName = mediaMessage.file.name
+        localFile.fileName = mediaMessage.fileName
         localFile.path = mediaMessage.path
-        localFile.size = mediaMessage.file.length()
+        localFile.size = mediaMessage.fileSize
         localFile.mimeType = mediaMessage.mime
         localFile.width = mediaMessage.height
         localFile.height = mediaMessage.width
         return localFile
     }
 
-    private fun bigFileUpload(message: MessageEntity, thumbBitmap: Bitmap) {
+    private fun bigFileUpload(
+        message: MessageEntity, thumbBitmap: Bitmap, inputStream: InputStream
+    ) {
         try {
             val tempUploadInfo = tempUploadInfos[message.clientMsgID]
             val thumbWidth = thumbBitmap.width
@@ -1060,7 +1075,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                 uploadTasks[message.clientMsgID] = uploadTask
 
                 mergeMultiUploadReqQueue[message.clientMsgID] = CompleteMultiPartUploadReq(
-                    uploadId = "", name = it.mediaMessage.file.name, part = mutableListOf()
+                    uploadId = "", name = it.mediaMessage.fileName, part = mutableListOf()
                 )
 
                 val job = viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
@@ -1083,8 +1098,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     scrollToBottom()
                     val initRep = UploadRepository.initMultiPartUpload(
                         body = InitMultiPartUploadBody(
-                            size = it.mediaMessage.file.length(),
-                            name = it.mediaMessage.file.name,
+                            size = it.mediaMessage.fileSize,
+                            name = it.mediaMessage.fileName,
                             contentType = ""
                         )
                     )
@@ -1099,15 +1114,15 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     val start = System.currentTimeMillis()
                     Log.d(
                         UPLOAD,
-                        "Big file upload ---->>> fileName: ${it.mediaMessage.file.name}, Fs hash: ${it.mediaMessage.file.hashCode()}, split start: $start"
+                        "Big file upload ---->>> fileName: ${it.mediaMessage.fileName}, Fs hash: ${it.mediaMessage.path}, split start: $start"
                     )
                     if (initRep.data.node.size > 1) {
                         UploadBigFileUtils.splitFile(
-                            it.mediaMessage.file, UploadBigFileUtils.defaultChunkSize
+                            inputStream, UploadBigFileUtils.defaultChunkSize, it.mediaMessage.path
                         )
                     } else {
                         UploadBigFileUtils.splitFile(
-                            it.mediaMessage.file, initRep.data.node[0].size
+                            inputStream, initRep.data.node[0].size, it.mediaMessage.path
                         )
                     }
                     val end = System.currentTimeMillis()
@@ -1118,10 +1133,10 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
                     mergeMultiUploadReqQueue[message.clientMsgID] = CompleteMultiPartUploadReq(
                         uploadId = initRep.data.uploadId,
-                        name = it.mediaMessage.file.name,
+                        name = it.mediaMessage.fileName,
                         part = mutableListOf()
                     )
-                    val buffers = UploadBigFileUtils.blocks[it.mediaMessage.file.hashCode()]
+                    val buffers = UploadBigFileUtils.blocks[it.mediaMessage.path]
 
                     if (buffers != null) {
                         var deltaSize = 0L
@@ -1140,7 +1155,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                                     byteCount = buffer.array().size
                                 ), listener = { bytesWritten, contentLength ->
                                     val totalProgress =
-                                        (1.0 * (deltaSize + bytesWritten)) / it.mediaMessage.file.length()
+                                        (1.0 * (deltaSize + bytesWritten)) / it.mediaMessage.fileSize
                                     val currentBlockProgress = (1.0 * bytesWritten) / contentLength
 
                                     val emitProgress = progressList[message.clientMsgID]
@@ -1182,7 +1197,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                                 body = reqBody
                             )
                         }
-                    UploadBigFileUtils.releaseMemory(it.mediaMessage.file.hashCode())
+                    UploadBigFileUtils.releaseMemory(it.mediaMessage.path)
                     Log.d(UPLOAD, "BigFileUpload success ---> ${mergeUpload?.data?.location}")
                     val mediaSource = MediaSource(
                         width = thumbWidth, height = thumbHeight, thumbnail = Thumbnail(
@@ -1200,6 +1215,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                             )
                         }
                     })
+                    inputStream.close()
                 }
                 jobs[message.clientMsgID] = job
             }
@@ -1208,7 +1224,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    fun continueSplitTrunksUpload(message: MessageEntity, file: File) {
+    fun continueSplitTrunksUpload(message: MessageEntity, inputStream: InputStream) {
         if (!networkAvailable()) {
             return
         }
@@ -1241,14 +1257,16 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             )
 
             if (newTask.taskLength > 1) {
-                UploadBigFileUtils.splitFile(file, UploadBigFileUtils.defaultChunkSize)
+                UploadBigFileUtils.splitFile(
+                    inputStream, UploadBigFileUtils.defaultChunkSize, message.localFile?.path
+                )
             } else {
                 UploadBigFileUtils.splitFile(
-                    file, initRep.data.node[0].size
+                    inputStream, initRep.data.node[0].size, message.localFile?.path
                 )
             }
 
-            val buffers = UploadBigFileUtils.blocks[file.hashCode()]
+            val buffers = UploadBigFileUtils.blocks[message.localFile?.path]
 
             if (buffers != null) {
                 var deltaSize = 0L
@@ -1273,7 +1291,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                             contentType = "application/octet-stream".toMediaTypeOrNull(),
                             byteCount = buffer.array().size
                         ), listener = { bytesWritten, contentLength ->
-                            val totalProgress = (1.0 * (deltaSize + bytesWritten)) / file.length()
+                            val totalProgress =
+                                ((1.0 * (deltaSize + bytesWritten)) / message.localFile?.size!!)
                             val currentTrunkProgress = (1.0 * bytesWritten) / contentLength
 
                             val emitProgress = progressList[message.clientMsgID]
@@ -1322,7 +1341,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     body = reqBody
                 )
 
-                UploadBigFileUtils.releaseMemory(file.hashCode())
+                UploadBigFileUtils.releaseMemory(message.localFile?.path)
                 Log.d(
                     UPLOAD, "BigFileUpload 断点续传 merge success ---> $mergeUpload"
                 )
@@ -1347,7 +1366,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     }
                 })
             }
-
+            inputStream.close()
         }
         jobs[message.clientMsgID] = job
     }
