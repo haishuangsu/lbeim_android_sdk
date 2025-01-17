@@ -93,14 +93,6 @@ fun MsgTypeContent(
                             )
                             Spacer(Modifier.width(8.dp))
                         }
-//                        else {
-//                            Image(
-//                                painter = painterResource(R.drawable.no_read),
-//                                contentDescription = "unread",
-//                                modifier = Modifier.size(16.dp)
-//                            )
-//                            Spacer(Modifier.width(8.dp))
-//                        }
                     }
 
                     Surface(
@@ -190,7 +182,7 @@ fun MsgTypeContent(
                         modifier = Modifier.align(Alignment.BottomEnd)
                     ) {
                         if (!message.sendSuccess) {
-                            // TODO
+                            //
                         } else {
                             if (message.readed) {
                                 Image(
@@ -200,14 +192,6 @@ fun MsgTypeContent(
                                 )
                                 Spacer(Modifier.width(8.dp))
                             }
-//                            else {
-//                                Image(
-//                                    painter = painterResource(R.drawable.no_read),
-//                                    contentDescription = "unread",
-//                                    modifier = Modifier.size(16.dp)
-//                                )
-//                                Spacer(Modifier.width(8.dp))
-//                            }
                         }
 
                         ThumbDecryptedOrNotImageView(
@@ -240,7 +224,7 @@ fun MsgTypeContent(
                         modifier = Modifier.align(Alignment.BottomEnd)
                     ) {
                         if (!message.sendSuccess) {
-                            // TODO
+                            //
                         } else {
                             if (message.readed) {
                                 Image(
@@ -250,14 +234,6 @@ fun MsgTypeContent(
                                 )
                                 Spacer(Modifier.width(8.dp))
                             }
-//                            else {
-//                                Image(
-//                                    painter = painterResource(R.drawable.no_read),
-//                                    contentDescription = "unread",
-//                                    modifier = Modifier.size(16.dp)
-//                                )
-//                                Spacer(Modifier.width(8.dp))
-//                            }
                         }
 
                         ThumbDecryptedOrNotImageView(
@@ -317,6 +293,15 @@ fun MsgTypeContent(
                             items(faq.knowledgeBaseList) { item ->
                                 Column(horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier.clickable {
+                                        println("history not available --->> message.sessionId: ${message.sessionId}, current session: ${ChatScreenViewModel.sessionList[0].sessionId}")
+                                        if (ChatScreenViewModel.sessionList.isNotEmpty() && message.sessionId != ChatScreenViewModel.sessionList[0].sessionId) {
+                                            Toast.makeText(
+                                                context,
+                                                "此记录不可用",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            return@clickable
+                                        }
                                         viewModel.faq(FaqReqBody(faqType = 1, id = item.id))
                                     }) {
                                     Surface(
@@ -415,6 +400,17 @@ fun MsgTypeContent(
                                 ), modifier = Modifier
                                     .padding(top = 8.dp)
                                     .clickable {
+                                        println("history not available --->> message.sessionId: ${message.sessionId}, current session: ${ChatScreenViewModel.sessionList[0].sessionId}")
+                                        if (ChatScreenViewModel.sessionList.isNotEmpty() && message.sessionId != ChatScreenViewModel.sessionList[0].sessionId) {
+                                            Toast
+                                                .makeText(
+                                                    context,
+                                                    "此记录不可用",
+                                                    Toast.LENGTH_SHORT
+                                                )
+                                                .show()
+                                            return@clickable
+                                        }
                                         viewModel.faq(FaqReqBody(faqType = 2, id = detail.id))
                                     })
                         }
