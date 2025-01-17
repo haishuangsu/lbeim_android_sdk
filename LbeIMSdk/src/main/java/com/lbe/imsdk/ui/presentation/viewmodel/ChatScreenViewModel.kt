@@ -797,6 +797,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
                 createSession()
                 fetchSessionList()
+                faq(faqReqBody = FaqReqBody(faqType = 0, id = ""))
                 val sendBody = genMsgBody(type = 1, msgBody = _inputMsg.value ?: "")
                 send(
                     messageSent = messageSent,
@@ -826,6 +827,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
                 createSession()
                 fetchSessionList()
+                faq(faqReqBody = FaqReqBody(faqType = 0, id = ""))
                 send(messageSent = {}, preSend = preSend, msgBody = msgBody)
             }
             return
@@ -1050,6 +1052,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             val thumbWidth = thumbBitmap.width
             val thumbHeight = thumbBitmap.height
             tempUploadInfo?.let { it ->
+                it.thumbWidth = thumbWidth
+                it.thumbHeight = thumbHeight
                 var executeIndex = 0
                 val uploadTask = UploadTask()
                 uploadTask.executeIndex = executeIndex
@@ -1324,8 +1328,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                 )
                 val cacheMediaSource = Gson().fromJson(message.msgBody, MediaSource::class.java)
                 val mediaSource = MediaSource(
-                    width = message.localFile?.width ?: 0,
-                    height = message.localFile?.height ?: 0,
+                    width = tempUploadInfos[message.clientMsgID]?.thumbWidth ?: 100,
+                    height = tempUploadInfos[message.clientMsgID]?.thumbHeight ?: 100,
                     thumbnail = Thumbnail(
                         url = cacheMediaSource.thumbnail.url, key = cacheMediaSource.thumbnail.key
                     ),

@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -460,6 +461,7 @@ fun MsgTypeContent(
                                         Gson().fromJson(answerUnit.content, FaqEntryUrl::class.java)
                                     val navRoute =
                                         "${NavRoute.MEDIA_VIEWER}/${message.clientMsgID}_$index"
+                                    Log.d("Faq", "Answer content --->>> ${answerUnit.content}")
                                     Log.d("Faq", "Answer faqEntryUrl --->>> $faqEntryUrl")
                                     NormalDecryptedOrNotImageView(
                                         key = faqEntryUrl.key,
@@ -470,7 +472,8 @@ fun MsgTypeContent(
                                             .clickable {
                                                 navController.navigate(navRoute)
                                             },
-                                        imageLoader
+                                        imageLoader,
+                                        contentScale = ContentScale.Crop
                                     )
                                 }
 

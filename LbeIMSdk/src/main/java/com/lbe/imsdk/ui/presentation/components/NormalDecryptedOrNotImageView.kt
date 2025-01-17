@@ -12,7 +12,11 @@ import coil3.request.ImageRequest
 
 @Composable
 fun NormalDecryptedOrNotImageView(
-    key: String, url: String, modifier: Modifier, imageLoader: ImageLoader
+    key: String,
+    url: String,
+    modifier: Modifier,
+    imageLoader: ImageLoader,
+    contentScale: ContentScale = ContentScale.FillWidth
 ) {
     val ctx = LocalPlatformContext.current
     AsyncImage(
@@ -20,7 +24,7 @@ fun NormalDecryptedOrNotImageView(
             DecryptedDecoder.Factory(url = url, key = key)
         ).build(),
         contentDescription = "Yo",
-        contentScale = ContentScale.Crop,
+        contentScale = contentScale,
         modifier = modifier,
         imageLoader = imageLoader,
     )
