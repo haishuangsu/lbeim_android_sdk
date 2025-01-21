@@ -25,4 +25,6 @@ data class Content(
     val status: Int,
     val createTime: Long,
     val sessionId: String,
+    val senderNickname: String,
+    val senderFaceURL: String,
 )

@@ -38,14 +38,6 @@ public final class IMMsg {
      */
     TextMsgType(1),
     /**
-     * <code>ImgMsgType = 2;</code>
-     */
-    ImgMsgType(2),
-    /**
-     * <code>VideoMsgType = 3;</code>
-     */
-    VideoMsgType(3),
-    /**
      * <code>CreateSessionMsgType = 4;</code>
      */
     CreateSessionMsgType(4),
@@ -75,44 +67,12 @@ public final class IMMsg {
     KickOffLineMsgType(7),
     /**
      * <pre>
-     * faq(contentType)
-     * </pre>
-     *
-     * <code>FaqMsgType = 8;</code>
-     */
-    FaqMsgType(8),
-    /**
-     * <pre>
-     * 知识点(contentType)
-     * </pre>
-     *
-     * <code>KnowledgePointMsgType = 9;</code>
-     */
-    KnowledgePointMsgType(9),
-    /**
-     * <pre>
-     * 答案(contentType)
-     * </pre>
-     *
-     * <code>KnowledgeAnswerMsgType = 10;</code>
-     */
-    KnowledgeAnswerMsgType(10),
-    /**
-     * <pre>
      * 会话结束
      * </pre>
      *
-     * <code>EndSessionMsgType = 11;</code>
+     * <code>EndSessionMsgType = 8;</code>
      */
-    EndSessionMsgType(11),
-    /**
-     * <pre>
-     * 系统文本消息(欢迎语、引导语等系统发送的文本消息)
-     * </pre>
-     *
-     * <code>SystemTextMsgType = 12;</code>
-     */
-    SystemTextMsgType(12),
+    EndSessionMsgType(8),
     UNRECOGNIZED(-1),
     ;
 
@@ -133,14 +93,6 @@ public final class IMMsg {
      * <code>TextMsgType = 1;</code>
      */
     public static final int TextMsgType_VALUE = 1;
-    /**
-     * <code>ImgMsgType = 2;</code>
-     */
-    public static final int ImgMsgType_VALUE = 2;
-    /**
-     * <code>VideoMsgType = 3;</code>
-     */
-    public static final int VideoMsgType_VALUE = 3;
     /**
      * <code>CreateSessionMsgType = 4;</code>
      */
@@ -171,44 +123,12 @@ public final class IMMsg {
     public static final int KickOffLineMsgType_VALUE = 7;
     /**
      * <pre>
-     * faq(contentType)
-     * </pre>
-     *
-     * <code>FaqMsgType = 8;</code>
-     */
-    public static final int FaqMsgType_VALUE = 8;
-    /**
-     * <pre>
-     * 知识点(contentType)
-     * </pre>
-     *
-     * <code>KnowledgePointMsgType = 9;</code>
-     */
-    public static final int KnowledgePointMsgType_VALUE = 9;
-    /**
-     * <pre>
-     * 答案(contentType)
-     * </pre>
-     *
-     * <code>KnowledgeAnswerMsgType = 10;</code>
-     */
-    public static final int KnowledgeAnswerMsgType_VALUE = 10;
-    /**
-     * <pre>
      * 会话结束
      * </pre>
      *
-     * <code>EndSessionMsgType = 11;</code>
+     * <code>EndSessionMsgType = 8;</code>
      */
-    public static final int EndSessionMsgType_VALUE = 11;
-    /**
-     * <pre>
-     * 系统文本消息(欢迎语、引导语等系统发送的文本消息)
-     * </pre>
-     *
-     * <code>SystemTextMsgType = 12;</code>
-     */
-    public static final int SystemTextMsgType_VALUE = 12;
+    public static final int EndSessionMsgType_VALUE = 8;
 
 
     public final int getNumber() {
@@ -237,17 +157,11 @@ public final class IMMsg {
       switch (value) {
         case 0: return JoinServer;
         case 1: return TextMsgType;
-        case 2: return ImgMsgType;
-        case 3: return VideoMsgType;
         case 4: return CreateSessionMsgType;
         case 5: return AgentUserJoinSessionMsgType;
         case 6: return HasReadReceiptMsgType;
         case 7: return KickOffLineMsgType;
-        case 8: return FaqMsgType;
-        case 9: return KnowledgePointMsgType;
-        case 10: return KnowledgeAnswerMsgType;
-        case 11: return EndSessionMsgType;
-        case 12: return SystemTextMsgType;
+        case 8: return EndSessionMsgType;
         default: return null;
       }
     }
@@ -302,6 +216,343 @@ public final class IMMsg {
     }
 
     // @@protoc_insertion_point(enum_scope:MsgType)
+  }
+
+  /**
+   * Protobuf enum {@code ContentType}
+   */
+  public enum ContentType
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <pre>
+     *
+     * </pre>
+     *
+     * <code>InvalidContentType = 0;</code>
+     */
+    InvalidContentType(0),
+    /**
+     * <pre>
+     * 文本
+     * </pre>
+     *
+     * <code>TextContentType = 1;</code>
+     */
+    TextContentType(1),
+    /**
+     * <pre>
+     * 图片
+     * </pre>
+     *
+     * <code>ImgContentType = 2;</code>
+     */
+    ImgContentType(2),
+    /**
+     * <pre>
+     * 音频
+     * </pre>
+     *
+     * <code>VideoContentType = 3;</code>
+     */
+    VideoContentType(3),
+    /**
+     * <pre>
+     * C端接入(只推送给B端)
+     * </pre>
+     *
+     * <code>CreateSessionContentType = 4;</code>
+     */
+    CreateSessionContentType(4),
+    /**
+     * <pre>
+     * 客服接入(只推送给C端)
+     * </pre>
+     *
+     * <code>AgentUserJoinSessionContentType = 5;</code>
+     */
+    AgentUserJoinSessionContentType(5),
+    /**
+     * <pre>
+     * 会话结束(只推送给C端)
+     * </pre>
+     *
+     * <code>EndSessionContentType = 6;</code>
+     */
+    EndSessionContentType(6),
+    /**
+     * <pre>
+     * 排队
+     * </pre>
+     *
+     * <code>RankingContentType = 7;</code>
+     */
+    RankingContentType(7),
+    /**
+     * <pre>
+     * faq(原协议8)
+     * </pre>
+     *
+     * <code>FaqContentType = 8;</code>
+     */
+    FaqContentType(8),
+    /**
+     * <pre>
+     * 知识点(原协议9)
+     * </pre>
+     *
+     * <code>KnowledgePointContentType = 9;</code>
+     */
+    KnowledgePointContentType(9),
+    /**
+     * <pre>
+     * 答案(原协议10)
+     * </pre>
+     *
+     * <code>KnowledgeAnswerContentType = 10;</code>
+     */
+    KnowledgeAnswerContentType(10),
+    /**
+     * <pre>
+     * 转接
+     * </pre>
+     *
+     * <code>TransferContentType = 11;</code>
+     */
+    TransferContentType(11),
+    /**
+     * <pre>
+     * 系统文本消息(欢迎语、引导语等系统发送的文本消息,原协议12)
+     * </pre>
+     *
+     * <code>SystemContentType = 12;</code>
+     */
+    SystemContentType(12),
+    /**
+     * <pre>
+     * 无客服在线
+     * </pre>
+     *
+     * <code>UnsupportedContentType = 13;</code>
+     */
+    UnsupportedContentType(13),
+    UNRECOGNIZED(-1),
+    ;
+
+    static {
+      com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
+        com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,
+        /* major= */ 4,
+        /* minor= */ 29,
+        /* patch= */ 0,
+        /* suffix= */ "-rc1",
+        ContentType.class.getName());
+    }
+    /**
+     * <pre>
+     *
+     * </pre>
+     *
+     * <code>InvalidContentType = 0;</code>
+     */
+    public static final int InvalidContentType_VALUE = 0;
+    /**
+     * <pre>
+     * 文本
+     * </pre>
+     *
+     * <code>TextContentType = 1;</code>
+     */
+    public static final int TextContentType_VALUE = 1;
+    /**
+     * <pre>
+     * 图片
+     * </pre>
+     *
+     * <code>ImgContentType = 2;</code>
+     */
+    public static final int ImgContentType_VALUE = 2;
+    /**
+     * <pre>
+     * 音频
+     * </pre>
+     *
+     * <code>VideoContentType = 3;</code>
+     */
+    public static final int VideoContentType_VALUE = 3;
+    /**
+     * <pre>
+     * C端接入(只推送给B端)
+     * </pre>
+     *
+     * <code>CreateSessionContentType = 4;</code>
+     */
+    public static final int CreateSessionContentType_VALUE = 4;
+    /**
+     * <pre>
+     * 客服接入(只推送给C端)
+     * </pre>
+     *
+     * <code>AgentUserJoinSessionContentType = 5;</code>
+     */
+    public static final int AgentUserJoinSessionContentType_VALUE = 5;
+    /**
+     * <pre>
+     * 会话结束(只推送给C端)
+     * </pre>
+     *
+     * <code>EndSessionContentType = 6;</code>
+     */
+    public static final int EndSessionContentType_VALUE = 6;
+    /**
+     * <pre>
+     * 排队
+     * </pre>
+     *
+     * <code>RankingContentType = 7;</code>
+     */
+    public static final int RankingContentType_VALUE = 7;
+    /**
+     * <pre>
+     * faq(原协议8)
+     * </pre>
+     *
+     * <code>FaqContentType = 8;</code>
+     */
+    public static final int FaqContentType_VALUE = 8;
+    /**
+     * <pre>
+     * 知识点(原协议9)
+     * </pre>
+     *
+     * <code>KnowledgePointContentType = 9;</code>
+     */
+    public static final int KnowledgePointContentType_VALUE = 9;
+    /**
+     * <pre>
+     * 答案(原协议10)
+     * </pre>
+     *
+     * <code>KnowledgeAnswerContentType = 10;</code>
+     */
+    public static final int KnowledgeAnswerContentType_VALUE = 10;
+    /**
+     * <pre>
+     * 转接
+     * </pre>
+     *
+     * <code>TransferContentType = 11;</code>
+     */
+    public static final int TransferContentType_VALUE = 11;
+    /**
+     * <pre>
+     * 系统文本消息(欢迎语、引导语等系统发送的文本消息,原协议12)
+     * </pre>
+     *
+     * <code>SystemContentType = 12;</code>
+     */
+    public static final int SystemContentType_VALUE = 12;
+    /**
+     * <pre>
+     * 无客服在线
+     * </pre>
+     *
+     * <code>UnsupportedContentType = 13;</code>
+     */
+    public static final int UnsupportedContentType_VALUE = 13;
+
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static ContentType valueOf(int value) {
+      return forNumber(value);
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     */
+    public static ContentType forNumber(int value) {
+      switch (value) {
+        case 0: return InvalidContentType;
+        case 1: return TextContentType;
+        case 2: return ImgContentType;
+        case 3: return VideoContentType;
+        case 4: return CreateSessionContentType;
+        case 5: return AgentUserJoinSessionContentType;
+        case 6: return EndSessionContentType;
+        case 7: return RankingContentType;
+        case 8: return FaqContentType;
+        case 9: return KnowledgePointContentType;
+        case 10: return KnowledgeAnswerContentType;
+        case 11: return TransferContentType;
+        case 12: return SystemContentType;
+        case 13: return UnsupportedContentType;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<ContentType>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static final com.google.protobuf.Internal.EnumLiteMap<
+        ContentType> internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<ContentType>() {
+            public ContentType findValueByNumber(int number) {
+              return ContentType.forNumber(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
+      return getDescriptor().getValues().get(ordinal());
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return IMMsg.getDescriptor().getEnumTypes().get(1);
+    }
+
+    private static final ContentType[] VALUES = values();
+
+    public static ContentType valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private ContentType(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:ContentType)
   }
 
   public interface StateOrBuilder extends
@@ -5022,7 +5273,7 @@ public final class IMMsg {
      * 消息类型
      * </pre>
      *
-     * <code>.MsgType msgType = 3;</code>
+     * <code>.ContentType msgType = 3;</code>
      * @return The enum numeric value on the wire for msgType.
      */
     int getMsgTypeValue();
@@ -5031,10 +5282,10 @@ public final class IMMsg {
      * 消息类型
      * </pre>
      *
-     * <code>.MsgType msgType = 3;</code>
+     * <code>.ContentType msgType = 3;</code>
      * @return The msgType.
      */
-    IMMsg.MsgType getMsgType();
+    IMMsg.ContentType getMsgType();
 
     /**
      * <pre>
@@ -5225,6 +5476,26 @@ public final class IMMsg {
      */
     com.google.protobuf.ByteString
         getSenderFaceURLBytes();
+
+    /**
+     * <pre>
+     * 服务端自定义消息ID
+     * </pre>
+     *
+     * <code>string serverMsgID = 15;</code>
+     * @return The serverMsgID.
+     */
+    java.lang.String getServerMsgID();
+    /**
+     * <pre>
+     * 服务端自定义消息ID
+     * </pre>
+     *
+     * <code>string serverMsgID = 15;</code>
+     * @return The bytes for serverMsgID.
+     */
+    com.google.protobuf.ByteString
+        getServerMsgIDBytes();
   }
   /**
    * Protobuf type {@code MsgBody}
@@ -5259,6 +5530,7 @@ public final class IMMsg {
       title_ = "";
       senderNickname_ = "";
       senderFaceURL_ = "";
+      serverMsgID_ = "";
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
@@ -5375,7 +5647,7 @@ public final class IMMsg {
      * 消息类型
      * </pre>
      *
-     * <code>.MsgType msgType = 3;</code>
+     * <code>.ContentType msgType = 3;</code>
      * @return The enum numeric value on the wire for msgType.
      */
     @java.lang.Override public int getMsgTypeValue() {
@@ -5386,12 +5658,12 @@ public final class IMMsg {
      * 消息类型
      * </pre>
      *
-     * <code>.MsgType msgType = 3;</code>
+     * <code>.ContentType msgType = 3;</code>
      * @return The msgType.
      */
-    @java.lang.Override public IMMsg.MsgType getMsgType() {
-      IMMsg.MsgType result = IMMsg.MsgType.forNumber(msgType_);
-      return result == null ? IMMsg.MsgType.UNRECOGNIZED : result;
+    @java.lang.Override public IMMsg.ContentType getMsgType() {
+      IMMsg.ContentType result = IMMsg.ContentType.forNumber(msgType_);
+      return result == null ? IMMsg.ContentType.UNRECOGNIZED : result;
     }
 
     public static final int MSGSEQ_FIELD_NUMBER = 4;
@@ -5815,6 +6087,53 @@ public final class IMMsg {
       }
     }
 
+    public static final int SERVERMSGID_FIELD_NUMBER = 15;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object serverMsgID_ = "";
+    /**
+     * <pre>
+     * 服务端自定义消息ID
+     * </pre>
+     *
+     * <code>string serverMsgID = 15;</code>
+     * @return The serverMsgID.
+     */
+    @java.lang.Override
+    public java.lang.String getServerMsgID() {
+      java.lang.Object ref = serverMsgID_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        serverMsgID_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * 服务端自定义消息ID
+     * </pre>
+     *
+     * <code>string serverMsgID = 15;</code>
+     * @return The bytes for serverMsgID.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getServerMsgIDBytes() {
+      java.lang.Object ref = serverMsgID_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        serverMsgID_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -5835,7 +6154,7 @@ public final class IMMsg {
       if (!com.google.protobuf.GeneratedMessage.isStringEmpty(receiverUid_)) {
         com.google.protobuf.GeneratedMessage.writeString(output, 2, receiverUid_);
       }
-      if (msgType_ != IMMsg.MsgType.JoinServer.getNumber()) {
+      if (msgType_ != IMMsg.ContentType.InvalidContentType.getNumber()) {
         output.writeEnum(3, msgType_);
       }
       if (msgSeq_ != 0) {
@@ -5871,6 +6190,9 @@ public final class IMMsg {
       if (!com.google.protobuf.GeneratedMessage.isStringEmpty(senderFaceURL_)) {
         com.google.protobuf.GeneratedMessage.writeString(output, 14, senderFaceURL_);
       }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(serverMsgID_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 15, serverMsgID_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -5886,7 +6208,7 @@ public final class IMMsg {
       if (!com.google.protobuf.GeneratedMessage.isStringEmpty(receiverUid_)) {
         size += com.google.protobuf.GeneratedMessage.computeStringSize(2, receiverUid_);
       }
-      if (msgType_ != IMMsg.MsgType.JoinServer.getNumber()) {
+      if (msgType_ != IMMsg.ContentType.InvalidContentType.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(3, msgType_);
       }
@@ -5925,6 +6247,9 @@ public final class IMMsg {
       }
       if (!com.google.protobuf.GeneratedMessage.isStringEmpty(senderFaceURL_)) {
         size += com.google.protobuf.GeneratedMessage.computeStringSize(14, senderFaceURL_);
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(serverMsgID_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(15, serverMsgID_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -5968,6 +6293,8 @@ public final class IMMsg {
           .equals(other.getSenderNickname())) return false;
       if (!getSenderFaceURL()
           .equals(other.getSenderFaceURL())) return false;
+      if (!getServerMsgID()
+          .equals(other.getServerMsgID())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -6008,6 +6335,8 @@ public final class IMMsg {
       hash = (53 * hash) + getSenderNickname().hashCode();
       hash = (37 * hash) + SENDERFACEURL_FIELD_NUMBER;
       hash = (53 * hash) + getSenderFaceURL().hashCode();
+      hash = (37 * hash) + SERVERMSGID_FIELD_NUMBER;
+      hash = (53 * hash) + getServerMsgID().hashCode();
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -6153,6 +6482,7 @@ public final class IMMsg {
         title_ = "";
         senderNickname_ = "";
         senderFaceURL_ = "";
+        serverMsgID_ = "";
         return this;
       }
 
@@ -6228,6 +6558,9 @@ public final class IMMsg {
         if (((from_bitField0_ & 0x00002000) != 0)) {
           result.senderFaceURL_ = senderFaceURL_;
         }
+        if (((from_bitField0_ & 0x00004000) != 0)) {
+          result.serverMsgID_ = serverMsgID_;
+        }
       }
 
       @java.lang.Override
@@ -6302,6 +6635,11 @@ public final class IMMsg {
         if (!other.getSenderFaceURL().isEmpty()) {
           senderFaceURL_ = other.senderFaceURL_;
           bitField0_ |= 0x00002000;
+          onChanged();
+        }
+        if (!other.getServerMsgID().isEmpty()) {
+          serverMsgID_ = other.serverMsgID_;
+          bitField0_ |= 0x00004000;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -6400,6 +6738,11 @@ public final class IMMsg {
                 bitField0_ |= 0x00002000;
                 break;
               } // case 114
+              case 122: {
+                serverMsgID_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00004000;
+                break;
+              } // case 122
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -6607,7 +6950,7 @@ public final class IMMsg {
        * 消息类型
        * </pre>
        *
-       * <code>.MsgType msgType = 3;</code>
+       * <code>.ContentType msgType = 3;</code>
        * @return The enum numeric value on the wire for msgType.
        */
       @java.lang.Override public int getMsgTypeValue() {
@@ -6618,7 +6961,7 @@ public final class IMMsg {
        * 消息类型
        * </pre>
        *
-       * <code>.MsgType msgType = 3;</code>
+       * <code>.ContentType msgType = 3;</code>
        * @param value The enum numeric value on the wire for msgType to set.
        * @return This builder for chaining.
        */
@@ -6633,24 +6976,24 @@ public final class IMMsg {
        * 消息类型
        * </pre>
        *
-       * <code>.MsgType msgType = 3;</code>
+       * <code>.ContentType msgType = 3;</code>
        * @return The msgType.
        */
       @java.lang.Override
-      public IMMsg.MsgType getMsgType() {
-        IMMsg.MsgType result = IMMsg.MsgType.forNumber(msgType_);
-        return result == null ? IMMsg.MsgType.UNRECOGNIZED : result;
+      public IMMsg.ContentType getMsgType() {
+        IMMsg.ContentType result = IMMsg.ContentType.forNumber(msgType_);
+        return result == null ? IMMsg.ContentType.UNRECOGNIZED : result;
       }
       /**
        * <pre>
        * 消息类型
        * </pre>
        *
-       * <code>.MsgType msgType = 3;</code>
+       * <code>.ContentType msgType = 3;</code>
        * @param value The msgType to set.
        * @return This builder for chaining.
        */
-      public Builder setMsgType(IMMsg.MsgType value) {
+      public Builder setMsgType(IMMsg.ContentType value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -6664,7 +7007,7 @@ public final class IMMsg {
        * 消息类型
        * </pre>
        *
-       * <code>.MsgType msgType = 3;</code>
+       * <code>.ContentType msgType = 3;</code>
        * @return This builder for chaining.
        */
       public Builder clearMsgType() {
@@ -7538,6 +7881,98 @@ public final class IMMsg {
         checkByteStringIsUtf8(value);
         senderFaceURL_ = value;
         bitField0_ |= 0x00002000;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object serverMsgID_ = "";
+      /**
+       * <pre>
+       * 服务端自定义消息ID
+       * </pre>
+       *
+       * <code>string serverMsgID = 15;</code>
+       * @return The serverMsgID.
+       */
+      public java.lang.String getServerMsgID() {
+        java.lang.Object ref = serverMsgID_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          serverMsgID_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 服务端自定义消息ID
+       * </pre>
+       *
+       * <code>string serverMsgID = 15;</code>
+       * @return The bytes for serverMsgID.
+       */
+      public com.google.protobuf.ByteString
+          getServerMsgIDBytes() {
+        java.lang.Object ref = serverMsgID_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          serverMsgID_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 服务端自定义消息ID
+       * </pre>
+       *
+       * <code>string serverMsgID = 15;</code>
+       * @param value The serverMsgID to set.
+       * @return This builder for chaining.
+       */
+      public Builder setServerMsgID(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        serverMsgID_ = value;
+        bitField0_ |= 0x00004000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 服务端自定义消息ID
+       * </pre>
+       *
+       * <code>string serverMsgID = 15;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearServerMsgID() {
+        serverMsgID_ = getDefaultInstance().getServerMsgID();
+        bitField0_ = (bitField0_ & ~0x00004000);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 服务端自定义消息ID
+       * </pre>
+       *
+       * <code>string serverMsgID = 15;</code>
+       * @param value The bytes for serverMsgID to set.
+       * @return This builder for chaining.
+       */
+      public Builder setServerMsgIDBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        serverMsgID_ = value;
+        bitField0_ |= 0x00004000;
         onChanged();
         return this;
       }
@@ -12774,6 +13209,3003 @@ public final class IMMsg {
 
   }
 
+  public interface CreateSessionContentOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:CreateSessionContent)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     * 客户接入时间(毫秒)
+     * </pre>
+     *
+     * <code>int64 joinTime = 1;</code>
+     * @return The joinTime.
+     */
+    long getJoinTime();
+  }
+  /**
+   * Protobuf type {@code CreateSessionContent}
+   */
+  public static final class CreateSessionContent extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:CreateSessionContent)
+      CreateSessionContentOrBuilder {
+  private static final long serialVersionUID = 0L;
+    static {
+      com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
+        com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,
+        /* major= */ 4,
+        /* minor= */ 29,
+        /* patch= */ 0,
+        /* suffix= */ "-rc1",
+        CreateSessionContent.class.getName());
+    }
+    // Use CreateSessionContent.newBuilder() to construct.
+    private CreateSessionContent(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+    }
+    private CreateSessionContent() {
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return IMMsg.internal_static_CreateSessionContent_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return IMMsg.internal_static_CreateSessionContent_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              IMMsg.CreateSessionContent.class, IMMsg.CreateSessionContent.Builder.class);
+    }
+
+    public static final int JOINTIME_FIELD_NUMBER = 1;
+    private long joinTime_ = 0L;
+    /**
+     * <pre>
+     * 客户接入时间(毫秒)
+     * </pre>
+     *
+     * <code>int64 joinTime = 1;</code>
+     * @return The joinTime.
+     */
+    @java.lang.Override
+    public long getJoinTime() {
+      return joinTime_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (joinTime_ != 0L) {
+        output.writeInt64(1, joinTime_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (joinTime_ != 0L) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(1, joinTime_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof IMMsg.CreateSessionContent)) {
+        return super.equals(obj);
+      }
+      IMMsg.CreateSessionContent other = (IMMsg.CreateSessionContent) obj;
+
+      if (getJoinTime()
+          != other.getJoinTime()) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + JOINTIME_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+          getJoinTime());
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static IMMsg.CreateSessionContent parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.CreateSessionContent parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.CreateSessionContent parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.CreateSessionContent parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.CreateSessionContent parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.CreateSessionContent parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.CreateSessionContent parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.CreateSessionContent parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static IMMsg.CreateSessionContent parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static IMMsg.CreateSessionContent parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static IMMsg.CreateSessionContent parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.CreateSessionContent parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(IMMsg.CreateSessionContent prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code CreateSessionContent}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:CreateSessionContent)
+        IMMsg.CreateSessionContentOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return IMMsg.internal_static_CreateSessionContent_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return IMMsg.internal_static_CreateSessionContent_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                IMMsg.CreateSessionContent.class, IMMsg.CreateSessionContent.Builder.class);
+      }
+
+      // Construct using IMMsg.CreateSessionContent.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        joinTime_ = 0L;
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return IMMsg.internal_static_CreateSessionContent_descriptor;
+      }
+
+      @java.lang.Override
+      public IMMsg.CreateSessionContent getDefaultInstanceForType() {
+        return IMMsg.CreateSessionContent.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public IMMsg.CreateSessionContent build() {
+        IMMsg.CreateSessionContent result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public IMMsg.CreateSessionContent buildPartial() {
+        IMMsg.CreateSessionContent result = new IMMsg.CreateSessionContent(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(IMMsg.CreateSessionContent result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.joinTime_ = joinTime_;
+        }
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof IMMsg.CreateSessionContent) {
+          return mergeFrom((IMMsg.CreateSessionContent)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(IMMsg.CreateSessionContent other) {
+        if (other == IMMsg.CreateSessionContent.getDefaultInstance()) return this;
+        if (other.getJoinTime() != 0L) {
+          setJoinTime(other.getJoinTime());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                joinTime_ = input.readInt64();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private long joinTime_ ;
+      /**
+       * <pre>
+       * 客户接入时间(毫秒)
+       * </pre>
+       *
+       * <code>int64 joinTime = 1;</code>
+       * @return The joinTime.
+       */
+      @java.lang.Override
+      public long getJoinTime() {
+        return joinTime_;
+      }
+      /**
+       * <pre>
+       * 客户接入时间(毫秒)
+       * </pre>
+       *
+       * <code>int64 joinTime = 1;</code>
+       * @param value The joinTime to set.
+       * @return This builder for chaining.
+       */
+      public Builder setJoinTime(long value) {
+
+        joinTime_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 客户接入时间(毫秒)
+       * </pre>
+       *
+       * <code>int64 joinTime = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearJoinTime() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        joinTime_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:CreateSessionContent)
+    }
+
+    // @@protoc_insertion_point(class_scope:CreateSessionContent)
+    private static final IMMsg.CreateSessionContent DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new IMMsg.CreateSessionContent();
+    }
+
+    public static IMMsg.CreateSessionContent getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<CreateSessionContent>
+        PARSER = new com.google.protobuf.AbstractParser<CreateSessionContent>() {
+      @java.lang.Override
+      public CreateSessionContent parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<CreateSessionContent> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<CreateSessionContent> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public IMMsg.CreateSessionContent getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface AgentUserJoinSessionContentOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:AgentUserJoinSessionContent)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     * 客服昵称
+     * </pre>
+     *
+     * <code>string username = 1;</code>
+     * @return The username.
+     */
+    java.lang.String getUsername();
+    /**
+     * <pre>
+     * 客服昵称
+     * </pre>
+     *
+     * <code>string username = 1;</code>
+     * @return The bytes for username.
+     */
+    com.google.protobuf.ByteString
+        getUsernameBytes();
+
+    /**
+     * <pre>
+     * 头像
+     * </pre>
+     *
+     * <code>string faceUrl = 2;</code>
+     * @return The faceUrl.
+     */
+    java.lang.String getFaceUrl();
+    /**
+     * <pre>
+     * 头像
+     * </pre>
+     *
+     * <code>string faceUrl = 2;</code>
+     * @return The bytes for faceUrl.
+     */
+    com.google.protobuf.ByteString
+        getFaceUrlBytes();
+
+    /**
+     * <pre>
+     * 加入时间(毫秒)
+     * </pre>
+     *
+     * <code>int64 joinTime = 3;</code>
+     * @return The joinTime.
+     */
+    long getJoinTime();
+  }
+  /**
+   * Protobuf type {@code AgentUserJoinSessionContent}
+   */
+  public static final class AgentUserJoinSessionContent extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:AgentUserJoinSessionContent)
+      AgentUserJoinSessionContentOrBuilder {
+  private static final long serialVersionUID = 0L;
+    static {
+      com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
+        com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,
+        /* major= */ 4,
+        /* minor= */ 29,
+        /* patch= */ 0,
+        /* suffix= */ "-rc1",
+        AgentUserJoinSessionContent.class.getName());
+    }
+    // Use AgentUserJoinSessionContent.newBuilder() to construct.
+    private AgentUserJoinSessionContent(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+    }
+    private AgentUserJoinSessionContent() {
+      username_ = "";
+      faceUrl_ = "";
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return IMMsg.internal_static_AgentUserJoinSessionContent_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return IMMsg.internal_static_AgentUserJoinSessionContent_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              IMMsg.AgentUserJoinSessionContent.class, IMMsg.AgentUserJoinSessionContent.Builder.class);
+    }
+
+    public static final int USERNAME_FIELD_NUMBER = 1;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object username_ = "";
+    /**
+     * <pre>
+     * 客服昵称
+     * </pre>
+     *
+     * <code>string username = 1;</code>
+     * @return The username.
+     */
+    @java.lang.Override
+    public java.lang.String getUsername() {
+      java.lang.Object ref = username_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        username_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * 客服昵称
+     * </pre>
+     *
+     * <code>string username = 1;</code>
+     * @return The bytes for username.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getUsernameBytes() {
+      java.lang.Object ref = username_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        username_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int FACEURL_FIELD_NUMBER = 2;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object faceUrl_ = "";
+    /**
+     * <pre>
+     * 头像
+     * </pre>
+     *
+     * <code>string faceUrl = 2;</code>
+     * @return The faceUrl.
+     */
+    @java.lang.Override
+    public java.lang.String getFaceUrl() {
+      java.lang.Object ref = faceUrl_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        faceUrl_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * 头像
+     * </pre>
+     *
+     * <code>string faceUrl = 2;</code>
+     * @return The bytes for faceUrl.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getFaceUrlBytes() {
+      java.lang.Object ref = faceUrl_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        faceUrl_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int JOINTIME_FIELD_NUMBER = 3;
+    private long joinTime_ = 0L;
+    /**
+     * <pre>
+     * 加入时间(毫秒)
+     * </pre>
+     *
+     * <code>int64 joinTime = 3;</code>
+     * @return The joinTime.
+     */
+    @java.lang.Override
+    public long getJoinTime() {
+      return joinTime_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(username_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 1, username_);
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(faceUrl_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 2, faceUrl_);
+      }
+      if (joinTime_ != 0L) {
+        output.writeInt64(3, joinTime_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(username_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(1, username_);
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(faceUrl_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(2, faceUrl_);
+      }
+      if (joinTime_ != 0L) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(3, joinTime_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof IMMsg.AgentUserJoinSessionContent)) {
+        return super.equals(obj);
+      }
+      IMMsg.AgentUserJoinSessionContent other = (IMMsg.AgentUserJoinSessionContent) obj;
+
+      if (!getUsername()
+          .equals(other.getUsername())) return false;
+      if (!getFaceUrl()
+          .equals(other.getFaceUrl())) return false;
+      if (getJoinTime()
+          != other.getJoinTime()) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + USERNAME_FIELD_NUMBER;
+      hash = (53 * hash) + getUsername().hashCode();
+      hash = (37 * hash) + FACEURL_FIELD_NUMBER;
+      hash = (53 * hash) + getFaceUrl().hashCode();
+      hash = (37 * hash) + JOINTIME_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+          getJoinTime());
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static IMMsg.AgentUserJoinSessionContent parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.AgentUserJoinSessionContent parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.AgentUserJoinSessionContent parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.AgentUserJoinSessionContent parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.AgentUserJoinSessionContent parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.AgentUserJoinSessionContent parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.AgentUserJoinSessionContent parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.AgentUserJoinSessionContent parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static IMMsg.AgentUserJoinSessionContent parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static IMMsg.AgentUserJoinSessionContent parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static IMMsg.AgentUserJoinSessionContent parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.AgentUserJoinSessionContent parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(IMMsg.AgentUserJoinSessionContent prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code AgentUserJoinSessionContent}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:AgentUserJoinSessionContent)
+        IMMsg.AgentUserJoinSessionContentOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return IMMsg.internal_static_AgentUserJoinSessionContent_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return IMMsg.internal_static_AgentUserJoinSessionContent_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                IMMsg.AgentUserJoinSessionContent.class, IMMsg.AgentUserJoinSessionContent.Builder.class);
+      }
+
+      // Construct using IMMsg.AgentUserJoinSessionContent.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        username_ = "";
+        faceUrl_ = "";
+        joinTime_ = 0L;
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return IMMsg.internal_static_AgentUserJoinSessionContent_descriptor;
+      }
+
+      @java.lang.Override
+      public IMMsg.AgentUserJoinSessionContent getDefaultInstanceForType() {
+        return IMMsg.AgentUserJoinSessionContent.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public IMMsg.AgentUserJoinSessionContent build() {
+        IMMsg.AgentUserJoinSessionContent result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public IMMsg.AgentUserJoinSessionContent buildPartial() {
+        IMMsg.AgentUserJoinSessionContent result = new IMMsg.AgentUserJoinSessionContent(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(IMMsg.AgentUserJoinSessionContent result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.username_ = username_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.faceUrl_ = faceUrl_;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.joinTime_ = joinTime_;
+        }
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof IMMsg.AgentUserJoinSessionContent) {
+          return mergeFrom((IMMsg.AgentUserJoinSessionContent)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(IMMsg.AgentUserJoinSessionContent other) {
+        if (other == IMMsg.AgentUserJoinSessionContent.getDefaultInstance()) return this;
+        if (!other.getUsername().isEmpty()) {
+          username_ = other.username_;
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        if (!other.getFaceUrl().isEmpty()) {
+          faceUrl_ = other.faceUrl_;
+          bitField0_ |= 0x00000002;
+          onChanged();
+        }
+        if (other.getJoinTime() != 0L) {
+          setJoinTime(other.getJoinTime());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                username_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                faceUrl_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              case 24: {
+                joinTime_ = input.readInt64();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 24
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object username_ = "";
+      /**
+       * <pre>
+       * 客服昵称
+       * </pre>
+       *
+       * <code>string username = 1;</code>
+       * @return The username.
+       */
+      public java.lang.String getUsername() {
+        java.lang.Object ref = username_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          username_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 客服昵称
+       * </pre>
+       *
+       * <code>string username = 1;</code>
+       * @return The bytes for username.
+       */
+      public com.google.protobuf.ByteString
+          getUsernameBytes() {
+        java.lang.Object ref = username_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          username_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 客服昵称
+       * </pre>
+       *
+       * <code>string username = 1;</code>
+       * @param value The username to set.
+       * @return This builder for chaining.
+       */
+      public Builder setUsername(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        username_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 客服昵称
+       * </pre>
+       *
+       * <code>string username = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearUsername() {
+        username_ = getDefaultInstance().getUsername();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 客服昵称
+       * </pre>
+       *
+       * <code>string username = 1;</code>
+       * @param value The bytes for username to set.
+       * @return This builder for chaining.
+       */
+      public Builder setUsernameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        username_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object faceUrl_ = "";
+      /**
+       * <pre>
+       * 头像
+       * </pre>
+       *
+       * <code>string faceUrl = 2;</code>
+       * @return The faceUrl.
+       */
+      public java.lang.String getFaceUrl() {
+        java.lang.Object ref = faceUrl_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          faceUrl_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 头像
+       * </pre>
+       *
+       * <code>string faceUrl = 2;</code>
+       * @return The bytes for faceUrl.
+       */
+      public com.google.protobuf.ByteString
+          getFaceUrlBytes() {
+        java.lang.Object ref = faceUrl_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          faceUrl_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 头像
+       * </pre>
+       *
+       * <code>string faceUrl = 2;</code>
+       * @param value The faceUrl to set.
+       * @return This builder for chaining.
+       */
+      public Builder setFaceUrl(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        faceUrl_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 头像
+       * </pre>
+       *
+       * <code>string faceUrl = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearFaceUrl() {
+        faceUrl_ = getDefaultInstance().getFaceUrl();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 头像
+       * </pre>
+       *
+       * <code>string faceUrl = 2;</code>
+       * @param value The bytes for faceUrl to set.
+       * @return This builder for chaining.
+       */
+      public Builder setFaceUrlBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        faceUrl_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+
+      private long joinTime_ ;
+      /**
+       * <pre>
+       * 加入时间(毫秒)
+       * </pre>
+       *
+       * <code>int64 joinTime = 3;</code>
+       * @return The joinTime.
+       */
+      @java.lang.Override
+      public long getJoinTime() {
+        return joinTime_;
+      }
+      /**
+       * <pre>
+       * 加入时间(毫秒)
+       * </pre>
+       *
+       * <code>int64 joinTime = 3;</code>
+       * @param value The joinTime to set.
+       * @return This builder for chaining.
+       */
+      public Builder setJoinTime(long value) {
+
+        joinTime_ = value;
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 加入时间(毫秒)
+       * </pre>
+       *
+       * <code>int64 joinTime = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearJoinTime() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        joinTime_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:AgentUserJoinSessionContent)
+    }
+
+    // @@protoc_insertion_point(class_scope:AgentUserJoinSessionContent)
+    private static final IMMsg.AgentUserJoinSessionContent DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new IMMsg.AgentUserJoinSessionContent();
+    }
+
+    public static IMMsg.AgentUserJoinSessionContent getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<AgentUserJoinSessionContent>
+        PARSER = new com.google.protobuf.AbstractParser<AgentUserJoinSessionContent>() {
+      @java.lang.Override
+      public AgentUserJoinSessionContent parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<AgentUserJoinSessionContent> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AgentUserJoinSessionContent> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public IMMsg.AgentUserJoinSessionContent getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface EndSessionContentOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:EndSessionContent)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     * 结束时间(毫秒)
+     * </pre>
+     *
+     * <code>int64 endTime = 1;</code>
+     * @return The endTime.
+     */
+    long getEndTime();
+  }
+  /**
+   * Protobuf type {@code EndSessionContent}
+   */
+  public static final class EndSessionContent extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:EndSessionContent)
+      EndSessionContentOrBuilder {
+  private static final long serialVersionUID = 0L;
+    static {
+      com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
+        com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,
+        /* major= */ 4,
+        /* minor= */ 29,
+        /* patch= */ 0,
+        /* suffix= */ "-rc1",
+        EndSessionContent.class.getName());
+    }
+    // Use EndSessionContent.newBuilder() to construct.
+    private EndSessionContent(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+    }
+    private EndSessionContent() {
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return IMMsg.internal_static_EndSessionContent_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return IMMsg.internal_static_EndSessionContent_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              IMMsg.EndSessionContent.class, IMMsg.EndSessionContent.Builder.class);
+    }
+
+    public static final int ENDTIME_FIELD_NUMBER = 1;
+    private long endTime_ = 0L;
+    /**
+     * <pre>
+     * 结束时间(毫秒)
+     * </pre>
+     *
+     * <code>int64 endTime = 1;</code>
+     * @return The endTime.
+     */
+    @java.lang.Override
+    public long getEndTime() {
+      return endTime_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (endTime_ != 0L) {
+        output.writeInt64(1, endTime_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (endTime_ != 0L) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(1, endTime_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof IMMsg.EndSessionContent)) {
+        return super.equals(obj);
+      }
+      IMMsg.EndSessionContent other = (IMMsg.EndSessionContent) obj;
+
+      if (getEndTime()
+          != other.getEndTime()) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + ENDTIME_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+          getEndTime());
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static IMMsg.EndSessionContent parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.EndSessionContent parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.EndSessionContent parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.EndSessionContent parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.EndSessionContent parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.EndSessionContent parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.EndSessionContent parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.EndSessionContent parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static IMMsg.EndSessionContent parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static IMMsg.EndSessionContent parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static IMMsg.EndSessionContent parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.EndSessionContent parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(IMMsg.EndSessionContent prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code EndSessionContent}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:EndSessionContent)
+        IMMsg.EndSessionContentOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return IMMsg.internal_static_EndSessionContent_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return IMMsg.internal_static_EndSessionContent_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                IMMsg.EndSessionContent.class, IMMsg.EndSessionContent.Builder.class);
+      }
+
+      // Construct using IMMsg.EndSessionContent.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        endTime_ = 0L;
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return IMMsg.internal_static_EndSessionContent_descriptor;
+      }
+
+      @java.lang.Override
+      public IMMsg.EndSessionContent getDefaultInstanceForType() {
+        return IMMsg.EndSessionContent.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public IMMsg.EndSessionContent build() {
+        IMMsg.EndSessionContent result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public IMMsg.EndSessionContent buildPartial() {
+        IMMsg.EndSessionContent result = new IMMsg.EndSessionContent(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(IMMsg.EndSessionContent result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.endTime_ = endTime_;
+        }
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof IMMsg.EndSessionContent) {
+          return mergeFrom((IMMsg.EndSessionContent)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(IMMsg.EndSessionContent other) {
+        if (other == IMMsg.EndSessionContent.getDefaultInstance()) return this;
+        if (other.getEndTime() != 0L) {
+          setEndTime(other.getEndTime());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                endTime_ = input.readInt64();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private long endTime_ ;
+      /**
+       * <pre>
+       * 结束时间(毫秒)
+       * </pre>
+       *
+       * <code>int64 endTime = 1;</code>
+       * @return The endTime.
+       */
+      @java.lang.Override
+      public long getEndTime() {
+        return endTime_;
+      }
+      /**
+       * <pre>
+       * 结束时间(毫秒)
+       * </pre>
+       *
+       * <code>int64 endTime = 1;</code>
+       * @param value The endTime to set.
+       * @return This builder for chaining.
+       */
+      public Builder setEndTime(long value) {
+
+        endTime_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 结束时间(毫秒)
+       * </pre>
+       *
+       * <code>int64 endTime = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearEndTime() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        endTime_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:EndSessionContent)
+    }
+
+    // @@protoc_insertion_point(class_scope:EndSessionContent)
+    private static final IMMsg.EndSessionContent DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new IMMsg.EndSessionContent();
+    }
+
+    public static IMMsg.EndSessionContent getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<EndSessionContent>
+        PARSER = new com.google.protobuf.AbstractParser<EndSessionContent>() {
+      @java.lang.Override
+      public EndSessionContent parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<EndSessionContent> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<EndSessionContent> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public IMMsg.EndSessionContent getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface RankingContentOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:RankingContent)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     * 排名
+     * </pre>
+     *
+     * <code>int32 number = 1;</code>
+     * @return The number.
+     */
+    int getNumber();
+  }
+  /**
+   * Protobuf type {@code RankingContent}
+   */
+  public static final class RankingContent extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:RankingContent)
+      RankingContentOrBuilder {
+  private static final long serialVersionUID = 0L;
+    static {
+      com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
+        com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,
+        /* major= */ 4,
+        /* minor= */ 29,
+        /* patch= */ 0,
+        /* suffix= */ "-rc1",
+        RankingContent.class.getName());
+    }
+    // Use RankingContent.newBuilder() to construct.
+    private RankingContent(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+    }
+    private RankingContent() {
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return IMMsg.internal_static_RankingContent_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return IMMsg.internal_static_RankingContent_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              IMMsg.RankingContent.class, IMMsg.RankingContent.Builder.class);
+    }
+
+    public static final int NUMBER_FIELD_NUMBER = 1;
+    private int number_ = 0;
+    /**
+     * <pre>
+     * 排名
+     * </pre>
+     *
+     * <code>int32 number = 1;</code>
+     * @return The number.
+     */
+    @java.lang.Override
+    public int getNumber() {
+      return number_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (number_ != 0) {
+        output.writeInt32(1, number_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (number_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, number_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof IMMsg.RankingContent)) {
+        return super.equals(obj);
+      }
+      IMMsg.RankingContent other = (IMMsg.RankingContent) obj;
+
+      if (getNumber()
+          != other.getNumber()) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + NUMBER_FIELD_NUMBER;
+      hash = (53 * hash) + getNumber();
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static IMMsg.RankingContent parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.RankingContent parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.RankingContent parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.RankingContent parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.RankingContent parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.RankingContent parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.RankingContent parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.RankingContent parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static IMMsg.RankingContent parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static IMMsg.RankingContent parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static IMMsg.RankingContent parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.RankingContent parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(IMMsg.RankingContent prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code RankingContent}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:RankingContent)
+        IMMsg.RankingContentOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return IMMsg.internal_static_RankingContent_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return IMMsg.internal_static_RankingContent_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                IMMsg.RankingContent.class, IMMsg.RankingContent.Builder.class);
+      }
+
+      // Construct using IMMsg.RankingContent.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        number_ = 0;
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return IMMsg.internal_static_RankingContent_descriptor;
+      }
+
+      @java.lang.Override
+      public IMMsg.RankingContent getDefaultInstanceForType() {
+        return IMMsg.RankingContent.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public IMMsg.RankingContent build() {
+        IMMsg.RankingContent result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public IMMsg.RankingContent buildPartial() {
+        IMMsg.RankingContent result = new IMMsg.RankingContent(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(IMMsg.RankingContent result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.number_ = number_;
+        }
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof IMMsg.RankingContent) {
+          return mergeFrom((IMMsg.RankingContent)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(IMMsg.RankingContent other) {
+        if (other == IMMsg.RankingContent.getDefaultInstance()) return this;
+        if (other.getNumber() != 0) {
+          setNumber(other.getNumber());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                number_ = input.readInt32();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private int number_ ;
+      /**
+       * <pre>
+       * 排名
+       * </pre>
+       *
+       * <code>int32 number = 1;</code>
+       * @return The number.
+       */
+      @java.lang.Override
+      public int getNumber() {
+        return number_;
+      }
+      /**
+       * <pre>
+       * 排名
+       * </pre>
+       *
+       * <code>int32 number = 1;</code>
+       * @param value The number to set.
+       * @return This builder for chaining.
+       */
+      public Builder setNumber(int value) {
+
+        number_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 排名
+       * </pre>
+       *
+       * <code>int32 number = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearNumber() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        number_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:RankingContent)
+    }
+
+    // @@protoc_insertion_point(class_scope:RankingContent)
+    private static final IMMsg.RankingContent DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new IMMsg.RankingContent();
+    }
+
+    public static IMMsg.RankingContent getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<RankingContent>
+        PARSER = new com.google.protobuf.AbstractParser<RankingContent>() {
+      @java.lang.Override
+      public RankingContent parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<RankingContent> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RankingContent> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public IMMsg.RankingContent getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface TransferContentOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:TransferContent)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     * 转接时间(毫秒)
+     * </pre>
+     *
+     * <code>int64 transferTime = 1;</code>
+     * @return The transferTime.
+     */
+    long getTransferTime();
+  }
+  /**
+   * Protobuf type {@code TransferContent}
+   */
+  public static final class TransferContent extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:TransferContent)
+      TransferContentOrBuilder {
+  private static final long serialVersionUID = 0L;
+    static {
+      com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
+        com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,
+        /* major= */ 4,
+        /* minor= */ 29,
+        /* patch= */ 0,
+        /* suffix= */ "-rc1",
+        TransferContent.class.getName());
+    }
+    // Use TransferContent.newBuilder() to construct.
+    private TransferContent(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+    }
+    private TransferContent() {
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return IMMsg.internal_static_TransferContent_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return IMMsg.internal_static_TransferContent_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              IMMsg.TransferContent.class, IMMsg.TransferContent.Builder.class);
+    }
+
+    public static final int TRANSFERTIME_FIELD_NUMBER = 1;
+    private long transferTime_ = 0L;
+    /**
+     * <pre>
+     * 转接时间(毫秒)
+     * </pre>
+     *
+     * <code>int64 transferTime = 1;</code>
+     * @return The transferTime.
+     */
+    @java.lang.Override
+    public long getTransferTime() {
+      return transferTime_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (transferTime_ != 0L) {
+        output.writeInt64(1, transferTime_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (transferTime_ != 0L) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(1, transferTime_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof IMMsg.TransferContent)) {
+        return super.equals(obj);
+      }
+      IMMsg.TransferContent other = (IMMsg.TransferContent) obj;
+
+      if (getTransferTime()
+          != other.getTransferTime()) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + TRANSFERTIME_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+          getTransferTime());
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static IMMsg.TransferContent parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.TransferContent parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.TransferContent parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.TransferContent parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.TransferContent parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.TransferContent parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.TransferContent parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.TransferContent parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static IMMsg.TransferContent parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static IMMsg.TransferContent parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static IMMsg.TransferContent parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.TransferContent parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(IMMsg.TransferContent prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code TransferContent}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:TransferContent)
+        IMMsg.TransferContentOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return IMMsg.internal_static_TransferContent_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return IMMsg.internal_static_TransferContent_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                IMMsg.TransferContent.class, IMMsg.TransferContent.Builder.class);
+      }
+
+      // Construct using IMMsg.TransferContent.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        transferTime_ = 0L;
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return IMMsg.internal_static_TransferContent_descriptor;
+      }
+
+      @java.lang.Override
+      public IMMsg.TransferContent getDefaultInstanceForType() {
+        return IMMsg.TransferContent.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public IMMsg.TransferContent build() {
+        IMMsg.TransferContent result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public IMMsg.TransferContent buildPartial() {
+        IMMsg.TransferContent result = new IMMsg.TransferContent(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(IMMsg.TransferContent result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.transferTime_ = transferTime_;
+        }
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof IMMsg.TransferContent) {
+          return mergeFrom((IMMsg.TransferContent)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(IMMsg.TransferContent other) {
+        if (other == IMMsg.TransferContent.getDefaultInstance()) return this;
+        if (other.getTransferTime() != 0L) {
+          setTransferTime(other.getTransferTime());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                transferTime_ = input.readInt64();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private long transferTime_ ;
+      /**
+       * <pre>
+       * 转接时间(毫秒)
+       * </pre>
+       *
+       * <code>int64 transferTime = 1;</code>
+       * @return The transferTime.
+       */
+      @java.lang.Override
+      public long getTransferTime() {
+        return transferTime_;
+      }
+      /**
+       * <pre>
+       * 转接时间(毫秒)
+       * </pre>
+       *
+       * <code>int64 transferTime = 1;</code>
+       * @param value The transferTime to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTransferTime(long value) {
+
+        transferTime_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 转接时间(毫秒)
+       * </pre>
+       *
+       * <code>int64 transferTime = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearTransferTime() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        transferTime_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:TransferContent)
+    }
+
+    // @@protoc_insertion_point(class_scope:TransferContent)
+    private static final IMMsg.TransferContent DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new IMMsg.TransferContent();
+    }
+
+    public static IMMsg.TransferContent getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<TransferContent>
+        PARSER = new com.google.protobuf.AbstractParser<TransferContent>() {
+      @java.lang.Override
+      public TransferContent parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<TransferContent> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<TransferContent> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public IMMsg.TransferContent getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface UnsupportedContentOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:UnsupportedContent)
+      com.google.protobuf.MessageOrBuilder {
+  }
+  /**
+   * Protobuf type {@code UnsupportedContent}
+   */
+  public static final class UnsupportedContent extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:UnsupportedContent)
+      UnsupportedContentOrBuilder {
+  private static final long serialVersionUID = 0L;
+    static {
+      com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
+        com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,
+        /* major= */ 4,
+        /* minor= */ 29,
+        /* patch= */ 0,
+        /* suffix= */ "-rc1",
+        UnsupportedContent.class.getName());
+    }
+    // Use UnsupportedContent.newBuilder() to construct.
+    private UnsupportedContent(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+    }
+    private UnsupportedContent() {
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return IMMsg.internal_static_UnsupportedContent_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return IMMsg.internal_static_UnsupportedContent_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              IMMsg.UnsupportedContent.class, IMMsg.UnsupportedContent.Builder.class);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof IMMsg.UnsupportedContent)) {
+        return super.equals(obj);
+      }
+      IMMsg.UnsupportedContent other = (IMMsg.UnsupportedContent) obj;
+
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static IMMsg.UnsupportedContent parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.UnsupportedContent parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.UnsupportedContent parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.UnsupportedContent parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.UnsupportedContent parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IMMsg.UnsupportedContent parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IMMsg.UnsupportedContent parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.UnsupportedContent parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static IMMsg.UnsupportedContent parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static IMMsg.UnsupportedContent parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static IMMsg.UnsupportedContent parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input);
+    }
+    public static IMMsg.UnsupportedContent parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessage
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(IMMsg.UnsupportedContent prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code UnsupportedContent}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:UnsupportedContent)
+        IMMsg.UnsupportedContentOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return IMMsg.internal_static_UnsupportedContent_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return IMMsg.internal_static_UnsupportedContent_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                IMMsg.UnsupportedContent.class, IMMsg.UnsupportedContent.Builder.class);
+      }
+
+      // Construct using IMMsg.UnsupportedContent.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return IMMsg.internal_static_UnsupportedContent_descriptor;
+      }
+
+      @java.lang.Override
+      public IMMsg.UnsupportedContent getDefaultInstanceForType() {
+        return IMMsg.UnsupportedContent.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public IMMsg.UnsupportedContent build() {
+        IMMsg.UnsupportedContent result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public IMMsg.UnsupportedContent buildPartial() {
+        IMMsg.UnsupportedContent result = new IMMsg.UnsupportedContent(this);
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof IMMsg.UnsupportedContent) {
+          return mergeFrom((IMMsg.UnsupportedContent)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(IMMsg.UnsupportedContent other) {
+        if (other == IMMsg.UnsupportedContent.getDefaultInstance()) return this;
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:UnsupportedContent)
+    }
+
+    // @@protoc_insertion_point(class_scope:UnsupportedContent)
+    private static final IMMsg.UnsupportedContent DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new IMMsg.UnsupportedContent();
+    }
+
+    public static IMMsg.UnsupportedContent getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<UnsupportedContent>
+        PARSER = new com.google.protobuf.AbstractParser<UnsupportedContent>() {
+      @java.lang.Override
+      public UnsupportedContent parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<UnsupportedContent> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<UnsupportedContent> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public IMMsg.UnsupportedContent getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_State_descriptor;
   private static final 
@@ -12834,6 +16266,36 @@ public final class IMMsg {
   private static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_EndSessionMsg_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_CreateSessionContent_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_CreateSessionContent_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_AgentUserJoinSessionContent_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_AgentUserJoinSessionContent_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_EndSessionContent_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_EndSessionContent_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_RankingContent_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_RankingContent_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_TransferContent_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_TransferContent_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_UnsupportedContent_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_UnsupportedContent_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -12857,33 +16319,46 @@ public final class IMMsg {
       "(\0132\016.EndSessionMsg\"5\n\004Join\022\013\n\003uid\030\001 \001(\t\022" +
       "\021\n\tsessionId\030\002 \001(\t\022\r\n\005token\030\003 \001(\t\"/\n\010Joi" +
       "nResp\022\021\n\tsessionId\030\001 \001(\t\022\020\n\010serverId\030\002 \001" +
-      "(\t\"\231\002\n\007MsgBody\022\021\n\tsenderUid\030\001 \001(\t\022\023\n\013rec" +
-      "eiverUid\030\002 \001(\t\022\031\n\007msgType\030\003 \001(\0162\010.MsgTyp" +
-      "e\022\016\n\006msgSeq\030\004 \001(\005\022\016\n\006encKey\030\005 \001(\t\022\017\n\007msg" +
-      "Body\030\006 \001(\t\022\016\n\006status\030\007 \001(\005\022\022\n\ncreateTime" +
-      "\030\010 \001(\003\022\023\n\013clientMsgID\030\t \001(\t\022\021\n\tsessionId" +
-      "\030\n \001(\t\022\020\n\010sendTime\030\013 \001(\t\022\r\n\005title\030\014 \001(\t\022" +
-      "\026\n\016senderNickname\030\r \001(\t\022\025\n\rsenderFaceURL" +
-      "\030\016 \001(\t\"\303\001\n\014SessionBasic\022\021\n\tsessionId\030\001 \001" +
-      "(\t\022\020\n\010headIcon\030\002 \001(\t\022\013\n\003uid\030\003 \001(\t\022\016\n\006sou" +
-      "rce\030\004 \001(\t\022\020\n\010nickName\030\005 \001(\t\022\r\n\005devNo\030\006 \001" +
-      "(\t\022\022\n\ncreateTime\030\007 \001(\003\022\020\n\010language\030\010 \001(\t" +
-      "\022\r\n\005extra\030\t \001(\t\022\033\n\tlatestMsg\030\n \001(\0132\010.Msg" +
-      "Body\"7\n\020CreateSessionMsg\022#\n\014sessionBasic" +
-      "\030\001 \001(\0132\r.SessionBasic\"+\n\027AgentUserJoinSe" +
-      "ssionMsg\022\020\n\010username\030\001 \001(\t\";\n\021HasReadRec" +
-      "eiptMsg\022\021\n\tsessionID\030\001 \001(\t\022\023\n\013hasReadSeq" +
-      "s\030\002 \003(\003\"4\n\016KickOffLineMsg\022\016\n\006userID\030\001 \001(" +
-      "\t\022\022\n\nidentityID\030\002 \001(\t\"\"\n\rEndSessionMsg\022\021" +
-      "\n\tsessionID\030\001 \001(\t*\257\002\n\007MsgType\022\016\n\nJoinSer" +
-      "ver\020\000\022\017\n\013TextMsgType\020\001\022\016\n\nImgMsgType\020\002\022\020" +
-      "\n\014VideoMsgType\020\003\022\030\n\024CreateSessionMsgType" +
-      "\020\004\022\037\n\033AgentUserJoinSessionMsgType\020\005\022\031\n\025H" +
-      "asReadReceiptMsgType\020\006\022\026\n\022KickOffLineMsg" +
-      "Type\020\007\022\016\n\nFaqMsgType\020\010\022\031\n\025KnowledgePoint" +
-      "MsgType\020\t\022\032\n\026KnowledgeAnswerMsgType\020\n\022\025\n" +
-      "\021EndSessionMsgType\020\013\022\025\n\021SystemTextMsgTyp" +
-      "e\020\014B\tB\005IMMsgP\000b\006proto3"
+      "(\t\"\262\002\n\007MsgBody\022\021\n\tsenderUid\030\001 \001(\t\022\023\n\013rec" +
+      "eiverUid\030\002 \001(\t\022\035\n\007msgType\030\003 \001(\0162\014.Conten" +
+      "tType\022\016\n\006msgSeq\030\004 \001(\005\022\016\n\006encKey\030\005 \001(\t\022\017\n" +
+      "\007msgBody\030\006 \001(\t\022\016\n\006status\030\007 \001(\005\022\022\n\ncreate" +
+      "Time\030\010 \001(\003\022\023\n\013clientMsgID\030\t \001(\t\022\021\n\tsessi" +
+      "onId\030\n \001(\t\022\020\n\010sendTime\030\013 \001(\t\022\r\n\005title\030\014 " +
+      "\001(\t\022\026\n\016senderNickname\030\r \001(\t\022\025\n\rsenderFac" +
+      "eURL\030\016 \001(\t\022\023\n\013serverMsgID\030\017 \001(\t\"\303\001\n\014Sess" +
+      "ionBasic\022\021\n\tsessionId\030\001 \001(\t\022\020\n\010headIcon\030" +
+      "\002 \001(\t\022\013\n\003uid\030\003 \001(\t\022\016\n\006source\030\004 \001(\t\022\020\n\010ni" +
+      "ckName\030\005 \001(\t\022\r\n\005devNo\030\006 \001(\t\022\022\n\ncreateTim" +
+      "e\030\007 \001(\003\022\020\n\010language\030\010 \001(\t\022\r\n\005extra\030\t \001(\t" +
+      "\022\033\n\tlatestMsg\030\n \001(\0132\010.MsgBody\"7\n\020CreateS" +
+      "essionMsg\022#\n\014sessionBasic\030\001 \001(\0132\r.Sessio" +
+      "nBasic\"+\n\027AgentUserJoinSessionMsg\022\020\n\010use" +
+      "rname\030\001 \001(\t\";\n\021HasReadReceiptMsg\022\021\n\tsess" +
+      "ionID\030\001 \001(\t\022\023\n\013hasReadSeqs\030\002 \003(\003\"4\n\016Kick" +
+      "OffLineMsg\022\016\n\006userID\030\001 \001(\t\022\022\n\nidentityID" +
+      "\030\002 \001(\t\"\"\n\rEndSessionMsg\022\021\n\tsessionID\030\001 \001" +
+      "(\t\"(\n\024CreateSessionContent\022\020\n\010joinTime\030\001" +
+      " \001(\003\"R\n\033AgentUserJoinSessionContent\022\020\n\010u" +
+      "sername\030\001 \001(\t\022\017\n\007faceUrl\030\002 \001(\t\022\020\n\010joinTi" +
+      "me\030\003 \001(\003\"$\n\021EndSessionContent\022\017\n\007endTime" +
+      "\030\001 \001(\003\" \n\016RankingContent\022\016\n\006number\030\001 \001(\005" +
+      "\"\'\n\017TransferContent\022\024\n\014transferTime\030\001 \001(" +
+      "\003\"\024\n\022UnsupportedContent*\257\001\n\007MsgType\022\016\n\nJ" +
+      "oinServer\020\000\022\017\n\013TextMsgType\020\001\022\030\n\024CreateSe" +
+      "ssionMsgType\020\004\022\037\n\033AgentUserJoinSessionMs" +
+      "gType\020\005\022\031\n\025HasReadReceiptMsgType\020\006\022\026\n\022Ki" +
+      "ckOffLineMsgType\020\007\022\025\n\021EndSessionMsgType\020" +
+      "\010*\371\002\n\013ContentType\022\026\n\022InvalidContentType\020" +
+      "\000\022\023\n\017TextContentType\020\001\022\022\n\016ImgContentType" +
+      "\020\002\022\024\n\020VideoContentType\020\003\022\034\n\030CreateSessio" +
+      "nContentType\020\004\022#\n\037AgentUserJoinSessionCo" +
+      "ntentType\020\005\022\031\n\025EndSessionContentType\020\006\022\026" +
+      "\n\022RankingContentType\020\007\022\022\n\016FaqContentType" +
+      "\020\010\022\035\n\031KnowledgePointContentType\020\t\022\036\n\032Kno" +
+      "wledgeAnswerContentType\020\n\022\027\n\023TransferCon" +
+      "tentType\020\013\022\025\n\021SystemContentType\020\014\022\032\n\026Uns" +
+      "upportedContentType\020\rB\tB\005IMMsgP\000b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -12924,7 +16399,7 @@ public final class IMMsg {
     internal_static_MsgBody_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_MsgBody_descriptor,
-        new java.lang.String[] { "SenderUid", "ReceiverUid", "MsgType", "MsgSeq", "EncKey", "MsgBody", "Status", "CreateTime", "ClientMsgID", "SessionId", "SendTime", "Title", "SenderNickname", "SenderFaceURL", });
+        new java.lang.String[] { "SenderUid", "ReceiverUid", "MsgType", "MsgSeq", "EncKey", "MsgBody", "Status", "CreateTime", "ClientMsgID", "SessionId", "SendTime", "Title", "SenderNickname", "SenderFaceURL", "ServerMsgID", });
     internal_static_SessionBasic_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_SessionBasic_fieldAccessorTable = new
@@ -12961,6 +16436,42 @@ public final class IMMsg {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_EndSessionMsg_descriptor,
         new java.lang.String[] { "SessionID", });
+    internal_static_CreateSessionContent_descriptor =
+      getDescriptor().getMessageTypes().get(12);
+    internal_static_CreateSessionContent_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_CreateSessionContent_descriptor,
+        new java.lang.String[] { "JoinTime", });
+    internal_static_AgentUserJoinSessionContent_descriptor =
+      getDescriptor().getMessageTypes().get(13);
+    internal_static_AgentUserJoinSessionContent_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_AgentUserJoinSessionContent_descriptor,
+        new java.lang.String[] { "Username", "FaceUrl", "JoinTime", });
+    internal_static_EndSessionContent_descriptor =
+      getDescriptor().getMessageTypes().get(14);
+    internal_static_EndSessionContent_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_EndSessionContent_descriptor,
+        new java.lang.String[] { "EndTime", });
+    internal_static_RankingContent_descriptor =
+      getDescriptor().getMessageTypes().get(15);
+    internal_static_RankingContent_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_RankingContent_descriptor,
+        new java.lang.String[] { "Number", });
+    internal_static_TransferContent_descriptor =
+      getDescriptor().getMessageTypes().get(16);
+    internal_static_TransferContent_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_TransferContent_descriptor,
+        new java.lang.String[] { "TransferTime", });
+    internal_static_UnsupportedContent_descriptor =
+      getDescriptor().getMessageTypes().get(17);
+    internal_static_UnsupportedContent_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_UnsupportedContent_descriptor,
+        new java.lang.String[] { });
     descriptor.resolveAllFeaturesImmutable();
   }
 

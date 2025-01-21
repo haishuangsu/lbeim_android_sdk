@@ -63,6 +63,7 @@ import com.lbe.imsdk.ui.presentation.screen.ChatScreenUiState
 import com.lbe.imsdk.utils.Converts.entityToMediaSendBody
 import com.lbe.imsdk.utils.Converts.entityToSendBody
 import com.lbe.imsdk.utils.Converts.protoToEntity
+import com.lbe.imsdk.utils.Converts.protoTypeConvert
 import com.lbe.imsdk.utils.Converts.sendBodyToEntity
 import com.lbe.imsdk.utils.FileLogger
 import com.lbe.imsdk.utils.TimeUtils.timeStampGen
@@ -146,6 +147,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     var timeOutTimer: Timer? = null
     var timeOut: Long = 5
 
+    var kickOfflineEvent = MutableStateFlow(value = "")
+    var kickOffLine = MutableStateFlow(false)
 
     private lateinit var initArgs: InitArgs
 
@@ -274,7 +277,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             Log.d(RETROFIT, "获取配置: $config")
             wssHost = config.data.ws[0]
             RetrofitInstance.IM_URL = config.data.rest[0]
-            RetrofitInstance.UPLOAD_BASE_URL = config.data.oss[1]
+            RetrofitInstance.UPLOAD_BASE_URL = config.data.oss[0]
         }.onFailure { err ->
             Log.d(RETROFIT, "获取配置异常: $err")
         }
@@ -580,6 +583,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                             sendTime = content.sendTime.toLong()
                             msgSeq = content.msgSeq
                             readed = (content.status == 1)
+                            customerServiceNickname = content.senderNickname
+                            customerServiceAvatar = content.senderFaceURL
                         }
                         IMLocalRepository.insertMessage(entity)
                     }
@@ -652,68 +657,66 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     return@launch
                 }
 
-                if (msgEntity.msgType == IMMsg.MsgType.TextMsgType || msgEntity.msgType == IMMsg.MsgType.ImgMsgType || msgEntity.msgType == IMMsg.MsgType.VideoMsgType) {
+                when (msgEntity.msgType) {
+                    IMMsg.MsgType.TextMsgType -> {
+                        remoteLastMsgType = protoTypeConvert(msgEntity)
 
-                    remoteLastMsgType = when (msgEntity.msgBody.msgType) {
-                        IMMsg.MsgType.TextMsgType -> 1
-                        IMMsg.MsgType.ImgMsgType -> 2
-                        IMMsg.MsgType.VideoMsgType -> 3
-                        IMMsg.MsgType.FaqMsgType -> 8
-                        IMMsg.MsgType.KnowledgePointMsgType -> 9
-                        IMMsg.MsgType.KnowledgeAnswerMsgType -> 10
-                        IMMsg.MsgType.SystemTextMsgType -> 12
-                        else -> 19
-                    }
-
-                    val receivedReq = msgEntity.msgBody.msgSeq
-                    println("接收转人工系统消息 --->> remoteLastMsgType: $remoteLastMsgType ,receivedReq: $receivedReq, seq: $seq")
-                    if (remoteLastMsgType == 1 || remoteLastMsgType == 2 || remoteLastMsgType == 3 || remoteLastMsgType == 8 || remoteLastMsgType == 9 || remoteLastMsgType == 10 || remoteLastMsgType == 12) {
-                        if (receivedReq - seq > 2) {
-                            fetchHistoryAndSync(sessionList[0])
+                        val receivedSeq = msgEntity.msgBody.msgSeq
+                        println("接收转人工系统消息 --->> remoteLastMsgType: $remoteLastMsgType ,receivedSeq: $receivedSeq, seq: $seq")
+                        if (remoteLastMsgType == 1 || remoteLastMsgType == 2 || remoteLastMsgType == 3 || remoteLastMsgType == 8 || remoteLastMsgType == 9 || remoteLastMsgType == 10 || remoteLastMsgType == 12) {
+                            if (receivedSeq - seq > 2) {
+                                fetchHistoryAndSync(sessionList[0])
+                            }
+                            seq = receivedSeq
+                            recivCount.value += 1
                         }
-                        seq = receivedReq
-                        recivCount.value += 1
-                    }
-                    Log.d(
-                        TAG, "收到消息 --->> seq: $seq, remoteLastMsgType: $remoteLastMsgType"
-                    )
-                    val entity = protoToEntity(msgEntity.msgBody)
-                    println("接收转人工系统消息 --->>> $entity")
+                        Log.d(
+                            TAG, "收到消息 --->> seq: $seq, remoteLastMsgType: $remoteLastMsgType"
+                        )
+                        val entity = protoToEntity(msgEntity)
+                        println("接收转人工系统消息 --->>> $entity")
 
-                    lastCsMessage = entity
-                    if (timeOutConfigOpen.value) {
-                        scheduleTimeoutJob()
-                    }
-                    viewModelScope.launch {
-                        IMLocalRepository.insertMessage(entity)
-                        if (entity.senderUid != uid) {
-                            addSingleMsgToUI(entity)
-                            recived.value += ","
+                        lastCsMessage = entity
+                        if (timeOutConfigOpen.value) {
+                            scheduleTimeoutJob()
+                        }
+                        viewModelScope.launch {
+                            IMLocalRepository.insertMessage(entity)
+                            if (entity.senderUid != uid) {
+                                addSingleMsgToUI(entity)
+                                recived.value += ","
+                            }
                         }
                     }
-                }
 
-                if (msgEntity.msgType == IMMsg.MsgType.HasReadReceiptMsgType) {
-                    val hasReadMsg = msgEntity.hasReadReceiptMsg
-                    val sessionId = hasReadMsg.sessionID
-                    val markReadList = hasReadMsg.hasReadSeqsList
+                    IMMsg.MsgType.HasReadReceiptMsgType -> {
+                        val hasReadMsg = msgEntity.hasReadReceiptMsg
+                        val sessionId = hasReadMsg.sessionID
+                        val markReadList = hasReadMsg.hasReadSeqsList
 
-                    Log.d(
-                        TAG,
-                        "收到客服标记已读消息 --->> sessionId: $sessionId, markReadList: $markReadList}"
-                    )
-                    for (seq in markReadList) {
-                        IMLocalRepository.findMsgAndMarkCsRead(sessionId, seq.toInt())
+                        Log.d(
+                            TAG,
+                            "收到客服标记已读消息 --->> sessionId: $sessionId, markReadList: $markReadList}"
+                        )
+                        for (seq in markReadList) {
+                            IMLocalRepository.findMsgAndMarkCsRead(sessionId, seq.toInt())
+                        }
+                        markMsgReadFromUI(sessionId, markReadList)
                     }
-                    markMsgReadFromUI(sessionId, markReadList)
-                }
 
-                if (msgEntity.msgType == IMMsg.MsgType.EndSessionMsgType) {
-                    endSession = true
-                }
+                    IMMsg.MsgType.EndSessionMsgType -> {
+                        endSession = true
+                    }
 
-                if (msgEntity.msgType == IMMsg.MsgType.KickOffLineMsgType) {
-                    disConnection()
+                    IMMsg.MsgType.KickOffLineMsgType -> {
+                        disConnection()
+                        kickOfflineEvent.value += ","
+                        kickOffLine.update { true }
+                    }
+
+                    else -> {
+                        Log.d(TAG, "Not Impl yet ---> ${msgEntity.msgType}")
+                    }
                 }
             }
         } catch (e: Exception) {

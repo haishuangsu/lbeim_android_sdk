@@ -24,29 +24,44 @@ object Converts {
         return entity
     }
 
-    fun protoToEntity(proto: IMMsg.MsgBody): MessageEntity {
-        val entity = MessageEntity().apply {
-            sessionId = proto.sessionId.ifEmpty { lbeSession }
-            senderUid = proto.senderUid
-            msgBody = proto.msgBody
-            msgType = when (proto.msgType) {
-                IMMsg.MsgType.TextMsgType -> 1
-                IMMsg.MsgType.ImgMsgType -> 2
-                IMMsg.MsgType.VideoMsgType -> 3
-                IMMsg.MsgType.FaqMsgType -> 8
-                IMMsg.MsgType.KnowledgePointMsgType -> 9
-                IMMsg.MsgType.KnowledgeAnswerMsgType -> 10
-                IMMsg.MsgType.SystemTextMsgType -> 12
-                else -> 19
+    fun protoTypeConvert(proto: IMMsg.MsgEntityToFrontEnd): Int {
+        val convertMsgType = when (proto.msgType) {
+            IMMsg.MsgType.TextMsgType -> when (proto.msgBody.msgType) {
+                IMMsg.ContentType.TextContentType -> 1
+                IMMsg.ContentType.ImgContentType -> 2
+                IMMsg.ContentType.VideoContentType -> 3
+                IMMsg.ContentType.AgentUserJoinSessionContentType -> 5 // 客服接入(只推送给C端)
+                IMMsg.ContentType.EndSessionContentType -> 6 // 会话结束(只推送给C端)
+                IMMsg.ContentType.RankingContentType -> 7  // 排队
+                IMMsg.ContentType.FaqContentType -> 8
+                IMMsg.ContentType.KnowledgePointContentType -> 9
+                IMMsg.ContentType.KnowledgeAnswerContentType -> 10
+                IMMsg.ContentType.TransferContentType -> 11 // 转接
+                IMMsg.ContentType.SystemContentType -> 12
+                IMMsg.ContentType.UnsupportedContentType -> 13 // 无客服在线
+                else -> 39
             }
-            msgSeq = proto.msgSeq
-            clientMsgID = proto.clientMsgID
-            sendTime = proto.sendTime.toLong()
-            faqListTile = proto.title
-            customerServiceNickname = proto.senderNickname
-            customerServiceAvatar = proto.senderFaceURL
+
+            else -> 39
         }
-        Log.d("Convert protoToEntity", entity.toString())
+        return convertMsgType
+    }
+
+    fun protoToEntity(proto: IMMsg.MsgEntityToFrontEnd): MessageEntity {
+        val loadMsgType = protoTypeConvert(proto)
+
+        val entity = MessageEntity().apply {
+            sessionId = proto.msgBody.sessionId.ifEmpty { lbeSession }
+            senderUid = proto.msgBody.senderUid
+            msgBody = proto.msgBody.msgBody
+            msgType = loadMsgType
+            msgSeq = proto.msgBody.msgSeq
+            clientMsgID = proto.msgBody.clientMsgID
+            sendTime = proto.msgBody.sendTime.toLong()
+            faqListTile = proto.msgBody.title
+            customerServiceNickname = proto.msgBody.senderNickname
+            customerServiceAvatar = proto.msgBody.senderFaceURL
+        }
         return entity
     }
 

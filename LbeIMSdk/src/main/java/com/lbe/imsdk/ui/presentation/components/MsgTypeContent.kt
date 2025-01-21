@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -258,11 +257,15 @@ fun MsgTypeContent(
 
         8 -> {
             if (!fromUser) {
-                Log.d("Faq", "Topic body --->>> ${message.msgBody}")
+                Log.d("Faq 8", "Topic body --->>> ${message.msgBody}")
                 val faq = Gson().fromJson(message.msgBody, FaqTopic::class.java)
 
-                val gridHeight = 105 * (1 + faq.knowledgeBaseList.size / 3)
-                Log.d("Faq", "计算高度 --->>> $gridHeight")
+                val gridHeight =
+                    if (faq.knowledgeBaseList.size % 3 == 0) 85 * (faq.knowledgeBaseList.size / 3) else 85 * (1 + faq.knowledgeBaseList.size / 3)
+                Log.d(
+                    "Faq 8",
+                    "计算高度 --->>> faq size: ${faq.knowledgeBaseList.size} ,gridHeight: $gridHeight"
+                )
 
                 Surface(
                     color = Color.White, modifier = Modifier.clip(
@@ -293,12 +296,10 @@ fun MsgTypeContent(
                             items(faq.knowledgeBaseList) { item ->
                                 Column(horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier.clickable {
-                                        println("history not available --->> message.sessionId: ${message.sessionId}, current session: ${ChatScreenViewModel.sessionList[0].sessionId}")
+                                        println("history not available 8 --->> message.sessionId: ${message.sessionId}, current session: ${ChatScreenViewModel.sessionList[0].sessionId}")
                                         if (ChatScreenViewModel.sessionList.isNotEmpty() && message.sessionId != ChatScreenViewModel.sessionList[0].sessionId) {
                                             Toast.makeText(
-                                                context,
-                                                "此记录不可用",
-                                                Toast.LENGTH_SHORT
+                                                context, "此记录不可用", Toast.LENGTH_SHORT
                                             ).show()
                                             return@clickable
                                         }
@@ -400,13 +401,11 @@ fun MsgTypeContent(
                                 ), modifier = Modifier
                                     .padding(top = 8.dp)
                                     .clickable {
-                                        println("history not available --->> message.sessionId: ${message.sessionId}, current session: ${ChatScreenViewModel.sessionList[0].sessionId}")
+                                        println("history not available 9 --->> message.sessionId: ${message.sessionId}, current session: ${ChatScreenViewModel.sessionList[0].sessionId}")
                                         if (ChatScreenViewModel.sessionList.isNotEmpty() && message.sessionId != ChatScreenViewModel.sessionList[0].sessionId) {
                                             Toast
                                                 .makeText(
-                                                    context,
-                                                    "此记录不可用",
-                                                    Toast.LENGTH_SHORT
+                                                    context, "此记录不可用", Toast.LENGTH_SHORT
                                                 )
                                                 .show()
                                             return@clickable

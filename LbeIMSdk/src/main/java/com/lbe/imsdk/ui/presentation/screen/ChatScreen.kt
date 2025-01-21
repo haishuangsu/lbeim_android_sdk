@@ -80,7 +80,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -91,7 +90,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
 
@@ -101,7 +99,9 @@ import com.google.gson.Gson
 import com.lbe.imsdk.R
 import com.lbe.imsdk.model.MediaMessage
 import com.lbe.imsdk.model.MessageEntity
+import com.lbe.imsdk.model.resp.CsJoinInfo
 import com.lbe.imsdk.model.resp.IconUrl
+import com.lbe.imsdk.model.resp.RankingContent
 
 import com.lbe.imsdk.ui.presentation.components.MsgTypeContent
 import com.lbe.imsdk.ui.presentation.components.NormalDecryptedOrNotImageView
@@ -231,6 +231,10 @@ fun ChatScreen(
     val toBottomEvent by viewModel.toBottom.collectAsState("")
     val previousToBottomEvent = rememberSaveable { mutableStateOf(toBottomEvent) }
     val recivedEvent by viewModel.recived.collectAsState("")
+
+    val kickOffLine by viewModel.kickOffLine.collectAsState(false)
+    val kickOffLineEvent by viewModel.kickOfflineEvent.collectAsState("")
+    val previousKickOffLineEvent = rememberSaveable { mutableStateOf(kickOffLineEvent) }
 
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
@@ -656,6 +660,17 @@ fun ChatScreen(
                                             modifier = Modifier
                                                 .size(18.dp)
                                                 .clickable {
+                                                    if (kickOffLine) {
+                                                        Toast
+                                                            .makeText(
+                                                                context,
+                                                                "您的账号已在其他地方登录，如要继续对话请重新载入页面",
+                                                                Toast.LENGTH_SHORT
+                                                            )
+                                                            .show()
+                                                        return@clickable
+                                                    }
+
                                                     viewModel.sendMessageFromTextInput(messageSent = {
                                                         currentFocus.clearFocus()
                                                     }, trimToast = {
@@ -700,6 +715,16 @@ fun ChatScreen(
                     }
                     previousToBottomEvent.value = toBottomEvent
                 }
+            }
+        }
+
+        LaunchedEffect(kickOffLineEvent) {
+            if (kickOffLineEvent.isNotEmpty() && kickOffLineEvent != previousKickOffLineEvent.value) {
+                Toast.makeText(
+                    context,
+                    "您的账号已在其他地方登录，如要继续对话请重新载入页面",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
 
@@ -833,75 +858,166 @@ fun RecievedFromCustomerService(
     navController: NavController,
     imageLoader: ImageLoader,
 ) {
-    val currentIndex = messages.indexOf(message)
-    var needShowTime = false
-    var sameCurrentDay = false
-    if (currentIndex != 0) {
-        val prev = messages[currentIndex - 1]
-        val diff = (message.sendTime - prev.sendTime) / 1000
-        sameCurrentDay = TimeUtils.isSameDay(Date(), Date(message.sendTime))
-        if (diff > 60 * 3) {
-            needShowTime = true
-        }
-    }
+    when (message.msgType) {
+        5 -> {
+            if (message.msgBody.isNotEmpty()) {
+                val csJoinInfo = Gson().fromJson(message.msgBody, CsJoinInfo::class.java)
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+                    Surface(
+                        modifier = Modifier
+                            .padding(top = 39.dp)
+                            .clip(RoundedCornerShape(12.dp)),
+                        color = Color.White,
+                    ) {
+                        Text(
+                            "${csJoinInfo.username} 将为您服务", style = TextStyle(
+                                color = Color.Black,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.W400,
+                            ), modifier = Modifier.padding(
+                                start = 8.dp, end = 8.dp, bottom = 8.dp, top = 19.dp
+                            )
+                        )
+                    }
 
-    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        AnimatedVisibility(visible = needShowTime) {
+                    if (csJoinInfo.faceUrl.isNotEmpty()) {
+                        val iconUrl = Gson().fromJson(csJoinInfo.faceUrl, IconUrl::class.java)
+                        if (iconUrl.url.isNotEmpty()) {
+                            NormalDecryptedOrNotImageView(
+                                key = iconUrl.key,
+                                url = iconUrl.url,
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape),
+                                imageLoader
+                            )
+                        } else {
+                            Image(
+                                painter = painterResource(id = R.drawable.default_cs_avatar),
+                                contentDescription = "",
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    } else {
+                        Image(
+                            painter = painterResource(id = R.drawable.default_cs_avatar),
+                            contentDescription = "",
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        6, 7, 11, 13 -> {
+            val content = when (message.msgType) {
+                6 -> "您已结束人工客服服务"
+                7 -> {
+                    val rankingContent =
+                        Gson().fromJson(message.msgBody, RankingContent::class.java)
+                    "正在为您努力转接到人工服务中，当前排队人数“_”人，请稍后".replace(
+                        "_", "${rankingContent.number}"
+                    )
+                }
+
+                11 -> "正在为您转接客服，请稍后"
+                13 -> "当前暂无客服接入，请稍后尝试"
+                else -> "Not result"
+            }
             Box(contentAlignment = Alignment.Center) {
                 Text(
-                    if (sameCurrentDay) TimeUtils.formatHHMMTime(message.sendTime) else TimeUtils.formatYYMMHHMMTime(
-                        message.sendTime
-                    ),
+                    content,
                     style = TextStyle(
-                        color = Color(0xff979797), fontSize = 10.sp, fontWeight = FontWeight.W400
+                        color = Color(0xFF979797), fontSize = 10.sp, fontWeight = FontWeight.W400,
                     ),
                     textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 9.dp)
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-            if (message.customerServiceAvatar.isNotEmpty()) {
-                val iconUrl = Gson().fromJson(message.customerServiceAvatar, IconUrl::class.java)
-                if (iconUrl.url.isNotEmpty()) {
-                    NormalDecryptedOrNotImageView(
-                        key = iconUrl.key,
-                        url = iconUrl.url,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape),
-                        imageLoader
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(id = R.drawable.default_cs_avatar),
-                        contentDescription = "",
-                        modifier = Modifier.size(32.dp)
-                    )
+        else -> {
+            val currentIndex = messages.indexOf(message)
+            var needShowTime = false
+            var sameCurrentDay = false
+            if (currentIndex != 0) {
+                val prev = messages[currentIndex - 1]
+                val diff = (message.sendTime - prev.sendTime) / 1000
+                sameCurrentDay = TimeUtils.isSameDay(Date(), Date(message.sendTime))
+                if (diff > 60 * 3) {
+                    needShowTime = true
                 }
-            } else {
-                Image(
-                    painter = painterResource(id = R.drawable.default_cs_avatar),
-                    contentDescription = "",
-                    modifier = Modifier.size(32.dp)
-                )
             }
 
             Column(
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = message.customerServiceNickname.ifEmpty { "在线客服" },
-                    modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
-                    style = TextStyle(
-                        fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)
-                    )
-                )
-                Spacer(Modifier.height(8.dp))
-                MsgTypeContent(message, viewModel, navController, false, imageLoader)
+                AnimatedVisibility(visible = needShowTime) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            if (sameCurrentDay) TimeUtils.formatHHMMTime(message.sendTime) else TimeUtils.formatYYMMHHMMTime(
+                                message.sendTime
+                            ),
+                            style = TextStyle(
+                                color = Color(0xff979797),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.W400
+                            ),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 9.dp)
+                        )
+                    }
+                }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+
+                    if (message.customerServiceAvatar.isNotEmpty()) {
+                        val iconUrl =
+                            Gson().fromJson(message.customerServiceAvatar, IconUrl::class.java)
+                        if (iconUrl.url.isNotEmpty()) {
+                            NormalDecryptedOrNotImageView(
+                                key = iconUrl.key,
+                                url = iconUrl.url,
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape),
+                                imageLoader
+                            )
+                        } else {
+                            Image(
+                                painter = painterResource(id = if (message.senderUid.isEmpty()) R.drawable.robots_avatar else R.drawable.default_cs_avatar),
+                                contentDescription = "",
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    } else {
+                        Image(
+                            painter = painterResource(id = if (message.senderUid.isEmpty()) R.drawable.robots_avatar else R.drawable.default_cs_avatar),
+                            contentDescription = "",
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+
+
+                    Column(
+                        modifier = Modifier.padding(8.dp)
+                    ) {
+                        Text(
+                            text = message.customerServiceNickname.ifEmpty { "在线客服" },
+                            modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
+                            style = TextStyle(
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.W400,
+                                color = Color(0xff979797)
+                            )
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        MsgTypeContent(message, viewModel, navController, false, imageLoader)
+                    }
+                }
             }
         }
     }

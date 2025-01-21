@@ -54,16 +54,20 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String, lbeSign: String, phone: String, email: String, language: String, device: String, headerIcon: String) -> Unit) {
     // HermitK1
-    var nickId by remember { mutableStateOf("HermitK5") }
-    var nickName by remember { mutableStateOf("HermitK5") }
+    var nickId by remember { mutableStateOf("HermitK4") }
+    var nickName by remember { mutableStateOf("HermitK4") }
+
+    // dev_my
+    var lbeSign by remember { mutableStateOf("0x77ce23dc4033c7e3b6cd9ec78b5c1d365ac8f4076e443575bb918451b63614011c7da66897248caebdb466b6ccb832aa639b0ddc5fe2574915759bbd5710b7aa1c") }
+    var lbeIdentity by remember { mutableStateOf("46gz1ezu9rd5") }
 
     // dev
 //    var lbeSign by remember { mutableStateOf("0xaee7b220061d450ef94406f819edec6f9402a1a41205e75e394519c02a527e3d1527e166ea6c868075b094d3bddbb1b274ccef66dd247ebec6930276f361088b1b") }
 //    var lbeIdentity by remember { mutableStateOf("441z9t7ucki1") }
 
     // sit
-    var lbeSign by remember { mutableStateOf("0x9d63fcec00dffa1e7bbebfa4f0afa80f5f26614613b29357d580b69b708d2d893b6eef2d013828830f9c52f647edcd9ebc5ec73900d178b4c1a27732fb24cefe1b") }
-    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
+//    var lbeSign by remember { mutableStateOf("0x9d63fcec00dffa1e7bbebfa4f0afa80f5f26614613b29357d580b69b708d2d893b6eef2d013828830f9c52f647edcd9ebc5ec73900d178b4c1a27732fb24cefe1b") }
+//    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
 
     // uat
     // var lbeSign by remember { mutableStateOf("0xc3620a07c69a191b3b2fb431bd26c8417413f4998e6fc2fc2c570bd1145ac004780d13db14290687a94d9b30804b1a8a2edb8b7828c6c45a55fc8d1e78f98dec1c") }
@@ -82,8 +86,8 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
 
     var device by remember { mutableStateOf("") }
 
-//    var headerIcon by remember { mutableStateOf("https://k.sinaimg.cn/n/sinakd20117/0/w800h800/20240127/889b-4c8a7876ebe98e4d619cdaf43fceea7c.jpg/w700d1q75cms.jpg") }
     var headerIcon by remember { mutableStateOf("http://10.40.92.203:9910/openimttt/lbe_65f8d397953b979b4be0d098e8d4f5.jpg") }
+//    var headerIcon by remember { mutableStateOf("") }
 
 //    var source by remember { mutableStateOf("Android") }
 

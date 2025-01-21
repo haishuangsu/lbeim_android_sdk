@@ -84,9 +84,9 @@ public object MsgBodyKt {
      * 消息类型
      * ```
      *
-     * `.MsgType msgType = 3;`
+     * `.ContentType msgType = 3;`
      */
-    public var msgType: IMMsg.MsgType
+    public var msgType: IMMsg.ContentType
       @JvmName("getMsgType")
       get() = _builder.msgType
       @JvmName("setMsgType")
@@ -105,7 +105,7 @@ public object MsgBodyKt {
      * 消息类型
      * ```
      *
-     * `.MsgType msgType = 3;`
+     * `.ContentType msgType = 3;`
      */
     public fun clearMsgType() {
       _builder.clearMsgType()
@@ -384,6 +384,31 @@ public object MsgBodyKt {
      */
     public fun clearSenderFaceURL() {
       _builder.clearSenderFaceURL()
+    }
+
+    /**
+     * ```
+     * 服务端自定义消息ID
+     * ```
+     *
+     * `string serverMsgID = 15;`
+     */
+    public var serverMsgID: kotlin.String
+      @JvmName("getServerMsgID")
+      get() = _builder.serverMsgID
+      @JvmName("setServerMsgID")
+      set(value) {
+        _builder.serverMsgID = value
+      }
+    /**
+     * ```
+     * 服务端自定义消息ID
+     * ```
+     *
+     * `string serverMsgID = 15;`
+     */
+    public fun clearServerMsgID() {
+      _builder.clearServerMsgID()
     }
   }
 }
