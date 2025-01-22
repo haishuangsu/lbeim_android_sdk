@@ -7,6 +7,7 @@ import com.lbe.imsdk.model.req.MsgBody
 import com.lbe.imsdk.model.req.SessionBody
 import com.lbe.imsdk.model.req.SessionListReq
 import com.lbe.imsdk.model.req.TimeoutReqBody
+import com.lbe.imsdk.model.resp.FaqResp
 import com.lbe.imsdk.model.resp.History
 import com.lbe.imsdk.model.resp.SendMsg
 import com.lbe.imsdk.model.resp.Session
@@ -66,8 +67,8 @@ object LbeImRepository {
 
     suspend fun faq(
         lbeSession: String, lbeToken: String, lbeIdentity: String, body: FaqReqBody
-    ) {
-        lbeIMRepository.faq(
+    ): FaqResp {
+        return lbeIMRepository.faq(
             lbeToken = lbeToken, lbeIdentity = lbeIdentity, lbeSession = lbeSession, body = body
         )
     }

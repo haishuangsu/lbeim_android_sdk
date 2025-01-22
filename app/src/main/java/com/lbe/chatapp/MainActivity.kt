@@ -54,12 +54,12 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String, lbeSign: String, phone: String, email: String, language: String, device: String, headerIcon: String) -> Unit) {
     // HermitK1
-    var nickId by remember { mutableStateOf("HermitK4") }
-    var nickName by remember { mutableStateOf("HermitK4") }
+    var nickId by remember { mutableStateOf("android001") }
+    var nickName by remember { mutableStateOf("android001") }
 
     // dev_my
-    var lbeSign by remember { mutableStateOf("0x77ce23dc4033c7e3b6cd9ec78b5c1d365ac8f4076e443575bb918451b63614011c7da66897248caebdb466b6ccb832aa639b0ddc5fe2574915759bbd5710b7aa1c") }
-    var lbeIdentity by remember { mutableStateOf("46gz1ezu9rd5") }
+//    var lbeSign by remember { mutableStateOf("0x77ce23dc4033c7e3b6cd9ec78b5c1d365ac8f4076e443575bb918451b63614011c7da66897248caebdb466b6ccb832aa639b0ddc5fe2574915759bbd5710b7aa1c") }
+//    var lbeIdentity by remember { mutableStateOf("46gz1ezu9rd5") }
 
     // dev
 //    var lbeSign by remember { mutableStateOf("0xaee7b220061d450ef94406f819edec6f9402a1a41205e75e394519c02a527e3d1527e166ea6c868075b094d3bddbb1b274ccef66dd247ebec6930276f361088b1b") }
@@ -74,9 +74,9 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
     // var lbeIdentity by remember { mutableStateOf("45vhxodzxswp") }
 
     // test
-//    var lbeSign by remember { mutableStateOf("0xad1701e4fd5456c87541a6bb5ccd41ae626d2a0bd52b6ff7fa78b7276632b5ff47386d2ed0cafa53ffb7364880c7e30a7e3688b6efc59a1ba9cda2f4216d2e9c1b") }
-//    var lbeIdentity by remember { mutableStateOf("43qf47gjuimi") }
-//    android015
+    var lbeSign by remember { mutableStateOf("0x281d5af2a0b222d5e0b99773372c1a4b955fbde587de0b1fd3708586b92020dc3437f9fff59e4f24c6aaca2b8a44d1ff82638e131c6a2d2c35289624e89b11c61b") }
+    var lbeIdentity by remember { mutableStateOf("46igleuw9olm") }
+//    android001
 
     var phone by remember { mutableStateOf("") }
 

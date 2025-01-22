@@ -7,6 +7,7 @@ import com.lbe.imsdk.model.req.MsgBody
 import com.lbe.imsdk.model.req.SessionBody
 import com.lbe.imsdk.model.req.SessionListReq
 import com.lbe.imsdk.model.req.TimeoutReqBody
+import com.lbe.imsdk.model.resp.FaqResp
 import com.lbe.imsdk.model.resp.History
 import com.lbe.imsdk.model.resp.SendMsg
 import com.lbe.imsdk.model.resp.Session
@@ -86,7 +87,7 @@ interface LbeIMAPiService {
         @Header(LBE_IDENTITY) lbeIdentity: String,
         @Header(LBE_SESSION) lbeSession: String,
         @Body body: FaqReqBody
-    )
+    ): FaqResp
 
     @POST(TURN)
     suspend fun turnCustomerService(

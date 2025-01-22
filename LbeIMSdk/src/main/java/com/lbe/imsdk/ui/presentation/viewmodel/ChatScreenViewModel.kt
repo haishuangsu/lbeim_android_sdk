@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.State
 import androidx.lifecycle.AndroidViewModel
@@ -277,7 +278,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             Log.d(RETROFIT, "获取配置: $config")
             wssHost = config.data.ws[0]
             RetrofitInstance.IM_URL = config.data.rest[0]
-            RetrofitInstance.UPLOAD_BASE_URL = config.data.oss[0]
+            RetrofitInstance.UPLOAD_BASE_URL = config.data.oss[1]
         }.onFailure { err ->
             Log.d(RETROFIT, "获取配置异常: $err")
         }
@@ -525,6 +526,14 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     body = faqReqBody
                 )
             }
+            result.onSuccess { faqResp ->
+                Log.d(RETROFIT, "faq --->> $faqResp")
+                if (faqResp.code == 20006) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(getApplication(), "此记录不可用", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
             result.onFailure { err ->
                 println("网络异常 --->>> Fetch faq  error --->>>  $err")
             }
@@ -573,20 +582,26 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             if (history.data.content.isNotEmpty()) {
                 seq = history.data.content.last().msgSeq
                 for (content in history.data.content) {
-                    if (content.msgType == 1 || content.msgType == 2 || content.msgType == 3 || content.msgType == 8 || content.msgType == 9 || content.msgType == 10 || content.msgType == 11 || content.msgType == 12) {
-                        val entity = MessageEntity().apply {
-                            sessionId = content.sessionId
-                            senderUid = content.senderUid
-                            msgBody = content.msgBody
-                            clientMsgID = content.clientMsgID
-                            msgType = content.msgType
-                            sendTime = content.sendTime.toLong()
-                            msgSeq = content.msgSeq
-                            readed = (content.status == 1)
-                            customerServiceNickname = content.senderNickname
-                            customerServiceAvatar = content.senderFaceURL
+                    when (content.msgType) {
+                        1, 2, 4, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13 -> {
+                            val entity = MessageEntity().apply {
+                                sessionId = content.sessionId
+                                senderUid = content.senderUid
+                                msgBody = content.msgBody
+                                clientMsgID = content.clientMsgID
+                                msgType = content.msgType
+                                sendTime = content.sendTime.toLong()
+                                msgSeq = content.msgSeq
+                                readed = (content.status == 1)
+                                customerServiceNickname = content.senderNickname
+                                customerServiceAvatar = content.senderFaceURL
+                            }
+                            IMLocalRepository.insertMessage(entity)
                         }
-                        IMLocalRepository.insertMessage(entity)
+
+                        else -> {
+                            continue
+                        }
                     }
                 }
             }

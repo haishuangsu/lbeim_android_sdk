@@ -859,13 +859,19 @@ fun RecievedFromCustomerService(
     imageLoader: ImageLoader,
 ) {
     when (message.msgType) {
+        4 -> {}
+
         5 -> {
             if (message.msgBody.isNotEmpty()) {
                 val csJoinInfo = Gson().fromJson(message.msgBody, CsJoinInfo::class.java)
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+
+                Box(
+                    contentAlignment = Alignment.TopCenter,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Surface(
                         modifier = Modifier
-                            .padding(top = 39.dp)
+                            .padding(top = 16.dp)
                             .clip(RoundedCornerShape(12.dp)),
                         color = Color.White,
                     ) {
@@ -984,7 +990,8 @@ fun RecievedFromCustomerService(
                                 modifier = Modifier
                                     .size(32.dp)
                                     .clip(CircleShape),
-                                imageLoader
+                                imageLoader,
+                                contentScale = ContentScale.Crop,
                             )
                         } else {
                             Image(
@@ -1003,7 +1010,9 @@ fun RecievedFromCustomerService(
 
 
                     Column(
-                        modifier = Modifier.padding(8.dp)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(8.dp)
                     ) {
                         Text(
                             text = message.customerServiceNickname.ifEmpty { "在线客服" },
@@ -1084,7 +1093,7 @@ fun UserInput(
                 AsyncImage(
                     model = ChatScreenViewModel.userAvatar,
                     contentDescription = "Yo",
-                    contentScale = ContentScale.FillBounds,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(32.dp)
                         .clip(CircleShape),

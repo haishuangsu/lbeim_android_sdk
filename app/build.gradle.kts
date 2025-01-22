@@ -10,8 +10,8 @@ android {
     defaultConfig {
         applicationId = "com.lbe.chatapp"
         minSdk = 28
-        versionCode = 17
-        versionName = "0.1.7"
+        versionCode = 18
+        versionName = "0.1.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -22,10 +22,10 @@ android {
     signingConfigs {
         if (System.getenv("JITPACK") == null) {
             create("release") {
-                keyAlias = "hermit"
-                keyPassword = "gavin@95"
-                storeFile = file("../hermit.jks")
-                storePassword = "gavin@95"
+                keyAlias = "lbe"
+                keyPassword = "lbe168"
+                storeFile = file("../lbe.jks")
+                storePassword = "lbe168"
             }
         }
     }
