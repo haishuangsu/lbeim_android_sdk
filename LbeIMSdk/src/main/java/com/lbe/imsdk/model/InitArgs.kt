@@ -12,4 +12,5 @@ data class InitArgs(
     val device: String,
     val source: String,
     val extraInfo: MutableMap<String, Any>,
+    var groupID: String,
 )

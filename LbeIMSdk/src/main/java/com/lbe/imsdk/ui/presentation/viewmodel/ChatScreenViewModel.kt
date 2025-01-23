@@ -150,6 +150,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
     var kickOfflineEvent = MutableStateFlow(value = "")
     var kickOffLine = MutableStateFlow(false)
+    var faqNotExistEvent = MutableStateFlow(value = "")
 
     private lateinit var initArgs: InitArgs
 
@@ -299,9 +300,10 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     language = initArgs.language,
                     device = initArgs.device,
                     source = initArgs.source,
-                    extraInfo = "",
                     headIcon = initArgs.headerIcon,
+                    groupID = initArgs.groupID,
                     uid = "",
+                    extraInfo = "",
                 )
             )
         }
@@ -527,11 +529,9 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                 )
             }
             result.onSuccess { faqResp ->
-                Log.d(RETROFIT, "faq --->> $faqResp")
+                Log.d(RETROFIT, "什么 --->> $faqResp")
                 if (faqResp.code == 20006) {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(getApplication(), "此记录不可用", Toast.LENGTH_SHORT).show()
-                    }
+                    faqNotExistEvent.value += ","
                 }
             }
             result.onFailure { err ->

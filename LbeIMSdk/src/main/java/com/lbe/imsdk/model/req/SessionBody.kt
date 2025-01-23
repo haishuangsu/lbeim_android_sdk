@@ -12,5 +12,6 @@ data class SessionBody(
     val device: String,
     val source: String,
     val identityID: String,
+    val groupID: String,
 )
 

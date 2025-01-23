@@ -21,8 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.lbe.imsdk.LbeSdk
-import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.lbeIdentity
-import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.lbeSign
 import com.lbe.imsdk.ui.theme.ChatAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -31,7 +29,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
             ChatAppTheme {
-                NickIdPrompt { nickId, nickName, lbeIdentity, lbeSign, phone, email, language, device, headerIcon ->
+                NickIdPrompt { nickId, nickName, lbeIdentity, lbeSign, phone, email, language, device, headerIcon, groupID ->
                     LbeSdk.init(
                         context = context,
                         lbeSign = lbeSign,
@@ -42,7 +40,8 @@ class MainActivity : ComponentActivity() {
                         email = email,
                         language = language,
                         device = device,
-                        headerIcon = headerIcon
+                        headerIcon = headerIcon,
+                        groupID = groupID
                     )
                     finish()
                 }
@@ -52,7 +51,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String, lbeSign: String, phone: String, email: String, language: String, device: String, headerIcon: String) -> Unit) {
+fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String, lbeSign: String, phone: String, email: String, language: String, device: String, headerIcon: String, groupID: String) -> Unit) {
     // HermitK1
     var nickId by remember { mutableStateOf("android001") }
     var nickName by remember { mutableStateOf("android001") }
@@ -89,6 +88,8 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
     var headerIcon by remember { mutableStateOf("http://10.40.92.203:9910/openimttt/lbe_65f8d397953b979b4be0d098e8d4f5.jpg") }
 //    var headerIcon by remember { mutableStateOf("") }
 
+    var groupID by remember { mutableStateOf("") }
+
 //    var source by remember { mutableStateOf("Android") }
 
     Card {
@@ -107,7 +108,13 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
                     readOnly = false,
                 )
             }
-
+            item {
+                OutlinedTextField(
+                    value = headerIcon,
+                    onValueChange = { headerIcon = it },
+                    label = { Text(text = "avatar") }, readOnly = false,
+                )
+            }
             item {
                 OutlinedTextField(
                     value = lbeIdentity,
@@ -123,7 +130,6 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
                     label = { Text(text = "NickId") }, readOnly = false,
                 )
             }
-
             item {
                 OutlinedTextField(
                     value = nickName,
@@ -131,7 +137,6 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
                     label = { Text(text = "NickName") }, readOnly = false,
                 )
             }
-
             item {
                 OutlinedTextField(
                     value = phone,
@@ -139,7 +144,6 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
                     label = { Text(text = "phone") }, readOnly = false,
                 )
             }
-
             item {
                 OutlinedTextField(
                     value = email,
@@ -147,7 +151,6 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
                     label = { Text(text = "email") }, readOnly = false,
                 )
             }
-
             item {
                 OutlinedTextField(
                     value = language,
@@ -164,9 +167,9 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
             }
             item {
                 OutlinedTextField(
-                    value = headerIcon,
-                    onValueChange = { headerIcon = it },
-                    label = { Text(text = "avatar") }, readOnly = false,
+                    value = groupID,
+                    onValueChange = { groupID = it },
+                    label = { Text(text = "groupID") }, readOnly = false,
                 )
             }
 
@@ -181,7 +184,8 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
                         email,
                         language,
                         device,
-                        headerIcon
+                        headerIcon,
+                        groupID
                     )
                 }) {
                     Text(text = "Connect")
@@ -189,5 +193,4 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
             }
         }
     }
-
 }

@@ -236,6 +236,9 @@ fun ChatScreen(
     val kickOffLineEvent by viewModel.kickOfflineEvent.collectAsState("")
     val previousKickOffLineEvent = rememberSaveable { mutableStateOf(kickOffLineEvent) }
 
+    val faqNotExistEvent by viewModel.faqNotExistEvent.collectAsState("")
+    val previousFaqNotExistEvent = rememberSaveable { mutableStateOf(faqNotExistEvent) }
+
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
@@ -728,6 +731,12 @@ fun ChatScreen(
             }
         }
 
+        LaunchedEffect(faqNotExistEvent) {
+            if (faqNotExistEvent.isNotEmpty() && faqNotExistEvent != previousFaqNotExistEvent.value) {
+                Toast.makeText(context, "当前知识点不存在或已被删除", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         LaunchedEffect(recivedEvent) {
             if (recivedEvent.isNotEmpty()) {
                 if (!showToBottomButton) {
@@ -866,8 +875,7 @@ fun RecievedFromCustomerService(
                 val csJoinInfo = Gson().fromJson(message.msgBody, CsJoinInfo::class.java)
 
                 Box(
-                    contentAlignment = Alignment.TopCenter,
-                    modifier = Modifier.fillMaxWidth()
+                    contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
                 ) {
                     Surface(
                         modifier = Modifier
