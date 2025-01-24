@@ -1023,7 +1023,7 @@ fun RecievedFromCustomerService(
                             .padding(8.dp)
                     ) {
                         Text(
-                            text = message.customerServiceNickname.ifEmpty { "在线客服" },
+                            text = message.customerServiceNickname.ifEmpty { if (message.senderUid.isNotEmpty()) "在线客服" else "智能机器人" },
                             modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
                             style = TextStyle(
                                 fontSize = 14.sp,

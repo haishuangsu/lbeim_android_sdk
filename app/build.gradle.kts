@@ -10,8 +10,8 @@ android {
     defaultConfig {
         applicationId = "com.lbe.chatapp"
         minSdk = 28
-        versionCode = 18
-        versionName = "0.1.8"
+        versionCode = 19
+        versionName = "0.1.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

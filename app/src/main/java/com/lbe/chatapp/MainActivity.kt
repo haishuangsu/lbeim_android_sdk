@@ -77,6 +77,11 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
     var lbeIdentity by remember { mutableStateOf("46igleuw9olm") }
 //    android001
 
+    // test 1
+//    var lbeSign by remember { mutableStateOf("0xaee7b220061d450ef94406f819edec6f9402a1a41205e75e394519c02a527e3d1527e166ea6c868075b094d3bddbb1b274ccef66dd247ebec6930276f361088b1b") }
+//    var lbeIdentity by remember { mutableStateOf("441z9t7ucki1") }
+//    android001
+
     var phone by remember { mutableStateOf("") }
 
     var email by remember { mutableStateOf("") }

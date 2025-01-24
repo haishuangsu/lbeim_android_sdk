@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.State
 import androidx.lifecycle.AndroidViewModel
@@ -70,6 +69,7 @@ import com.lbe.imsdk.utils.FileLogger
 import com.lbe.imsdk.utils.TimeUtils.timeStampGen
 import com.lbe.imsdk.utils.UUIDUtils.uuidGen
 import com.lbe.imsdk.utils.UploadBigFileUtils
+import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -160,7 +160,10 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
     private val _inputMsg = MutableLiveData("")
     val inputMsg: LiveData<String> = _inputMsg
 
+    private lateinit var okHttpClient: OkHttpClient
     private var chatService: ChatService? = null
+    private var wsSubs: Disposable? = null
+
     var lazyListState: LazyListState? = null
 
     private val networkMonitor = NetworkMonitor(application)
@@ -194,6 +197,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         if (sdkInit) {
             Log.d(TAG, "websocket disConnectionSdk")
             sdkInit = false
+            wsSubs?.dispose()
+            okHttpClient.dispatcher.executorService.shutdown()
             jobs["sdkJob"]?.cancel()
             pingTimer?.cancel()
             pingTimer = null
@@ -626,22 +631,31 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
 
     @SuppressLint("CheckResult")
     private fun observerConnection() {
-        chatService = Scarlet.Builder().webSocketFactory(
+        okHttpClient =
             OkHttpClient.Builder().connectTimeout(Duration.ofDays(5)).retryOnConnectionFailure(true)
-                .build().newWebSocketFactory(
-                    DynamicHeaderUrlRequestFactory(
-                        url = wssHost, lbeToken = lbeToken, lbeSession = lbeSession,
-                    )
+                .build()
+
+        val scarletInstance = Scarlet.Builder().webSocketFactory(
+            okHttpClient.newWebSocketFactory(
+                DynamicHeaderUrlRequestFactory(
+                    url = wssHost, lbeToken = lbeToken, lbeSession = lbeSession,
                 )
-        ).addStreamAdapterFactory(RxJava2StreamAdapterFactory()).build().create<ChatService>()
+            )
+        ).addStreamAdapterFactory(RxJava2StreamAdapterFactory()).build()
+
+        chatService = scarletInstance.create<ChatService>()
 
         Log.d(TAG, "Observing Connection")
         updateConnectionStatus(ConnectionStatus.CONNECTING)
-        chatService?.observeConnection()?.subscribe({ response ->
-            onResponseReceived(response)
-        }, { error ->
-            error.localizedMessage?.let { Log.e(TAG, "websocket 出错 ---->>> $it") }
-        })
+
+        wsSubs = chatService?.observeConnection()?.subscribe(
+            { response ->
+                onResponseReceived(response)
+            },
+            { error ->
+                error.localizedMessage?.let { Log.e(TAG, "websocket 出错 ---->>> $it") }
+            },
+        )
     }
 
     private fun onResponseReceived(response: WebSocket.Event) {
