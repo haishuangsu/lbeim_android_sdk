@@ -127,6 +127,7 @@ enum class MessagePosition {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Appbar(viewModel: ChatScreenViewModel) {
+    val kickOffLine by viewModel.kickOffLine.collectAsState(false)
     val ctx = LocalContext.current
 
     CenterAlignedTopAppBar(title = {
@@ -151,6 +152,14 @@ fun Appbar(viewModel: ChatScreenViewModel) {
         }
     }, actions = {
         IconButton(onClick = {
+            if (kickOffLine) {
+                Toast.makeText(
+                    ctx,
+                    "您的账号已在其他地方登录，如要继续对话请重新载入页面",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@IconButton
+            }
             viewModel.turnCustomerService()
         }) {
             Image(

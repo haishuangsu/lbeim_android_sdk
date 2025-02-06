@@ -53,8 +53,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String, lbeSign: String, phone: String, email: String, language: String, device: String, headerIcon: String, groupID: String) -> Unit) {
     // HermitK1
-    var nickId by remember { mutableStateOf("android001") }
-    var nickName by remember { mutableStateOf("android001") }
+    var nickId by remember { mutableStateOf("HermitK5") }
+    var nickName by remember { mutableStateOf("HermitK5") }
 
     // dev_my
 //    var lbeSign by remember { mutableStateOf("0x77ce23dc4033c7e3b6cd9ec78b5c1d365ac8f4076e443575bb918451b63614011c7da66897248caebdb466b6ccb832aa639b0ddc5fe2574915759bbd5710b7aa1c") }
@@ -65,16 +65,16 @@ fun NickIdPrompt(onStart: (nickId: String, nickName: String, lbeIdentity: String
 //    var lbeIdentity by remember { mutableStateOf("441z9t7ucki1") }
 
     // sit
-//    var lbeSign by remember { mutableStateOf("0x9d63fcec00dffa1e7bbebfa4f0afa80f5f26614613b29357d580b69b708d2d893b6eef2d013828830f9c52f647edcd9ebc5ec73900d178b4c1a27732fb24cefe1b") }
-//    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
+    var lbeSign by remember { mutableStateOf("0x9d63fcec00dffa1e7bbebfa4f0afa80f5f26614613b29357d580b69b708d2d893b6eef2d013828830f9c52f647edcd9ebc5ec73900d178b4c1a27732fb24cefe1b") }
+    var lbeIdentity by remember { mutableStateOf("441zy52mn2yy") }
 
     // uat
     // var lbeSign by remember { mutableStateOf("0xc3620a07c69a191b3b2fb431bd26c8417413f4998e6fc2fc2c570bd1145ac004780d13db14290687a94d9b30804b1a8a2edb8b7828c6c45a55fc8d1e78f98dec1c") }
     // var lbeIdentity by remember { mutableStateOf("45vhxodzxswp") }
 
     // test
-    var lbeSign by remember { mutableStateOf("0x281d5af2a0b222d5e0b99773372c1a4b955fbde587de0b1fd3708586b92020dc3437f9fff59e4f24c6aaca2b8a44d1ff82638e131c6a2d2c35289624e89b11c61b") }
-    var lbeIdentity by remember { mutableStateOf("46igleuw9olm") }
+//    var lbeSign by remember { mutableStateOf("0x281d5af2a0b222d5e0b99773372c1a4b955fbde587de0b1fd3708586b92020dc3437f9fff59e4f24c6aaca2b8a44d1ff82638e131c6a2d2c35289624e89b11c61b") }
+//    var lbeIdentity by remember { mutableStateOf("46igleuw9olm") }
 //    android001
 
     // test 1

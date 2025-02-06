@@ -23,6 +23,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,6 +70,8 @@ fun MsgTypeContent(
 ) {
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
+    val kickOffLine by viewModel.kickOffLine.collectAsState(false)
+
     when (message.msgType) {
         1 -> {
             if (fromUser) {
@@ -303,6 +307,14 @@ fun MsgTypeContent(
                                             ).show()
                                             return@clickable
                                         }
+                                        if (kickOffLine) {
+                                            Toast.makeText(
+                                                context,
+                                                "您的账号已在其他地方登录，如要继续对话请重新载入页面",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            return@clickable
+                                        }
                                         viewModel.faq(FaqReqBody(faqType = 1, id = item.id))
                                     }) {
                                     Surface(
@@ -392,26 +404,34 @@ fun MsgTypeContent(
                         )
 
                         for (detail in faqDetailList) {
-                            Text(detail.knowledgePointName,
-//                                if (detail.knowledgePointName == null) "" else detail.knowledgePointName,
-                                style = TextStyle(
-                                    color = Color(0xff0054FC),
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.W500,
-                                ), modifier = Modifier
-                                    .padding(top = 8.dp)
-                                    .clickable {
-                                        println("history not available 9 --->> message.sessionId: ${message.sessionId}, current session: ${ChatScreenViewModel.sessionList[0].sessionId}")
-                                        if (ChatScreenViewModel.sessionList.isNotEmpty() && message.sessionId != ChatScreenViewModel.sessionList[0].sessionId) {
-                                            Toast
-                                                .makeText(
-                                                    context, "此记录不可用", Toast.LENGTH_SHORT
-                                                )
-                                                .show()
-                                            return@clickable
-                                        }
-                                        viewModel.faq(FaqReqBody(faqType = 2, id = detail.id))
-                                    })
+                            Text(detail.knowledgePointName, style = TextStyle(
+                                color = Color(0xff0054FC),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.W500,
+                            ), modifier = Modifier
+                                .padding(top = 8.dp)
+                                .clickable {
+                                    println("history not available 9 --->> message.sessionId: ${message.sessionId}, current session: ${ChatScreenViewModel.sessionList[0].sessionId}")
+                                    if (ChatScreenViewModel.sessionList.isNotEmpty() && message.sessionId != ChatScreenViewModel.sessionList[0].sessionId) {
+                                        Toast
+                                            .makeText(
+                                                context, "此记录不可用", Toast.LENGTH_SHORT
+                                            )
+                                            .show()
+                                        return@clickable
+                                    }
+                                    if (kickOffLine) {
+                                        Toast
+                                            .makeText(
+                                                context,
+                                                "您的账号已在其他地方登录，如要继续对话请重新载入页面",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                            .show()
+                                        return@clickable
+                                    }
+                                    viewModel.faq(FaqReqBody(faqType = 2, id = detail.id))
+                                })
                         }
                     }
                 }
