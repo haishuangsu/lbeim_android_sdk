@@ -76,6 +76,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -128,11 +129,12 @@ enum class MessagePosition {
 @Composable
 fun Appbar(viewModel: ChatScreenViewModel) {
     val kickOffLine by viewModel.kickOffLine.collectAsState(false)
+    val kickOfflineMessage = stringResource(R.string.kick_offline_message)
     val ctx = LocalContext.current
 
     CenterAlignedTopAppBar(title = {
         Text(
-            "在线客服", style = TextStyle(
+            stringResource(R.string.chat_title), style = TextStyle(
                 color = Color(0xff18243E), fontSize = 18.sp, fontWeight = FontWeight.W500
             )
         )
@@ -154,9 +156,7 @@ fun Appbar(viewModel: ChatScreenViewModel) {
         IconButton(onClick = {
             if (kickOffLine) {
                 Toast.makeText(
-                    ctx,
-                    "您的账号已在其他地方登录，如要继续对话请重新载入页面",
-                    Toast.LENGTH_SHORT
+                    ctx, kickOfflineMessage, Toast.LENGTH_SHORT
                 ).show()
                 return@IconButton
             }
@@ -179,6 +179,11 @@ fun ChatScreen(
     imageLoader: ImageLoader,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
+    val uploadImageLimit = stringResource(R.string.upload_image_limit)
+    val uploadVideoLimit = stringResource(R.string.upload_video_limit)
+    val faqNotExist = stringResource(R.string.faq_not_exist)
+    val kickOfflineMessage = stringResource(R.string.kick_offline_message)
+
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
@@ -306,7 +311,7 @@ fun ChatScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                "网络不可用，请检查你的网络",
+                                stringResource(R.string.network_unavailable),
                                 style = TextStyle(
                                     color = Color(0xff979797),
                                     fontSize = 12.sp,
@@ -480,7 +485,7 @@ fun ChatScreen(
                                                     if (FileUtils.isImage(mediaMessage.mime) && mediaMessage.file.length() > 1024 * 1024 * 10) {
                                                         Toast.makeText(
                                                             context,
-                                                            "上传的图片最大为10MB",
+                                                            uploadImageLimit,
                                                             Toast.LENGTH_SHORT
                                                         ).show()
                                                         return@LaunchedEffect
@@ -488,7 +493,7 @@ fun ChatScreen(
                                                     if (!FileUtils.isImage(mediaMessage.mime) && mediaMessage.file.length() > 1024 * 1024 * 100) {
                                                         Toast.makeText(
                                                             context,
-                                                            "上传的视频最大为100MB",
+                                                            uploadVideoLimit,
                                                             Toast.LENGTH_SHORT
                                                         ).show()
                                                         return@LaunchedEffect
@@ -658,7 +663,8 @@ fun ChatScreen(
                                     ) {
                                         Box(Modifier.weight(1f)) {
                                             if (input.isEmpty()) Text(
-                                                "请输入你想咨询的问题", style = TextStyle(
+                                                stringResource(R.string.input_hint),
+                                                style = TextStyle(
                                                     color = Color(0xffEBEBEB),
                                                     fontSize = 14.sp,
                                                     fontWeight = FontWeight.W400,
@@ -667,6 +673,8 @@ fun ChatScreen(
                                             innerTextField()
                                         }
 
+                                        val cannotSendEmptyMessage =
+                                            stringResource(R.string.cannot_send_empty_message)
                                         Image(painter = painterResource(R.drawable.send),
                                             contentDescription = "Send Button",
                                             modifier = Modifier
@@ -676,7 +684,7 @@ fun ChatScreen(
                                                         Toast
                                                             .makeText(
                                                                 context,
-                                                                "您的账号已在其他地方登录，如要继续对话请重新载入页面",
+                                                                kickOfflineMessage,
                                                                 Toast.LENGTH_SHORT
                                                             )
                                                             .show()
@@ -689,7 +697,7 @@ fun ChatScreen(
                                                         Toast
                                                             .makeText(
                                                                 context,
-                                                                "不能发送空白消息",
+                                                                cannotSendEmptyMessage,
                                                                 Toast.LENGTH_SHORT
                                                             )
                                                             .show()
@@ -733,16 +741,14 @@ fun ChatScreen(
         LaunchedEffect(kickOffLineEvent) {
             if (kickOffLineEvent.isNotEmpty() && kickOffLineEvent != previousKickOffLineEvent.value) {
                 Toast.makeText(
-                    context,
-                    "您的账号已在其他地方登录，如要继续对话请重新载入页面",
-                    Toast.LENGTH_LONG
+                    context, kickOfflineMessage, Toast.LENGTH_LONG
                 ).show()
             }
         }
 
         LaunchedEffect(faqNotExistEvent) {
             if (faqNotExistEvent.isNotEmpty() && faqNotExistEvent != previousFaqNotExistEvent.value) {
-                Toast.makeText(context, "当前知识点不存在或已被删除", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, faqNotExist, Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -777,7 +783,7 @@ fun timeoutTips(viewModel: ChatScreenViewModel) {
                     .padding(start = 12.dp)
             ) {
                 Text(
-                    "您已超过${viewModel.timeOut}分钟未回复",
+                    stringResource(R.string.timeout_message, viewModel.timeOut),
                     style = TextStyle(
                         color = Color(0xff979797), fontSize = 12.sp, fontWeight = FontWeight.W400
                     ),
@@ -815,8 +821,9 @@ fun ToBottom(viewModel: ChatScreenViewModel, goToTop: () -> Unit) {
                 )
             ) {
                 Text(
-                    if (recivCount == 0) "回到底部" else "有${recivCount}条新消息",
-                    style = TextStyle(
+                    if (recivCount == 0) stringResource(R.string.back_to_bottom) else stringResource(
+                        R.string.new_messages, recivCount
+                    ), style = TextStyle(
                         color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.W400
                     )
                 )
@@ -893,7 +900,10 @@ fun RecievedFromCustomerService(
                         color = Color.White,
                     ) {
                         Text(
-                            "${csJoinInfo.username} 将为您服务", style = TextStyle(
+                            stringResource(
+                                R.string.cs_serving, csJoinInfo.username
+                            ),//"${csJoinInfo.username} 将为您服务",
+                            style = TextStyle(
                                 color = Color.Black,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.W400,
@@ -934,17 +944,15 @@ fun RecievedFromCustomerService(
 
         6, 7, 11, 13 -> {
             val content = when (message.msgType) {
-                6 -> "您已结束人工客服服务"
+                6 -> stringResource(R.string.end_cs_service)
                 7 -> {
                     val rankingContent =
                         Gson().fromJson(message.msgBody, RankingContent::class.java)
-                    "正在为您努力转接到人工服务中，当前排队人数“_”人，请稍后".replace(
-                        "_", "${rankingContent.number}"
-                    )
+                    stringResource(R.string.cs_queue_number, rankingContent.number)
                 }
 
-                11 -> "正在为您转接客服，请稍后"
-                13 -> "当前暂无客服接入，请稍后尝试"
+                11 -> stringResource(R.string.cs_connecting)
+                13 -> stringResource(R.string.no_cs_available)
                 else -> "Not result"
             }
             Box(contentAlignment = Alignment.Center) {
@@ -1032,7 +1040,11 @@ fun RecievedFromCustomerService(
                             .padding(8.dp)
                     ) {
                         Text(
-                            text = message.customerServiceNickname.ifEmpty { if (message.senderUid.isNotEmpty()) "在线客服" else "智能机器人" },
+                            text = message.customerServiceNickname.ifEmpty {
+                                if (message.senderUid.isNotEmpty()) stringResource(
+                                    R.string.online_cs
+                                ) else stringResource(R.string.ai_robot)
+                            },
                             modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
                             style = TextStyle(
                                 fontSize = 14.sp,
@@ -1096,7 +1108,11 @@ fun UserInput(
                     .padding(8.dp),
             ) {
                 Text(
-                    text = ChatScreenViewModel.nickName.ifEmpty { if (!ChatScreenViewModel.isAnonymous) "用户 ${ChatScreenViewModel.nickId}" else "游客 ${ChatScreenViewModel.nickId}" },
+                    text = ChatScreenViewModel.nickName.ifEmpty {
+                        if (!ChatScreenViewModel.isAnonymous) stringResource(
+                            R.string.user_prefix, ChatScreenViewModel.nickId
+                        ) else stringResource(R.string.visitor_prefix, ChatScreenViewModel.nickId)
+                    },
                     modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
                     style = TextStyle(
                         fontSize = 14.sp, fontWeight = FontWeight.W400, color = Color(0xff979797)

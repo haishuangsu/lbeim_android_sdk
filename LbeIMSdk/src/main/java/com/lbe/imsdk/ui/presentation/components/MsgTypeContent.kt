@@ -34,6 +34,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -71,6 +72,9 @@ fun MsgTypeContent(
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
     val kickOffLine by viewModel.kickOffLine.collectAsState(false)
+    val copySuccess = stringResource(R.string.copy_success)
+    val historyNotAvailable = stringResource(R.string.history_not_available)
+    val kickOfflineMessage = stringResource(R.string.kick_offline_message)
 
     when (message.msgType) {
         1 -> {
@@ -79,7 +83,7 @@ fun MsgTypeContent(
                     if (!message.sendSuccess) {
                         Image(
                             painter = painterResource(R.drawable.send_fail),
-                            contentDescription = "send fail",
+                            contentDescription = stringResource(R.string.content_description_send_fail),
                             modifier = Modifier
                                 .size(16.dp)
                                 .clickable {
@@ -91,7 +95,7 @@ fun MsgTypeContent(
                         if (message.readed) {
                             Image(
                                 painter = painterResource(R.drawable.readed),
-                                contentDescription = "read msg",
+                                contentDescription = stringResource(R.string.content_description_read),
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(Modifier.width(8.dp))
@@ -114,14 +118,14 @@ fun MsgTypeContent(
                                         clipboardManager.setText(AnnotatedString(message.msgBody))
                                         Toast
                                             .makeText(
-                                                context, "复制成功", Toast.LENGTH_SHORT
+                                                context, copySuccess, Toast.LENGTH_SHORT
                                             )
                                             .show()
                                     }, onTap = {
                                         clipboardManager.setText(AnnotatedString(message.msgBody))
                                         Toast
                                             .makeText(
-                                                context, "复制成功", Toast.LENGTH_SHORT
+                                                context, copySuccess, Toast.LENGTH_SHORT
                                             )
                                             .show()
                                     })
@@ -153,14 +157,14 @@ fun MsgTypeContent(
                                     clipboardManager.setText(AnnotatedString(message.msgBody))
                                     Toast
                                         .makeText(
-                                            context, "复制成功", Toast.LENGTH_SHORT
+                                            context, copySuccess, Toast.LENGTH_SHORT
                                         )
                                         .show()
                                 }, onTap = {
                                     clipboardManager.setText(AnnotatedString(message.msgBody))
                                     Toast
                                         .makeText(
-                                            context, "复制成功", Toast.LENGTH_SHORT
+                                            context, copySuccess, Toast.LENGTH_SHORT
                                         )
                                         .show()
                                 })
@@ -285,7 +289,7 @@ fun MsgTypeContent(
                     ) {
                         Text(
                             faq.knowledgeBaseTitle.ifEmpty {
-                                "Hi~请简单的描述一下你的问题，我们会尽力协助哦。"
+                                stringResource(R.string.faq_default_greeting)
                             }, style = TextStyle(
                                 color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.W400
                             )
@@ -303,14 +307,14 @@ fun MsgTypeContent(
                                         println("history not available 8 --->> message.sessionId: ${message.sessionId}, current session: ${ChatScreenViewModel.sessionList[0].sessionId}")
                                         if (ChatScreenViewModel.sessionList.isNotEmpty() && message.sessionId != ChatScreenViewModel.sessionList[0].sessionId) {
                                             Toast.makeText(
-                                                context, "此记录不可用", Toast.LENGTH_SHORT
+                                                context, historyNotAvailable, Toast.LENGTH_SHORT
                                             ).show()
                                             return@clickable
                                         }
                                         if (kickOffLine) {
                                             Toast.makeText(
                                                 context,
-                                                "您的账号已在其他地方登录，如要继续对话请重新载入页面",
+                                                kickOfflineMessage,
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                             return@clickable
@@ -415,7 +419,7 @@ fun MsgTypeContent(
                                     if (ChatScreenViewModel.sessionList.isNotEmpty() && message.sessionId != ChatScreenViewModel.sessionList[0].sessionId) {
                                         Toast
                                             .makeText(
-                                                context, "此记录不可用", Toast.LENGTH_SHORT
+                                                context, historyNotAvailable, Toast.LENGTH_SHORT
                                             )
                                             .show()
                                         return@clickable
@@ -424,7 +428,7 @@ fun MsgTypeContent(
                                         Toast
                                             .makeText(
                                                 context,
-                                                "您的账号已在其他地方登录，如要继续对话请重新载入页面",
+                                                kickOfflineMessage,
                                                 Toast.LENGTH_SHORT
                                             )
                                             .show()
@@ -567,7 +571,7 @@ fun MsgTypeContent(
         }
 
         else -> {
-            Text("Not implement yet. --->>> { ${message.msgType} }")
+            Text(stringResource(R.string.not_implemented, message.msgType))
         }
     }
 }

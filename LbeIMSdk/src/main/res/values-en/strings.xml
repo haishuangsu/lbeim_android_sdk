@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">ChatApp</string>
+    
+    <!-- General -->
+    <string name="copy_success">Copied successfully</string>
+    <string name="save_success">Saved successfully</string>
+    <string name="save">Save</string>
+    
+    <!-- Chat Interface -->
+    <string name="chat_title">Online Service</string>
+    <string name="network_unavailable">Network unavailable, please check your connection</string>
+    <string name="kick_offline_message">Your account has been logged in elsewhere. Please reload the page to continue the conversation</string>
+    <string name="history_not_available">This record is not available</string>
+    <string name="upload_image_limit">Image size cannot exceed 10MB</string>
+    <string name="upload_video_limit">Video size cannot exceed 100MB</string>
+    <string name="cannot_send_empty_message">Cannot send empty message</string>
+    <string name="timeout_message">You haven\'t replied for %d minutes</string>
+    <string name="faq_not_exist">The current knowledge point does not exist or has been deleted</string>
+    <string name="input_hint">Please enter your question</string>
+    <string name="back_to_bottom">Back to bottom</string>
+    <string name="new_messages">%d new messages</string>
+    <string name="cs_serving">%s will serve you</string>
+    <string name="end_cs_service">You have ended the customer service</string>
+    <string name="cs_queue_number">Connecting to customer service, current queue number: %d, please wait</string>
+    <string name="cs_connecting">Connecting to customer service, please wait</string>
+    <string name="no_cs_available">No customer service available, please try again later</string>
+    <string name="online_cs">Online Service</string>
+    <string name="ai_robot">AI Assistant</string>
+    <string name="user_prefix">User %s</string>
+    <string name="visitor_prefix">Visitor %s</string>
+    
+    <!-- FAQ -->
+    <string name="faq_default_greeting">Hi~ Please briefly describe your question, and we\'ll do our best to help</string>
+    <string name="not_implemented">Not implement yet. --->>> { %d }</string>
+    
+    <!-- Image Viewer -->
+    <string name="content_description_back">Back</string>
+    <string name="content_description_cs">Customer Service</string>
+    <string name="content_description_send_fail">Send Failed</string>
+    <string name="content_description_read">Read</string>
+    <string name="content_description_close">Close</string>
+</resources>

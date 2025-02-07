@@ -1,3 +1,42 @@
 <resources>
     <string name="app_name">ChatApp</string>
+    
+    <!-- 通用 -->
+    <string name="copy_success">复制成功</string>
+    <string name="save_success">保存成功</string>
+    <string name="save">保存</string>
+    
+    <!-- 聊天界面 -->
+    <string name="chat_title">在线客服</string>
+    <string name="network_unavailable">网络不可用，请检查你的网络</string>
+    <string name="kick_offline_message">您的账号已在其他地方登录，如要继续对话请重新载入页面</string>
+    <string name="history_not_available">此记录不可用</string>
+    <string name="upload_image_limit">上传的图片最大为10MB</string>
+    <string name="upload_video_limit">上传的视频最大为100MB</string>
+    <string name="cannot_send_empty_message">不能发送空白消息</string>
+    <string name="timeout_message">您已超过%d分钟未回复</string>
+    <string name="faq_not_exist">当前知识点不存在或已被删除</string>
+    <string name="input_hint">请输入你想咨询的问题</string>
+    <string name="back_to_bottom">回到底部</string>
+    <string name="new_messages">有%d条新消息</string>
+    <string name="cs_serving">%s 将为您服务</string>
+    <string name="end_cs_service">您已结束人工客服服务</string>
+    <string name="cs_queue_number">正在为您努力转接到人工服务中，当前排队人数%d人，请稍后</string>
+    <string name="cs_connecting">正在为您转接客服，请稍后</string>
+    <string name="no_cs_available">当前暂无客服接入，请稍后尝试</string>
+    <string name="online_cs">在线客服</string>
+    <string name="ai_robot">智能机器人</string>
+    <string name="user_prefix">用户 %s</string>
+    <string name="visitor_prefix">游客 %s</string>
+    
+    <!-- FAQ -->
+    <string name="faq_default_greeting">Hi~请简单的描述一下你的问题，我们会尽力协助哦。</string>
+    <string name="not_implemented">Not implement yet. --->>> { %d }</string>
+    
+    <!-- 图片查看 -->
+    <string name="content_description_back">返回</string>
+    <string name="content_description_cs">客服</string>
+    <string name="content_description_send_fail">发送失败</string>
+    <string name="content_description_read">已读</string>
+    <string name="content_description_close">关闭</string>
 </resources>

@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 
@@ -72,6 +73,7 @@ fun MediaViewer(
     imageLoader: ImageLoader
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val saveSuccess = stringResource(R.string.save_success)
 
     println("NavTo, args: $msgClientId, viewModel msg size: ${viewModel.uiState.value?.messages?.size}")
     val cache = viewModel.uiState.value?.messages?.toMutableList()
@@ -175,7 +177,7 @@ fun MediaViewer(
                                     if (success) {
                                         println("保存本地 图片成功 --->> $saveUrl")
                                         Toast
-                                            .makeText(ctx, "保存成功", Toast.LENGTH_SHORT)
+                                            .makeText(ctx, saveSuccess, Toast.LENGTH_SHORT)
                                             .show()
                                     } else {
                                         println("保存本地 图片失败 --->> $saveUrl")
@@ -184,7 +186,6 @@ fun MediaViewer(
                             } else if (msg.msgType == 3) {
                                 val saveUrl = "$fullUrl?sign=$fullKey"
                                 val extraFileName = extractFileName(saveUrl)
-                                println("正则提取 --->>> $extraFileName")
                                 coroutineScope.launch {
                                     val success = saveVideoToGallery(
                                         ctx.contentResolver, fullUrl, extraFileName ?: "test.mp4"
@@ -192,7 +193,7 @@ fun MediaViewer(
                                     if (success) {
                                         println("保存本地 视频成功 --->> $saveUrl")
                                         Toast
-                                            .makeText(ctx, "保存成功", Toast.LENGTH_SHORT)
+                                            .makeText(ctx, saveSuccess, Toast.LENGTH_SHORT)
                                             .show()
                                     } else {
                                         println("保存本地 视频失败 --->> $saveUrl")
@@ -202,7 +203,7 @@ fun MediaViewer(
                         },
                 ) {
                     Text(
-                        "保存", style = TextStyle(
+                        stringResource(R.string.save), style = TextStyle(
                             fontSize = 12.sp, fontWeight = FontWeight.W400, color = Color.White
                         ), modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.5.dp)
                     )
@@ -218,7 +219,7 @@ fun MediaViewer(
                         }) {
                     Image(
                         painter = painterResource(R.drawable.media_close),
-                        contentDescription = "",
+                        contentDescription = stringResource(R.string.content_description_close),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(12.dp)
