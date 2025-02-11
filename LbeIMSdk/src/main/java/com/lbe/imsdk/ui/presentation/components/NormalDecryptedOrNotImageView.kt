@@ -6,8 +6,11 @@ import androidx.compose.ui.layout.ContentScale
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
 
 import coil3.request.ImageRequest
+import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel
 
 
 @Composable
@@ -20,9 +23,13 @@ fun NormalDecryptedOrNotImageView(
 ) {
     val ctx = LocalPlatformContext.current
     AsyncImage(
-        model = ImageRequest.Builder(ctx).data(url).decoderFactory(
-            DecryptedDecoder.Factory(url = url, key = key)
-        ).build(),
+        model = ImageRequest.Builder(ctx).data(url)
+            .httpHeaders(NetworkHeaders.Builder().apply {
+                set("lbeToken", ChatScreenViewModel.lbeToken)
+            }.build())
+            .decoderFactory(
+                DecryptedDecoder.Factory(url = url, key = key)
+            ).build(),
         contentDescription = "Yo",
         contentScale = contentScale,
         modifier = modifier,

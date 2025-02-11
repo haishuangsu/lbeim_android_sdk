@@ -269,7 +269,7 @@ fun MediaView(msgEntity: MessageEntity, imageLoader: ImageLoader) {
         ) {
             Surface(color = Color.Black, modifier = Modifier.fillMaxSize()) { }
 
-            ExoPlayerView(fullUrl)
+            ExoPlayerView(fullUrl, token = ChatScreenViewModel.lbeToken)
         }
     }
 }

@@ -284,7 +284,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             Log.d(RETROFIT, "获取配置: $config")
             wssHost = config.data.ws[0]
             RetrofitInstance.IM_URL = config.data.rest[0]
-            RetrofitInstance.UPLOAD_BASE_URL = config.data.oss[1]
+            RetrofitInstance.UPLOAD_BASE_URL = config.data.oss[0]
         }.onFailure { err ->
             Log.d(RETROFIT, "获取配置异常: $err")
         }
@@ -1020,7 +1020,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                                         }
                                     }
                                 })
-                        ), signType = if (it.mediaMessage.isImage) 2 else 1
+                        ), signType = if (it.mediaMessage.isImage) 2 else 1, token = lbeToken
                     )
                     Log.d(UPLOAD, "Single upload ---->>> ${rep.data.paths[0]}")
                     val mediaSource = MediaSource(
@@ -1118,7 +1118,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                             size = it.mediaMessage.file.length(),
                             name = it.mediaMessage.file.name,
                             contentType = ""
-                        )
+                        ),
+                        token = lbeToken
                     )
                     Log.d(UPLOAD, "init multi upload --->>> $initRep")
 
@@ -1211,7 +1212,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
                     val mergeUpload =
                         mergeMultiUploadReqQueue[message.clientMsgID]?.let { reqBody ->
                             UploadRepository.completeMultiPartUpload(
-                                body = reqBody
+                                body = reqBody,
+                                token = lbeToken
                             )
                         }
                     UploadBigFileUtils.releaseMemory(it.mediaMessage.file.hashCode())
@@ -1351,7 +1353,8 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
             Log.d(UPLOAD, "merge reqBody --->> $reqBody")
             if (reqBody != null) {
                 val mergeUpload = UploadRepository.completeMultiPartUpload(
-                    body = reqBody
+                    body = reqBody,
+                    token = lbeToken
                 )
 
                 UploadBigFileUtils.releaseMemory(file.hashCode())
@@ -1436,7 +1439,7 @@ class ChatScreenViewModel(application: Application) : AndroidViewModel(applicati
         val thumbnailResp = UploadRepository.singleUpload(
             file = MultipartBody.Part.createFormData(
                 "file", "lbe_${uuidGen()}_${timeStampGen()}.jpg", buffer.toRequestBody()
-            ), signType = 2
+            ), signType = 2, token = lbeToken
         )
         withContext(Dispatchers.IO) {
             bao.close()

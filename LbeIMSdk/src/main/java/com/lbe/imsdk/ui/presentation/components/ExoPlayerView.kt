@@ -11,13 +11,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.forEach
-import androidx.core.view.setPadding
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
@@ -25,10 +26,19 @@ import androidx.media3.ui.R as ExoPlayerUiR
 
 @OptIn(UnstableApi::class)
 @Composable
-fun ExoPlayerView(url: String) {
+fun ExoPlayerView(url: String, token: String) {
     val context = LocalContext.current
 
-    val exoPlayer = ExoPlayer.Builder(context).build()
+    val httpDataSourceFactory = DefaultHttpDataSource.Factory()
+        .setDefaultRequestProperties(mapOf(
+            "lbeToken" to token
+        ))
+
+    val dataSourceFactory = DefaultDataSource.Factory(context, httpDataSourceFactory)
+
+    val exoPlayer = ExoPlayer.Builder(context)
+        .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
+        .build()
 
     val mediaSource = remember(url) {
         MediaItem.fromUri(url)

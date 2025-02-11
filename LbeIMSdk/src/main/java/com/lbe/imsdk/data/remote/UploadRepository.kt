@@ -12,14 +12,19 @@ import okhttp3.RequestBody
 object UploadRepository {
     private val uploadService = RetrofitInstance.uploadService
 
-    suspend fun singleUpload(file: MultipartBody.Part, signType: Int = 1): SingleUploadRep {
-        return uploadService.singleUpload(file = file, signType = signType)
+    suspend fun singleUpload(
+        file: MultipartBody.Part,
+        signType: Int = 1,
+        token: String,
+    ): SingleUploadRep {
+        return uploadService.singleUpload(file = file, signType = signType, token = token)
     }
 
     suspend fun initMultiPartUpload(
-        body: InitMultiPartUploadBody
+        body: InitMultiPartUploadBody,
+        token: String,
     ): InitMultiPartUploadRep {
-        return uploadService.initMultiPartUpload(body = body)
+        return uploadService.initMultiPartUpload(body = body, token = token)
     }
 
     suspend fun uploadBinary(url: String, body: RequestBody) {
@@ -27,8 +32,9 @@ object UploadRepository {
     }
 
     suspend fun completeMultiPartUpload(
-        body: CompleteMultiPartUploadReq
+        body: CompleteMultiPartUploadReq,
+        token: String,
     ): CompleteMultiPartUploadRep {
-        return uploadService.completeMultiPartUpload(body = body)
+        return uploadService.completeMultiPartUpload(body = body, token = token)
     }
 }

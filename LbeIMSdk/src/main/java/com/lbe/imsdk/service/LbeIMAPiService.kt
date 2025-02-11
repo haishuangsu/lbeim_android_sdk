@@ -22,7 +22,6 @@ private const val LBE_TOKEN = "lbeToken"
 private const val LBE_IDENTITY = "lbeIdentity"
 private const val LBE_SESSION = "lbeSession"
 
-
 private const val FETCH_HISTORY_URL = "miner-api/trans/history"
 private const val CREATE_ChAT_URL = "miner-api/trans/session"
 private const val SEND_MSG_URL = "miner-api/trans/msg-send"
@@ -31,7 +30,6 @@ private const val FETCH_TIMEOUT_CONFIG = "miner-api/trans/timeout-config"
 private const val MARK_READ = "miner-api/trans/mark-msg-as-read"
 private const val FAQ = "miner-api/trans/faq"
 private const val TURN = "miner-api/trans/service-support"
-
 
 interface LbeIMAPiService {
 
