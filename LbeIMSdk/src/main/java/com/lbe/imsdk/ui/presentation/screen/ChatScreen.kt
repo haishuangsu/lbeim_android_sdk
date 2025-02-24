@@ -112,7 +112,6 @@ import com.lbe.imsdk.utils.FileUtils
 import com.lbe.imsdk.utils.TimeUtils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.File
 import java.util.Date
 
 data class ChatScreenUiState(
@@ -460,7 +459,8 @@ fun ChatScreen(
                                             val projection = arrayOf(
                                                 MediaStore.MediaColumns.DISPLAY_NAME,
                                                 MediaStore.MediaColumns.MIME_TYPE,
-                                                MediaStore.MediaColumns.DATA,
+                                                MediaStore.MediaColumns.SIZE
+//                                                MediaStore.MediaColumns.DATA,
                                             )
                                             val metaCursor =
                                                 cr.query(uri, projection, null, null, null)
@@ -468,21 +468,23 @@ fun ChatScreen(
                                                 if (mCursor.moveToFirst()) {
                                                     val fName = mCursor.getString(0)
                                                     val mime = mCursor.getString(1)
-                                                    val path = mCursor.getString(2)
+                                                    val size = mCursor.getString(2)
+//                                                    val path = mCursor.getString(2)
                                                     Log.d(
                                                         ChatScreenViewModel.FILE_SELECT,
-                                                        "查询 --->>> fileName: $fName, mime: $mime, \npath: $path"
+                                                        "查询 --->>> fileName: $fName, mime: $mime"//, \npath: $path"
                                                     )
-                                                    val file = File(path)
+//                                                    val file = File(path)
                                                     val mediaMessage = MediaMessage(
                                                         width = 0,
                                                         height = 0,
-                                                        file = file,
                                                         path = uri.toString(),
                                                         mime = mime,
                                                         isImage = FileUtils.isImage(mime),
+                                                        fileName = fName,
+                                                        fileSize = size.toLong(),
                                                     )
-                                                    if (FileUtils.isImage(mediaMessage.mime) && mediaMessage.file.length() > 1024 * 1024 * 10) {
+                                                    if (FileUtils.isImage(mediaMessage.mime) && size.toLong() > 1024 * 1024 * 10) {
                                                         Toast.makeText(
                                                             context,
                                                             uploadImageLimit,
@@ -490,7 +492,7 @@ fun ChatScreen(
                                                         ).show()
                                                         return@LaunchedEffect
                                                     }
-                                                    if (!FileUtils.isImage(mediaMessage.mime) && mediaMessage.file.length() > 1024 * 1024 * 100) {
+                                                    if (!FileUtils.isImage(mediaMessage.mime) && size.toLong() > 1024 * 1024 * 100) {
                                                         Toast.makeText(
                                                             context,
                                                             uploadVideoLimit,
@@ -501,7 +503,7 @@ fun ChatScreen(
                                                     viewModel.preInsertUpload(mediaMessage)
                                                     Log.d(
                                                         ChatScreenViewModel.FILE_SELECT,
-                                                        "found file --->> ${file.name}, ${file.path}, ${file.length()}, ${file.absolutePath}, mimeType: $mime, Is image file: ${
+                                                        "found file --->> mimeType: $mime, Is image file: ${
                                                             FileUtils.isImage(
                                                                 mime
                                                             )

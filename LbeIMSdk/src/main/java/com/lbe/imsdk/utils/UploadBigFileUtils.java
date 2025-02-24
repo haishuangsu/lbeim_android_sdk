@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class UploadBigFileUtils {
 
-    public static Map<Integer, ArrayList<ByteBuffer>> blocks = new HashMap<>();
+    public static Map<String, ArrayList<ByteBuffer>> blocks = new HashMap<>();
 
     public static final long defaultChunkSize = 5 * 1024 * 1024;
 
@@ -32,30 +32,27 @@ public class UploadBigFileUtils {
             position += remaining;
 //            chunkCount++;
         }
-        blocks.put(file.hashCode(), buffers);
+        blocks.put(file.getAbsolutePath(), buffers);
         fileInputStream.close();
     }
 
-    // 使用 InputStream 分块的重载方法
-    public static void splitFile(InputStream inputStream, long chunkSize) throws IOException {
-        // 使用 ByteBuffer 来存储每个分块
+    public static void splitFile(InputStream inputStream, long chunkSize, String path) throws IOException {
         ArrayList<ByteBuffer> buffers = new ArrayList<>();
         byte[] buffer = new byte[(int) chunkSize];
         int bytesRead;
         while ((bytesRead = inputStream.read(buffer)) != -1) {
             ByteBuffer byteBuffer = ByteBuffer.allocate(bytesRead);
             byteBuffer.put(buffer, 0, bytesRead);
-            byteBuffer.flip(); // 准备好读取
-            buffers.add(byteBuffer); // 保存分块
+            byteBuffer.flip();
+            buffers.add(byteBuffer);
         }
-        // 以文件的哈希值为 key 来存储块数据
-        blocks.put(inputStream.hashCode(), buffers);
+        blocks.put(path, buffers);
     }
 
-    public static void releaseMemory(int hashCode) {
-        ArrayList<ByteBuffer> buffers = blocks.get(hashCode);
+    public static void releaseMemory(String path) {
+        ArrayList<ByteBuffer> buffers = blocks.get(path);
         assert buffers != null;
         buffers.clear();
-        blocks.remove(hashCode);
+        blocks.remove(path);
     }
 }

@@ -1,7 +1,6 @@
 package com.lbe.imsdk.ui.presentation.components
 
 import android.net.Uri
-import android.provider.MediaStore
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -42,7 +41,6 @@ import com.lbe.imsdk.model.resp.MediaSource
 import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel
 import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel.Companion.CONTINUE_UPLOAD
 import com.lbe.imsdk.utils.FileUtils
-import java.io.File
 
 
 @Composable
@@ -108,17 +106,12 @@ fun ThumbDecryptedOrNotImageView(
                                 "续传 executeIndex: ${message.uploadTask?.executeIndex}"
                             )
                             val uri = Uri.parse(message.localFile?.path)
-                            val cr = ctx.contentResolver
-                            val projection = arrayOf(MediaStore.MediaColumns.DATA)
-                            val metaCursor = cr.query(uri, projection, null, null, null)
-                            metaCursor?.use { mCursor ->
-                                if (mCursor.moveToFirst()) {
-                                    val path = mCursor.getString(0)
-                                    Log.d(
-                                        ChatScreenViewModel.UPLOAD, "续传 ---->>>> path: $path"
-                                    )
-                                    val file = File(path)
-                                    viewModel?.continueSplitTrunksUpload(message, file)
+                            val inputStream = ctx.contentResolver.openInputStream(uri)
+                            inputStream?.let { stream ->
+                                try {
+                                    viewModel?.continueSplitTrunksUpload(message, stream)
+                                } catch (e: Exception) {
+                                    println("$e")
                                 }
                             }
                         }
@@ -142,7 +135,7 @@ fun ThumbDecryptedOrNotImageView(
                                 "ThumbnailGen",
                                 "bitmap --->> width: ${bitmap.width}, height: ${bitmap.height}"
                             )
-                            viewModel?.upload(message, bitmap)
+                            viewModel?.upload(message, bitmap, context)
                         }
                     }
                 },
