@@ -1,0 +1,40 @@
+<resources>
+    <string name="app_name">ChatApp</string>
+    
+    <!-- 通用 -->
+    <string name="chat_session_status_13">复制成功</string>
+    <string name="save_success">保存成功</string>
+    <string name="chat_session_status_18">保存</string>
+    
+    <!-- 聊天界面 -->
+    <string name="chat_session_status_1">在线客服</string>
+    <string name="chat_session_status_9">网络不可用，请检查你的网络</string>
+    <string name="chat_session_status_8">您的账号已在其他地方登录，如要继续对话请重新载入页面</string>
+    <string name="chat_session_status_27">此记录不可用</string>
+    <string name="chat_session_status_24">图片大小超出限制</string>
+    <string name="chat_session_status_25">视频大小超出限制</string>
+    <string name="chat_session_status_23">不能发送空白消息</string>
+    <string name="chat_session_status_3">您已超过%d分钟未回复</string>
+    <string name="chat_session_status_28">当前知识点不存在或已被删除</string>
+    <string name="chat_session_status_12">请输入你想咨询的问题</string>
+    <string name="chat_session_status_10">回到底部</string>
+    <string name="chat_session_status_11">有%d条新消息</string>
+    <string name="chat_session_status_4">%s 将为您服务</string>
+    <string name="chat_session_status_6">您已结束人工客服服务</string>
+    <string name="chat_session_status_2">正在为您努力转接到人工服务中，当前排队人数%d人，请稍后</string>
+    <string name="chat_session_status_5">正在为您转接客服，请稍后</string>
+    <string name="chat_session_status_7">当前暂无客服接入，请稍后尝试</string>
+    <string name="chat_session_status_14">智能机器人</string>
+    <string name="chat_session_status_16">用户 %s</string>
+    <string name="chat_session_status_15">游客 %s</string>
+    
+    <!-- FAQ -->
+    <string name="faq_default_greeting">Hi~请简单的描述一下你的问题，我们会尽力协助哦。</string>
+    <string name="not_implemented">Not implement yet. --->>> { %d }</string>
+    
+    <!-- 图片查看 -->
+    <string name="content_description_back">返回</string>
+    <string name="content_description_send_fail">发送失败</string>
+    <string name="content_description_read">已读</string>
+    <string name="content_description_close">关闭</string>
+</resources>

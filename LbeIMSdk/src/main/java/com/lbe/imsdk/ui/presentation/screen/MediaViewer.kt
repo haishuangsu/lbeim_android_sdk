@@ -203,7 +203,7 @@ fun MediaViewer(
                         },
                 ) {
                     Text(
-                        stringResource(R.string.save), style = TextStyle(
+                        stringResource(R.string.chat_session_status_18), style = TextStyle(
                             fontSize = 12.sp, fontWeight = FontWeight.W400, color = Color.White
                         ), modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.5.dp)
                     )

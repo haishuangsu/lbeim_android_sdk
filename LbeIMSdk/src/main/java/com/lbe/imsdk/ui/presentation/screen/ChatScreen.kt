@@ -128,12 +128,12 @@ enum class MessagePosition {
 @Composable
 fun Appbar(viewModel: ChatScreenViewModel) {
     val kickOffLine by viewModel.kickOffLine.collectAsState(false)
-    val kickOfflineMessage = stringResource(R.string.kick_offline_message)
+    val kickOfflineMessage = stringResource(R.string.chat_session_status_8)
     val ctx = LocalContext.current
 
     CenterAlignedTopAppBar(title = {
         Text(
-            stringResource(R.string.chat_title), style = TextStyle(
+            stringResource(R.string.chat_session_status_1), style = TextStyle(
                 color = Color(0xff18243E), fontSize = 18.sp, fontWeight = FontWeight.W500
             )
         )
@@ -178,10 +178,10 @@ fun ChatScreen(
     imageLoader: ImageLoader,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
-    val uploadImageLimit = stringResource(R.string.upload_image_limit)
-    val uploadVideoLimit = stringResource(R.string.upload_video_limit)
-    val faqNotExist = stringResource(R.string.faq_not_exist)
-    val kickOfflineMessage = stringResource(R.string.kick_offline_message)
+    val uploadImageLimit = stringResource(R.string.chat_session_status_24)
+    val uploadVideoLimit = stringResource(R.string.chat_session_status_25)
+    val faqNotExist = stringResource(R.string.chat_session_status_28)
+    val kickOfflineMessage = stringResource(R.string.chat_session_status_8)
 
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
@@ -310,7 +310,7 @@ fun ChatScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                stringResource(R.string.network_unavailable),
+                                stringResource(R.string.chat_session_status_9),
                                 style = TextStyle(
                                     color = Color(0xff979797),
                                     fontSize = 12.sp,
@@ -665,7 +665,7 @@ fun ChatScreen(
                                     ) {
                                         Box(Modifier.weight(1f)) {
                                             if (input.isEmpty()) Text(
-                                                stringResource(R.string.input_hint),
+                                                stringResource(R.string.chat_session_status_12),
                                                 style = TextStyle(
                                                     color = Color(0xffEBEBEB),
                                                     fontSize = 14.sp,
@@ -676,7 +676,7 @@ fun ChatScreen(
                                         }
 
                                         val cannotSendEmptyMessage =
-                                            stringResource(R.string.cannot_send_empty_message)
+                                            stringResource(R.string.chat_session_status_23)
                                         Image(painter = painterResource(R.drawable.send),
                                             contentDescription = "Send Button",
                                             modifier = Modifier
@@ -785,7 +785,7 @@ fun timeoutTips(viewModel: ChatScreenViewModel) {
                     .padding(start = 12.dp)
             ) {
                 Text(
-                    stringResource(R.string.timeout_message, viewModel.timeOut),
+                    stringResource(R.string.chat_session_status_3, viewModel.timeOut),
                     style = TextStyle(
                         color = Color(0xff979797), fontSize = 12.sp, fontWeight = FontWeight.W400
                     ),
@@ -823,8 +823,8 @@ fun ToBottom(viewModel: ChatScreenViewModel, goToTop: () -> Unit) {
                 )
             ) {
                 Text(
-                    if (recivCount == 0) stringResource(R.string.back_to_bottom) else stringResource(
-                        R.string.new_messages, recivCount
+                    if (recivCount == 0) stringResource(R.string.chat_session_status_10) else stringResource(
+                        R.string.chat_session_status_11, recivCount
                     ), style = TextStyle(
                         color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.W400
                     )
@@ -903,7 +903,7 @@ fun RecievedFromCustomerService(
                     ) {
                         Text(
                             stringResource(
-                                R.string.cs_serving, csJoinInfo.username
+                                R.string.chat_session_status_4, csJoinInfo.username
                             ),//"${csJoinInfo.username} 将为您服务",
                             style = TextStyle(
                                 color = Color.Black,
@@ -946,15 +946,15 @@ fun RecievedFromCustomerService(
 
         6, 7, 11, 13 -> {
             val content = when (message.msgType) {
-                6 -> stringResource(R.string.end_cs_service)
+                6 -> stringResource(R.string.chat_session_status_6)
                 7 -> {
                     val rankingContent =
                         Gson().fromJson(message.msgBody, RankingContent::class.java)
-                    stringResource(R.string.cs_queue_number, rankingContent.number)
+                    stringResource(R.string.chat_session_status_2, rankingContent.number)
                 }
 
-                11 -> stringResource(R.string.cs_connecting)
-                13 -> stringResource(R.string.no_cs_available)
+                11 -> stringResource(R.string.chat_session_status_5)
+                13 -> stringResource(R.string.chat_session_status_7)
                 else -> "Not result"
             }
             Box(contentAlignment = Alignment.Center) {
@@ -1044,8 +1044,8 @@ fun RecievedFromCustomerService(
                         Text(
                             text = message.customerServiceNickname.ifEmpty {
                                 if (message.senderUid.isNotEmpty()) stringResource(
-                                    R.string.online_cs
-                                ) else stringResource(R.string.ai_robot)
+                                    R.string.chat_session_status_1
+                                ) else stringResource(R.string.chat_session_status_14)
                             },
                             modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
                             style = TextStyle(
@@ -1112,8 +1112,8 @@ fun UserInput(
                 Text(
                     text = ChatScreenViewModel.nickName.ifEmpty {
                         if (!ChatScreenViewModel.isAnonymous) stringResource(
-                            R.string.user_prefix, ChatScreenViewModel.nickId
-                        ) else stringResource(R.string.visitor_prefix, ChatScreenViewModel.nickId)
+                            R.string.chat_session_status_16, ChatScreenViewModel.nickId
+                        ) else stringResource(R.string.chat_session_status_15, ChatScreenViewModel.nickId)
                     },
                     modifier = Modifier.align(if (messagePosition == MessagePosition.LEFT) Alignment.Start else Alignment.End),
                     style = TextStyle(

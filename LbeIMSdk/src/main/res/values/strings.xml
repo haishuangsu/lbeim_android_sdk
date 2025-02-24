@@ -1,42 +1,40 @@
 <resources>
     <string name="app_name">ChatApp</string>
     
-    <!-- 通用 -->
-    <string name="copy_success">复制成功</string>
-    <string name="save_success">保存成功</string>
-    <string name="save">保存</string>
+    <!-- General -->
+    <string name="chat_session_status_13">Copied successfully</string>
+    <string name="save_success">Saved successfully</string>
+    <string name="chat_session_status_18">Save</string>
     
-    <!-- 聊天界面 -->
-    <string name="chat_title">在线客服</string>
-    <string name="network_unavailable">网络不可用，请检查你的网络</string>
-    <string name="kick_offline_message">您的账号已在其他地方登录，如要继续对话请重新载入页面</string>
-    <string name="history_not_available">此记录不可用</string>
-    <string name="upload_image_limit">上传的图片最大为10MB</string>
-    <string name="upload_video_limit">上传的视频最大为100MB</string>
-    <string name="cannot_send_empty_message">不能发送空白消息</string>
-    <string name="timeout_message">您已超过%d分钟未回复</string>
-    <string name="faq_not_exist">当前知识点不存在或已被删除</string>
-    <string name="input_hint">请输入你想咨询的问题</string>
-    <string name="back_to_bottom">回到底部</string>
-    <string name="new_messages">有%d条新消息</string>
-    <string name="cs_serving">%s 将为您服务</string>
-    <string name="end_cs_service">您已结束人工客服服务</string>
-    <string name="cs_queue_number">正在为您努力转接到人工服务中，当前排队人数%d人，请稍后</string>
-    <string name="cs_connecting">正在为您转接客服，请稍后</string>
-    <string name="no_cs_available">当前暂无客服接入，请稍后尝试</string>
-    <string name="online_cs">在线客服</string>
-    <string name="ai_robot">智能机器人</string>
-    <string name="user_prefix">用户 %s</string>
-    <string name="visitor_prefix">游客 %s</string>
+    <!-- Chat Interface -->
+    <string name="chat_session_status_1">Live customer service</string>
+    <string name="chat_session_status_9">The network is unavailable, please check your network</string>
+    <string name="chat_session_status_8">Your account has already been logged in elsewhere. To continue the conversation, please reload the page</string>
+    <string name="chat_session_status_27">This record is unavailable</string>
+    <string name="chat_session_status_24">Image size exceeds the limit</string>
+    <string name="chat_session_status_25">Video size exceeds the limit</string>
+    <string name="chat_session_status_23">Cannot send a blank message</string>
+    <string name="chat_session_status_3">You have exceeded %d minutes without a reply</string>
+    <string name="chat_session_status_28">The current knowledge point does not exist or has been deleted</string>
+    <string name="chat_session_status_12">Please enter the question you want to consult.</string>
+    <string name="chat_session_status_10">Bottom</string>
+    <string name="chat_session_status_11">You have %d new messages</string>
+    <string name="chat_session_status_4">%s service will be at your service</string>
+    <string name="chat_session_status_6">You have ended the manual customer service</string>
+    <string name="chat_session_status_2">We are working hard to transfer you to the human service. Currently, there are %d people in the queue. Please wait a moment</string>
+    <string name="chat_session_status_5">We are currently transferring you to customer service. Please wait a moment</string>
+    <string name="chat_session_status_7">Currently, there is no customer service access available. Please try again later</string>
+    <string name="chat_session_status_14">Intelligent Robot</string>
+    <string name="chat_session_status_16">User %s</string>
+    <string name="chat_session_status_15">Visitor %s</string>
     
     <!-- FAQ -->
-    <string name="faq_default_greeting">Hi~请简单的描述一下你的问题，我们会尽力协助哦。</string>
+    <string name="faq_default_greeting">Hi~ Please briefly describe your question, and we\'ll do our best to help</string>
     <string name="not_implemented">Not implement yet. --->>> { %d }</string>
     
-    <!-- 图片查看 -->
-    <string name="content_description_back">返回</string>
-    <string name="content_description_cs">客服</string>
-    <string name="content_description_send_fail">发送失败</string>
-    <string name="content_description_read">已读</string>
-    <string name="content_description_close">关闭</string>
+    <!-- Image Viewer -->
+    <string name="content_description_back">Back</string>
+    <string name="content_description_send_fail">Send Failed</string>
+    <string name="content_description_read">Read</string>
+    <string name="content_description_close">Close</string>
 </resources>

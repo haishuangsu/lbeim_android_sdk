@@ -72,9 +72,9 @@ fun MsgTypeContent(
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
     val kickOffLine by viewModel.kickOffLine.collectAsState(false)
-    val copySuccess = stringResource(R.string.copy_success)
-    val historyNotAvailable = stringResource(R.string.history_not_available)
-    val kickOfflineMessage = stringResource(R.string.kick_offline_message)
+    val copySuccess = stringResource(R.string.chat_session_status_13)
+    val historyNotAvailable = stringResource(R.string.chat_session_status_27)
+    val kickOfflineMessage = stringResource(R.string.chat_session_status_8)
 
     when (message.msgType) {
         1 -> {

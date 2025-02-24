@@ -22,12 +22,15 @@ import com.lbe.imsdk.ui.presentation.screen.ChatScreen
 import com.lbe.imsdk.ui.presentation.screen.MediaViewer
 import com.lbe.imsdk.ui.presentation.viewmodel.ChatScreenViewModel
 import com.lbe.imsdk.ui.theme.ChatAppTheme
+import java.util.Locale
 
 class LbeChatActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         val initArgsJson = intent.getStringExtra("initArgs")
         val initArgs = Gson().fromJson(initArgsJson, InitArgs::class.java)
+        updateAppLanguage(initArgs.language)
+        
+        super.onCreate(savedInstanceState)
         Log.d("LbeIMSdk", "Sdk 接收 args --->> $initArgs")
         setContent {
             ChatAppTheme {
@@ -62,5 +65,18 @@ class LbeChatActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun updateAppLanguage(language: String) {
+        val locale = when (language.lowercase()) {
+            "zh", "zh_cn", "zh-cn" -> Locale.CHINESE
+            else -> Locale.ENGLISH
+        }
+        
+        val config = resources.configuration
+        config.setLocale(locale)
+        val context = createConfigurationContext(config)
+        resources.updateConfiguration(config, resources.displayMetrics)
+        baseContext.resources.updateConfiguration(config, baseContext.resources.displayMetrics)
     }
 }
